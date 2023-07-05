@@ -51,6 +51,9 @@ namespace pdf2eink
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
+            if (pageNo == pages - 1)
+                return;
+
             pageNo++;
             showPage();
         }
@@ -58,6 +61,18 @@ namespace pdf2eink
         private void trackBar1_Scroll(object sender, EventArgs e)
         {
             pageNo = trackBar1.Value;
+            showPage();
+        }
+
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            d.AddNumericField("page", "Page", max: pages, min: 1, decimalPlaces: 0);
+            d.ShowDialog();
+
+            var page = d.GetIntegerNumericField("page") - 1;
+            trackBar1.Value = page;
+            pageNo = page;
             showPage();
         }
     }
