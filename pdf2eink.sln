@@ -5,6 +5,8 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "pdf2eink", "pdf2eink\pdf2eink.csproj", "{29FAF837-AC97-4C6E-94D1-7438651E0E14}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DitheringLib", "DitheringLib\DitheringLib.csproj", "{8C811243-8E52-4341-8699-E845397D264E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{29FAF837-AC97-4C6E-94D1-7438651E0E14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29FAF837-AC97-4C6E-94D1-7438651E0E14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29FAF837-AC97-4C6E-94D1-7438651E0E14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C811243-8E52-4341-8699-E845397D264E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C811243-8E52-4341-8699-E845397D264E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C811243-8E52-4341-8699-E845397D264E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C811243-8E52-4341-8699-E845397D264E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

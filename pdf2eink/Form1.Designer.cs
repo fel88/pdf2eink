@@ -36,6 +36,7 @@
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.checkBox2 = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
@@ -122,6 +123,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.checkBox2);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.numericUpDown1);
             this.panel1.Controls.Add(this.progressBar1);
@@ -132,6 +134,16 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(484, 114);
             this.panel1.TabIndex = 7;
+            // 
+            // checkBox2
+            // 
+            this.checkBox2.AutoSize = true;
+            this.checkBox2.Location = new System.Drawing.Point(188, 69);
+            this.checkBox2.Name = "checkBox2";
+            this.checkBox2.Size = new System.Drawing.Size(95, 19);
+            this.checkBox2.TabIndex = 6;
+            this.checkBox2.Text = "use dithering";
+            this.checkBox2.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -162,5 +174,6 @@
         private NumericUpDown numericUpDown1;
         private TableLayoutPanel tableLayoutPanel1;
         private Panel panel1;
+        private CheckBox checkBox2;
     }
 }

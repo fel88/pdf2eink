@@ -8,6 +8,7 @@ using System.Text;
 using System.Data;
 using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics;
+using DitheringLib;
 
 namespace pdf2eink
 {
@@ -313,7 +314,12 @@ namespace pdf2eink
 
                                     using (var rmat = mat3.Resize(new OpenCvSharp.Size(600, 448 * 2)))
                                     {
-                                        using (var top1 = rmat.Threshold(200, 255, ThresholdTypes.Binary))
+                                        if (checkBox2.Checked)
+                                        {
+                                            Dithering d = new Dithering();
+                                            pictureBox1.Image = d.Process(rmat.ToBitmap());
+                                        }
+                                        else using (var top1 = rmat.Threshold(200, 255, ThresholdTypes.Binary))
                                         {
                                             pictureBox1.Image = top1.ToBitmap();
                                         }

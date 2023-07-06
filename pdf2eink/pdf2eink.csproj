@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DitheringLib\DitheringLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Editor.cs">
       <SubType>Form</SubType>
     </Compile>
