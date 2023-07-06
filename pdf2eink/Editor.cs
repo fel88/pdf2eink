@@ -1,8 +1,10 @@
+using System.Text;
+
 namespace pdf2eink
 {
-    public partial class Viewer : Form
+    public partial class Editor : Form
     {
-        public Viewer()
+        public Editor()
         {
             InitializeComponent();
         }
@@ -10,14 +12,7 @@ namespace pdf2eink
         int pageNo;
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            if (ofd.ShowDialog() != DialogResult.OK)
-                return;
 
-            bts = File.ReadAllBytes(ofd.FileName);
-            pages = BitConverter.ToInt32(bts, 4);
-            trackBar1.Maximum = pages - 1;
-            showPage();
 
         }
         int pages = 0;
@@ -78,8 +73,52 @@ namespace pdf2eink
 
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
+            var size = 76 * 448;
+
+            List<byte> part0 = new List<byte>();
+            part0.AddRange(Encoding.UTF8.GetBytes("CB"));
+            part0.AddRange(BitConverter.GetBytes((byte)0));//format . 0 -simple without meta info
+            part0.AddRange(BitConverter.GetBytes(pages - 1));
+
+            var part1 = bts.Skip(8).Take(4 + pageNo * size).ToArray();
+            var part2 = bts.Skip(12 + pageNo * size).Skip(size).ToArray();
+
+            bts = part0.Concat(part1).Concat(part2).ToArray();
+            pages = BitConverter.ToInt32(bts, 4);
+            trackBar1.Maximum = pages - 1;
+            showPage();
+        }
+
+        private void toolStripButton4_Click(object sender, EventArgs e)
+        {
             pageNo--;
             showPage();
+        }
+
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            if (ofd.ShowDialog() != DialogResult.OK)
+                return;
+
+            bts = File.ReadAllBytes(ofd.FileName);
+            pages = BitConverter.ToInt32(bts, 4);
+            trackBar1.Maximum = pages - 1;
+            showPage();
+        }
+
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            if (sfd.ShowDialog() != DialogResult.OK)
+                return;
+
+            File.WriteAllBytes(sfd.FileName, bts);
+        }
+
+        private void almostWhiteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

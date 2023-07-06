@@ -18,6 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Editor.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Viewer.cs">
       <SubType>Form</SubType>
     </Compile>

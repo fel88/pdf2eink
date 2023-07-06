@@ -30,5 +30,12 @@ namespace pdf2eink
             v.MdiParent = this;
             v.Show();
         }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            Editor v = new Editor();
+            v.MdiParent = this;
+            v.Show();
+        }
     }
 }

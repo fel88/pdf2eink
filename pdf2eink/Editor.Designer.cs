@@ -1,6 +1,6 @@
 ﻿namespace pdf2eink
 {
-    partial class Viewer
+    partial class Editor
     {
         /// <summary>
         ///  Required designer variable.
@@ -28,18 +28,25 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Viewer));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Editor));
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+            this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton4 = new System.Windows.Forms.ToolStripButton();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
+            this.toolStripDropDownButton2 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.almostWhiteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.almostBlackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.almostNoWhiteHorizontalLinesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
@@ -92,24 +99,42 @@
             // 
             this.toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripButton1,
+            this.toolStripDropDownButton1,
             this.toolStripButton2,
-            this.toolStripButton3});
+            this.toolStripButton3,
+            this.toolStripButton4,
+            this.toolStripDropDownButton2});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(700, 25);
             this.toolStrip1.TabIndex = 2;
             this.toolStrip1.Text = "toolStrip1";
             // 
-            // toolStripButton1
+            // toolStripDropDownButton1
             // 
-            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(38, 22);
-            this.toolStripButton1.Text = "open";
-            this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
+            this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.loadToolStripMenuItem,
+            this.saveAsToolStripMenuItem});
+            this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
+            this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
+            this.toolStripDropDownButton1.Size = new System.Drawing.Size(38, 22);
+            this.toolStripDropDownButton1.Text = "File";
+            // 
+            // loadToolStripMenuItem
+            // 
+            this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
+            this.loadToolStripMenuItem.Text = "load";
+            this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
+            // 
+            // saveAsToolStripMenuItem
+            // 
+            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
+            this.saveAsToolStripMenuItem.Text = "save as";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // toolStripButton2
             // 
@@ -120,6 +145,26 @@
             this.toolStripButton2.Size = new System.Drawing.Size(65, 22);
             this.toolStripButton2.Text = "goto page";
             this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
+            // 
+            // toolStripButton3
+            // 
+            this.toolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButton3.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton3.Image")));
+            this.toolStripButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton3.Name = "toolStripButton3";
+            this.toolStripButton3.Size = new System.Drawing.Size(72, 22);
+            this.toolStripButton3.Text = "delete page";
+            this.toolStripButton3.Click += new System.EventHandler(this.toolStripButton3_Click);
+            // 
+            // toolStripButton4
+            // 
+            this.toolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButton4.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton4.Image")));
+            this.toolStripButton4.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton4.Name = "toolStripButton4";
+            this.toolStripButton4.Size = new System.Drawing.Size(65, 22);
+            this.toolStripButton4.Text = "back page";
+            this.toolStripButton4.Click += new System.EventHandler(this.toolStripButton4_Click);
             // 
             // statusStrip1
             // 
@@ -152,17 +197,39 @@
             this.toolStripStatusLabel3.Size = new System.Drawing.Size(42, 17);
             this.toolStripStatusLabel3.Text = "1 / 100";
             // 
-            // toolStripButton3
+            // toolStripDropDownButton2
             // 
-            this.toolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripButton3.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton3.Image")));
-            this.toolStripButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton3.Name = "toolStripButton3";
-            this.toolStripButton3.Size = new System.Drawing.Size(65, 22);
-            this.toolStripButton3.Text = "back page";
-            this.toolStripButton3.Click += new System.EventHandler(this.toolStripButton3_Click);
+            this.toolStripDropDownButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.almostWhiteToolStripMenuItem,
+            this.almostBlackToolStripMenuItem,
+            this.almostNoWhiteHorizontalLinesToolStripMenuItem});
+            this.toolStripDropDownButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton2.Image")));
+            this.toolStripDropDownButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton2.Name = "toolStripDropDownButton2";
+            this.toolStripDropDownButton2.Size = new System.Drawing.Size(54, 22);
+            this.toolStripDropDownButton2.Text = "search";
             // 
-            // Viewer
+            // almostWhiteToolStripMenuItem
+            // 
+            this.almostWhiteToolStripMenuItem.Name = "almostWhiteToolStripMenuItem";
+            this.almostWhiteToolStripMenuItem.Size = new System.Drawing.Size(242, 22);
+            this.almostWhiteToolStripMenuItem.Text = "almost white";
+            this.almostWhiteToolStripMenuItem.Click += new System.EventHandler(this.almostWhiteToolStripMenuItem_Click);
+            // 
+            // almostBlackToolStripMenuItem
+            // 
+            this.almostBlackToolStripMenuItem.Name = "almostBlackToolStripMenuItem";
+            this.almostBlackToolStripMenuItem.Size = new System.Drawing.Size(242, 22);
+            this.almostBlackToolStripMenuItem.Text = "almost black";
+            // 
+            // almostNoWhiteHorizontalLinesToolStripMenuItem
+            // 
+            this.almostNoWhiteHorizontalLinesToolStripMenuItem.Name = "almostNoWhiteHorizontalLinesToolStripMenuItem";
+            this.almostNoWhiteHorizontalLinesToolStripMenuItem.Size = new System.Drawing.Size(242, 22);
+            this.almostNoWhiteHorizontalLinesToolStripMenuItem.Text = "almost no white horizontal lines";
+            // 
+            // Editor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -171,8 +238,8 @@
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.statusStrip1);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.Name = "Viewer";
-            this.Text = "Viewer";
+            this.Name = "Editor";
+            this.Text = "Editor";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
@@ -191,7 +258,6 @@
         private PictureBox pictureBox1;
         private TableLayoutPanel tableLayoutPanel1;
         private ToolStrip toolStrip1;
-        private ToolStripButton toolStripButton1;
         private TrackBar trackBar1;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
@@ -199,5 +265,13 @@
         private ToolStripStatusLabel toolStripStatusLabel3;
         private ToolStripButton toolStripButton2;
         private ToolStripButton toolStripButton3;
+        private ToolStripButton toolStripButton4;
+        private ToolStripDropDownButton toolStripDropDownButton1;
+        private ToolStripMenuItem loadToolStripMenuItem;
+        private ToolStripMenuItem saveAsToolStripMenuItem;
+        private ToolStripDropDownButton toolStripDropDownButton2;
+        private ToolStripMenuItem almostWhiteToolStripMenuItem;
+        private ToolStripMenuItem almostBlackToolStripMenuItem;
+        private ToolStripMenuItem almostNoWhiteHorizontalLinesToolStripMenuItem;
     }
 }
