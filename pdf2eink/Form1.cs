@@ -9,6 +9,7 @@ using System.Data;
 using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics;
 using DitheringLib;
+using System.Security.Cryptography;
 
 namespace pdf2eink
 {
@@ -40,7 +41,17 @@ namespace pdf2eink
             return rgbValues;
         }
 
-        void ExportToInternalFormat(string fileName, string outputFileName)
+        bool renderPageInfo = false;
+        public class ExportResult
+        {
+            public bool Terminate;
+        }
+        public class PageInfo
+        {
+            public Bitmap Bmp;
+            public int Page;
+        }
+        void ExportToInternalFormat(string fileName, string outputFileName, Func<PageInfo, ExportResult> action = null)
         {
 
             using (var fs = new FileStream(outputFileName, FileMode.Create))
@@ -66,6 +77,7 @@ namespace pdf2eink
                             progressBar1.Maximum = pdoc.PageCount;
                             progressBar1.Value = i;
                         });
+
                         using (var img = pdoc.Render(i, 300, 300, PdfRenderFlags.CorrectFromDpi) as Bitmap)
                         using (var mat = img.ToMat())
                         {
@@ -88,50 +100,97 @@ namespace pdf2eink
                                             //search safe cut line
                                             var safeY = GetSafeY(rmat);
                                             //rmat.Height / 2
-
-                                            using (var top = new Mat(rmat, new Rect(0, 0, rmat.Width, safeY)))
+                                            Rect[] rects = new Rect[2]
                                             {
-                                                using (var topResized = top.Resize(new OpenCvSharp.Size(600, 448)))
-                                                using (var top1 = topResized.Threshold(200, 255, ThresholdTypes.Binary))
+                                                new Rect (0, 0, rmat.Width, safeY),
+                                                new Rect (0, safeY, rmat.Width, rmat.Height - safeY),
+                                            };
+                                            foreach (var item in rects)
+                                            {
+                                                using (var top = new Mat(rmat, item))
                                                 {
-                                                    if (top1.Width > 0 && top1.Height > 0)
+                                                    if (renderPageInfo)
                                                     {
-
-                                                        //top1.SaveImage(i + "_page_0.bmp");
-                                                        using (var bmp = top1.ToBitmap())
+                                                        using (var topResized = top.Resize(new OpenCvSharp.Size(600, 440)))
                                                         {
-                                                            using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+                                                            using (var total = new Mat(new OpenCvSharp.Size(600, 448), MatType.CV_8UC1))
                                                             {
-                                                                //clone.Save(i + "_page_0.bmp");
-                                                                var bts = GetBuffer(clone);
-                                                                fs.Write(bts);
-                                                                pages++;
+                                                                topResized.CopyTo(total.RowRange(0, 440).ColRange(0, 600));
+                                                                total.Rectangle(new Rect(0, 440, 600, 8), Scalar.White, -1);
+                                                                // total.Line(590, 0, 590, 448, Scalar.Black);
+                                                                //total.PutText((pages + 1) + " / " + pdoc.PageCount * 2,new OpenCvSharp.Point(591,5),HersheyFonts.HersheySimplex,1,Scalar.Black)
+                                                                using (var temp1 = total.CvtColor(ColorConversionCodes.GRAY2BGR))
+                                                                {
+                                                                    using (var bmp1 = temp1.ToBitmap())
+                                                                    {
+                                                                        using (var gr = Graphics.FromImage(bmp1))
+                                                                        {
+                                                                            gr.DrawLine(Pens.Black, 0, 439, 600, 439);
+                                                                            var str = (pages + 1) + " / " + pdoc.PageCount * 2;
+                                                                            /*for (int z = 0; z < str.Length; z++)
+                                                                            {
+                                                                                gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
+                                                                             Brushes.Black, 0, 5 + z * 10);
+                                                                            }*/
+                                                                            var ms = gr.MeasureString("99999 / 99999", new Font("Consolas", 7));
+
+                                                                            int xx = (pages * 15) % (int)(600 - ms.Width - 1);
+                                                                            gr.DrawString(str.ToString(), new Font("Consolas", 7),
+                                                                             Brushes.Black, xx, 438);
+                                                                        }
+                                                                        var matTotal = bmp1.ToMat();
+                                                                        using (var top1 = matTotal.Threshold(200, 255, ThresholdTypes.Binary))
+                                                                        {
+                                                                            if (top1.Width > 0 && top1.Height > 0)
+                                                                            {
+                                                                                //top1.SaveImage(i + "_page_0.bmp");
+                                                                                using (var bmp = top1.ToBitmap())
+                                                                                {
+                                                                                    if (action != null)
+                                                                                    {
+                                                                                        var res = action(new PageInfo() { Page = pages, Bmp = bmp.Clone() as Bitmap });
+                                                                                        if (res.Terminate)
+                                                                                            return;
+                                                                                    }
+                                                                                    using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+                                                                                    {
+                                                                                        //clone.Save(i + "_page_0.bmp");
+                                                                                        var bts = GetBuffer(clone);
+                                                                                        fs.Write(bts);
+                                                                                        pages++;
+                                                                                    }
+                                                                                }
+
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
                                                             }
                                                         }
                                                     }
-                                                }
-                                            }
-                                            using (var bottom = new Mat(rmat, new Rect(0, safeY, rmat.Width, rmat.Height - safeY)))
-                                            {
-                                                using (var bottomResized = bottom.Resize(new OpenCvSharp.Size(600, 448)))
-                                                using (var bottom1 = bottomResized.Threshold(200, 255, ThresholdTypes.Binary))
-                                                {
-                                                    if (bottom1.Width > 0 && bottom1.Height > 0)
-                                                    {
-                                                        //bottom1.SaveImage(i + "_page_1.bmp");
-                                                        using (var bmp = bottom1.ToBitmap())
+                                                    else
+                                                        using (var topResized = top.Resize(new OpenCvSharp.Size(600, 448)))
+                                                        using (var top1 = topResized.Threshold(200, 255, ThresholdTypes.Binary))
                                                         {
-                                                            using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+                                                            if (top1.Width > 0 && top1.Height > 0)
                                                             {
-                                                                // clone.Save(i + "_page_1.bmp");
-                                                                var bts = GetBuffer(clone);
-                                                                fs.Write(bts);
-                                                                pages++;
+
+                                                                //top1.SaveImage(i + "_page_0.bmp");
+                                                                using (var bmp = top1.ToBitmap())
+                                                                {
+                                                                    using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+                                                                    {
+                                                                        //clone.Save(i + "_page_0.bmp");
+                                                                        var bts = GetBuffer(clone);
+                                                                        fs.Write(bts);
+                                                                        pages++;
+                                                                    }
+                                                                }
                                                             }
                                                         }
-                                                    }
                                                 }
                                             }
+                                            //using (var bottom = new Mat(rmat, new Rect(0, safeY, rmat.Width, rmat.Height - safeY)))
 
 
                                         }
@@ -187,7 +246,6 @@ namespace pdf2eink
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
 
-
             if (checkBox1.Checked)
             {
                 SaveFileDialog sfd = new SaveFileDialog();
@@ -199,7 +257,20 @@ namespace pdf2eink
                 }
                 Thread th = new Thread(() =>
                 {
-                    ExportToInternalFormat(ofd.FileName, sfd.FileName);
+                    Func<PageInfo, ExportResult> action = null;
+
+                    if (previewOnly)
+                    {
+                        action = (x) =>
+                        {
+                            var term = numericUpDown1.Value == x.Page;
+                            if (term)
+                                pictureBox1.Image = x.Bmp;
+
+                            return new ExportResult() { Terminate = term };
+                        };
+                    }
+                    ExportToInternalFormat(ofd.FileName, sfd.FileName, action);
                 });
                 th.IsBackground = true;
                 th.Start();
@@ -320,9 +391,9 @@ namespace pdf2eink
                                             pictureBox1.Image = d.Process(rmat.ToBitmap());
                                         }
                                         else using (var top1 = rmat.Threshold(200, 255, ThresholdTypes.Binary))
-                                        {
-                                            pictureBox1.Image = top1.ToBitmap();
-                                        }
+                                            {
+                                                pictureBox1.Image = top1.ToBitmap();
+                                            }
                                     }
                                 }
                             }
@@ -343,6 +414,23 @@ namespace pdf2eink
 
             Process.Start(startInfo);
 
+        }
+
+        private void cbRenderPageInfo_CheckedChanged(object sender, EventArgs e)
+        {
+            renderPageInfo = cbRenderPageInfo.Checked;
+        }
+
+        bool previewOnly;
+        private void cbPreviewOnly_CheckedChanged(object sender, EventArgs e)
+        {
+            previewOnly = cbPreviewOnly.Checked;
+        }
+
+        bool wearLeveling;
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            wearLeveling = checkBox3.Checked;
         }
     }
 }

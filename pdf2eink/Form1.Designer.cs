@@ -36,7 +36,10 @@
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.cbPreviewOnly = new System.Windows.Forms.CheckBox();
+            this.cbRenderPageInfo = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
+            this.checkBox3 = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
@@ -56,7 +59,7 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(1, 37);
+            this.progressBar1.Location = new System.Drawing.Point(9, 38);
             this.progressBar1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(270, 22);
@@ -123,6 +126,9 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.checkBox3);
+            this.panel1.Controls.Add(this.cbPreviewOnly);
+            this.panel1.Controls.Add(this.cbRenderPageInfo);
             this.panel1.Controls.Add(this.checkBox2);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.numericUpDown1);
@@ -135,6 +141,29 @@
             this.panel1.Size = new System.Drawing.Size(484, 114);
             this.panel1.TabIndex = 7;
             // 
+            // cbPreviewOnly
+            // 
+            this.cbPreviewOnly.AutoSize = true;
+            this.cbPreviewOnly.Location = new System.Drawing.Point(348, 11);
+            this.cbPreviewOnly.Name = "cbPreviewOnly";
+            this.cbPreviewOnly.Size = new System.Drawing.Size(93, 19);
+            this.cbPreviewOnly.TabIndex = 8;
+            this.cbPreviewOnly.Text = "preview only";
+            this.cbPreviewOnly.UseVisualStyleBackColor = true;
+            this.cbPreviewOnly.CheckedChanged += new System.EventHandler(this.cbPreviewOnly_CheckedChanged);
+            // 
+            // cbRenderPageInfo
+            // 
+            this.cbRenderPageInfo.AutoSize = true;
+            this.cbRenderPageInfo.Location = new System.Drawing.Point(229, 14);
+            this.cbRenderPageInfo.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.cbRenderPageInfo.Name = "cbRenderPageInfo";
+            this.cbRenderPageInfo.Size = new System.Drawing.Size(113, 19);
+            this.cbRenderPageInfo.TabIndex = 7;
+            this.cbRenderPageInfo.Text = "render page info";
+            this.cbRenderPageInfo.UseVisualStyleBackColor = true;
+            this.cbRenderPageInfo.CheckedChanged += new System.EventHandler(this.cbRenderPageInfo_CheckedChanged);
+            // 
             // checkBox2
             // 
             this.checkBox2.AutoSize = true;
@@ -145,6 +174,18 @@
             this.checkBox2.Text = "use dithering";
             this.checkBox2.UseVisualStyleBackColor = true;
             // 
+            // checkBox3
+            // 
+            this.checkBox3.AutoSize = true;
+            this.checkBox3.Location = new System.Drawing.Point(300, 41);
+            this.checkBox3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.checkBox3.Name = "checkBox3";
+            this.checkBox3.Size = new System.Drawing.Size(95, 19);
+            this.checkBox3.TabIndex = 9;
+            this.checkBox3.Text = "wear leveling";
+            this.checkBox3.UseVisualStyleBackColor = true;
+            this.checkBox3.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -154,7 +195,7 @@
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Form1";
+            this.Text = "Export";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
@@ -175,5 +216,8 @@
         private TableLayoutPanel tableLayoutPanel1;
         private Panel panel1;
         private CheckBox checkBox2;
+        private CheckBox cbRenderPageInfo;
+        private CheckBox cbPreviewOnly;
+        private CheckBox checkBox3;
     }
 }
