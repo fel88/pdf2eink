@@ -15,12 +15,13 @@ namespace pdf2eink
 
         public int Pages { get; set; }
 
+        public int Dpi { get; set; } = 300;
         public Bitmap GetPage(int index)
         {
             Process compiler = new Process();
             compiler.StartInfo.FileName = Path.Combine(Settings.DjVuLibrePath, "ddjvu.exe");
 
-            compiler.StartInfo.Arguments = $"-page={index} {bookName}";
+            compiler.StartInfo.Arguments = $"-page={index} -scale={Dpi} {bookName}";
             compiler.StartInfo.UseShellExecute = false;
             compiler.StartInfo.CreateNoWindow = true;
 

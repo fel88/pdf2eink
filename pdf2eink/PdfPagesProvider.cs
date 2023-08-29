@@ -8,13 +8,14 @@ namespace pdf2eink
         {
             pdoc = PdfDocument.Load(fileName);
         }
+        public int Dpi { get; set; } = 300;
 
         PdfDocument pdoc;
         public int Pages => pdoc.PageCount;
 
         public Bitmap GetPage(int index)
         {
-            return (Bitmap)pdoc.Render(index, 300, 300, PdfRenderFlags.CorrectFromDpi);
+            return (Bitmap)pdoc.Render(index, Dpi, Dpi, PdfRenderFlags.CorrectFromDpi);
         }
 
         public void Dispose()
