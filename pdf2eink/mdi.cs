@@ -37,5 +37,11 @@ namespace pdf2eink
             v.MdiParent = this;
             v.Show();
         }
+
+        private void toolStripButton4_Click(object sender, EventArgs e)
+        {
+            Settings s = new Settings();
+            s.ShowDialog();
+        }
     }
 }

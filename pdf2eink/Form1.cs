@@ -10,6 +10,7 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics;
 using DitheringLib;
 using System.Security.Cryptography;
+using System.Windows.Forms;
 
 namespace pdf2eink
 {
@@ -41,44 +42,42 @@ namespace pdf2eink
             return rgbValues;
         }
 
-        bool renderPageInfo = false;
+        bool renderPageInfo = true;
         public class ExportResult
         {
             public bool Terminate;
         }
-        public class PageInfo
-        {
-            public Bitmap Bmp;
-            public int Page;
-        }
-        void ExportToInternalFormat(string fileName, string outputFileName, Func<PageInfo, ExportResult> action = null)
+        
+        int minGray = 200;
+
+        void ExportToInternalFormat(IPagesProvider pp, string outputFileName, Func<PageInfo, ExportResult> action = null)
         {
 
             using (var fs = new FileStream(outputFileName, FileMode.Create))
             {
                 int pages = 0;
-                using (var pdoc = PdfDocument.Load(fileName))
+
                 {
                     fs.Write(Encoding.UTF8.GetBytes("CB"));
                     fs.Write(BitConverter.GetBytes((byte)0));//format . 0 -simple without meta info
-                    fs.Write(BitConverter.GetBytes(pdoc.PageCount));
+                    fs.Write(BitConverter.GetBytes(pp.Pages));
                     fs.Write(BitConverter.GetBytes((ushort)600));//width
                     fs.Write(BitConverter.GetBytes((ushort)448));//heigth
 
                     //var bounds = pdoc.GetTextBounds(new PdfTextSpan(0, 0, 0));
 
-                    var fn = Path.GetFileNameWithoutExtension(fileName);
 
 
-                    for (int i = 0; i < pdoc.PageCount; i++)
+
+                    for (int i = 0; i < pp.Pages; i++)
                     {
                         progressBar1.Invoke(() =>
                         {
-                            progressBar1.Maximum = pdoc.PageCount;
+                            progressBar1.Maximum = pp.Pages;
                             progressBar1.Value = i;
                         });
 
-                        using (var img = pdoc.Render(i, 300, 300, PdfRenderFlags.CorrectFromDpi) as Bitmap)
+                        using (var img = pp.GetPage(i))
                         using (var mat = img.ToMat())
                         {
                             using (var mat2 = mat.CvtColor(ColorConversionCodes.BGR2GRAY))
@@ -126,7 +125,7 @@ namespace pdf2eink
                                                                         using (var gr = Graphics.FromImage(bmp1))
                                                                         {
                                                                             gr.DrawLine(Pens.Black, 0, 439, 600, 439);
-                                                                            var str = (pages + 1) + " / " + pdoc.PageCount * 2;
+                                                                            var str = (pages + 1) + " / " + pp.Pages * 2;
                                                                             /*for (int z = 0; z < str.Length; z++)
                                                                             {
                                                                                 gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
@@ -139,7 +138,7 @@ namespace pdf2eink
                                                                              Brushes.Black, xx, 438);
                                                                         }
                                                                         var matTotal = bmp1.ToMat();
-                                                                        using (var top1 = matTotal.Threshold(200, 255, ThresholdTypes.Binary))
+                                                                        using (var top1 = matTotal.Threshold(minGray, 255, ThresholdTypes.Binary))
                                                                         {
                                                                             if (top1.Width > 0 && top1.Height > 0)
                                                                             {
@@ -170,7 +169,7 @@ namespace pdf2eink
                                                     }
                                                     else
                                                         using (var topResized = top.Resize(new OpenCvSharp.Size(600, 448)))
-                                                        using (var top1 = topResized.Threshold(200, 255, ThresholdTypes.Binary))
+                                                        using (var top1 = topResized.Threshold(minGray, 255, ThresholdTypes.Binary))
                                                         {
                                                             if (top1.Width > 0 && top1.Height > 0)
                                                             {
@@ -220,7 +219,7 @@ namespace pdf2eink
         }
         private int GetSafeY(Mat rmat)
         {
-            using (var top1 = rmat.Threshold(200, 255, ThresholdTypes.Binary))
+            using (var top1 = rmat.Threshold(minGray, 255, ThresholdTypes.Binary))
             {
                 //top1.SaveImage("temp11.png");
                 for (int i = 0; i < 20; i++)
@@ -243,18 +242,21 @@ namespace pdf2eink
         private void button1_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "All supported files (*.pdf,*.djvu)|*.djvu;*.pdf|Pdf files (*.pdf)|*.pdf|Djvu files (*.djvu)|*.djvu";
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
 
-            if (checkBox1.Checked)
+            if (internalFormat)
             {
                 SaveFileDialog sfd = new SaveFileDialog();
+                sfd.AddExtension = true;
+                sfd.DefaultExt = "cb";
+                sfd.Filter = "CB files (*.cb)|*.cb";
+                sfd.FileName = Path.GetFileNameWithoutExtension(ofd.FileName);
 
                 if (sfd.ShowDialog() != DialogResult.OK)
-                {
                     return;
 
-                }
                 Thread th = new Thread(() =>
                 {
                     Func<PageInfo, ExportResult> action = null;
@@ -270,7 +272,19 @@ namespace pdf2eink
                             return new ExportResult() { Terminate = term };
                         };
                     }
-                    ExportToInternalFormat(ofd.FileName, sfd.FileName, action);
+                    IPagesProvider p1 = null;
+                    if (ofd.FileName.ToLower().EndsWith("pdf"))
+                    {
+                        p1 = new PdfPagesProvider(ofd.FileName);
+                    }
+                    else
+                    if (ofd.FileName.ToLower().EndsWith("djvu"))
+                    {
+                        p1 = new DjvuPagesProvider(ofd.FileName);
+                    }
+                    //ExportToInternalFormat(ofd.FileName, sfd.FileName, action);
+                    ExportToInternalFormat(p1, sfd.FileName, action);
+                    p1.Dispose();
                 });
                 th.IsBackground = true;
                 th.Start();
@@ -311,9 +325,9 @@ namespace pdf2eink
                                         using (var bottom = new Mat(rmat, new Rect(0, rmat.Height / 2, rmat.Width, rmat.Height / 2)))
                                         {
 
-                                            using (var top1 = top.Threshold(200, 255, ThresholdTypes.Binary))
+                                            using (var top1 = top.Threshold(minGray, 255, ThresholdTypes.Binary))
                                             {
-                                                using (var bottom1 = bottom.Threshold(200, 255, ThresholdTypes.Binary))
+                                                using (var bottom1 = bottom.Threshold(minGray, 255, ThresholdTypes.Binary))
                                                 {
                                                     if (top1.Width > 0 && top1.Height > 0)
                                                     {
@@ -351,10 +365,10 @@ namespace pdf2eink
 
             }
         }
-
+        bool internalFormat = true;
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-
+            internalFormat = checkBox1.Checked;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -390,7 +404,7 @@ namespace pdf2eink
                                             Dithering d = new Dithering();
                                             pictureBox1.Image = d.Process(rmat.ToBitmap());
                                         }
-                                        else using (var top1 = rmat.Threshold(200, 255, ThresholdTypes.Binary))
+                                        else using (var top1 = rmat.Threshold(minGray, 255, ThresholdTypes.Binary))
                                             {
                                                 pictureBox1.Image = top1.ToBitmap();
                                             }
@@ -427,10 +441,16 @@ namespace pdf2eink
             previewOnly = cbPreviewOnly.Checked;
         }
 
-        bool wearLeveling;
+        bool wearLeveling = true;
         private void checkBox3_CheckedChanged(object sender, EventArgs e)
         {
             wearLeveling = checkBox3.Checked;
         }
+
+        private void numericUpDown2_ValueChanged(object sender, EventArgs e)
+        {
+            minGray = (int)numericUpDown2.Value;
+        }
     }
+
 }
