@@ -326,7 +326,7 @@ namespace pdf2eink
                         p1 = new PdfPagesProvider(ofd.FileName);
                     }
                     else
-                    if (ofd.FileName.ToLower().EndsWith("djvu"))
+                    if (ofd.FileName.ToLower().EndsWith("djvu") || ofd.FileName.ToLower().EndsWith("djv"))
                     {
                         p1 = new DjvuPagesProvider(ofd.FileName);
                     }
