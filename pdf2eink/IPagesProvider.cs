@@ -4,6 +4,7 @@
     {
         int Pages { get; }
         Bitmap GetPage(int index);
+        int Dpi { get; set; }
     }
 
 }

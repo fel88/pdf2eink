@@ -36,25 +36,37 @@
             numericUpDown1 = new NumericUpDown();
             tableLayoutPanel1 = new TableLayoutPanel();
             panel1 = new Panel();
+            label2 = new Label();
+            numericUpDown6 = new NumericUpDown();
+            numericUpDown5 = new NumericUpDown();
+            checkBox5 = new CheckBox();
+            numericUpDown4 = new NumericUpDown();
+            numericUpDown3 = new NumericUpDown();
+            checkBox4 = new CheckBox();
+            label1 = new Label();
+            numericUpDown2 = new NumericUpDown();
             checkBox3 = new CheckBox();
             cbPreviewOnly = new CheckBox();
             cbRenderPageInfo = new CheckBox();
             checkBox2 = new CheckBox();
-            numericUpDown2 = new NumericUpDown();
-            label1 = new Label();
+            checkBox6 = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
             tableLayoutPanel1.SuspendLayout();
             panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown6).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown5).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown4).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown3).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown2).BeginInit();
             SuspendLayout();
             // 
             // button1
             // 
-            button1.Location = new Point(12, 11);
+            button1.Location = new Point(9, 11);
             button1.Margin = new Padding(3, 2, 3, 2);
             button1.Name = "button1";
-            button1.Size = new Size(82, 22);
+            button1.Size = new Size(103, 22);
             button1.TabIndex = 0;
             button1.Text = "Export";
             button1.UseVisualStyleBackColor = true;
@@ -97,10 +109,10 @@
             // 
             pictureBox1.BorderStyle = BorderStyle.FixedSingle;
             pictureBox1.Dock = DockStyle.Fill;
-            pictureBox1.Location = new Point(3, 122);
+            pictureBox1.Location = new Point(3, 162);
             pictureBox1.Margin = new Padding(3, 2, 3, 2);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(484, 251);
+            pictureBox1.Size = new Size(484, 211);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 4;
             pictureBox1.TabStop = false;
@@ -124,13 +136,21 @@
             tableLayoutPanel1.Location = new Point(0, 0);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 2;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 160F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel1.Size = new Size(490, 375);
             tableLayoutPanel1.TabIndex = 6;
             // 
             // panel1
             // 
+            panel1.Controls.Add(checkBox6);
+            panel1.Controls.Add(label2);
+            panel1.Controls.Add(numericUpDown6);
+            panel1.Controls.Add(numericUpDown5);
+            panel1.Controls.Add(checkBox5);
+            panel1.Controls.Add(numericUpDown4);
+            panel1.Controls.Add(numericUpDown3);
+            panel1.Controls.Add(checkBox4);
             panel1.Controls.Add(label1);
             panel1.Controls.Add(numericUpDown2);
             panel1.Controls.Add(checkBox3);
@@ -145,8 +165,101 @@
             panel1.Dock = DockStyle.Fill;
             panel1.Location = new Point(3, 3);
             panel1.Name = "panel1";
-            panel1.Size = new Size(484, 114);
+            panel1.Size = new Size(484, 154);
             panel1.TabIndex = 7;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(336, 119);
+            label2.Name = "label2";
+            label2.Size = new Size(24, 15);
+            label2.TabIndex = 18;
+            label2.Text = "dpi";
+            // 
+            // numericUpDown6
+            // 
+            numericUpDown6.Location = new Point(399, 117);
+            numericUpDown6.Maximum = new decimal(new int[] { 600, 0, 0, 0 });
+            numericUpDown6.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
+            numericUpDown6.Name = "numericUpDown6";
+            numericUpDown6.Size = new Size(76, 23);
+            numericUpDown6.TabIndex = 17;
+            numericUpDown6.Value = new decimal(new int[] { 300, 0, 0, 0 });
+            numericUpDown6.ValueChanged += numericUpDown6_ValueChanged;
+            // 
+            // numericUpDown5
+            // 
+            numericUpDown5.Enabled = false;
+            numericUpDown5.Location = new Point(188, 118);
+            numericUpDown5.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
+            numericUpDown5.Name = "numericUpDown5";
+            numericUpDown5.Size = new Size(76, 23);
+            numericUpDown5.TabIndex = 16;
+            numericUpDown5.Value = new decimal(new int[] { 120, 0, 0, 0 });
+            numericUpDown5.ValueChanged += numericUpDown5_ValueChanged;
+            // 
+            // checkBox5
+            // 
+            checkBox5.AutoSize = true;
+            checkBox5.Location = new Point(9, 122);
+            checkBox5.Name = "checkBox5";
+            checkBox5.Size = new Size(178, 19);
+            checkBox5.TabIndex = 15;
+            checkBox5.Text = "split when aspect greater (%)";
+            checkBox5.UseVisualStyleBackColor = true;
+            checkBox5.CheckedChanged += checkBox5_CheckedChanged;
+            // 
+            // numericUpDown4
+            // 
+            numericUpDown4.Enabled = false;
+            numericUpDown4.Location = new Point(177, 94);
+            numericUpDown4.Maximum = new decimal(new int[] { 5000, 0, 0, 0 });
+            numericUpDown4.Name = "numericUpDown4";
+            numericUpDown4.Size = new Size(76, 23);
+            numericUpDown4.TabIndex = 14;
+            numericUpDown4.Value = new decimal(new int[] { 20, 0, 0, 0 });
+            numericUpDown4.ValueChanged += numericUpDown4_ValueChanged;
+            // 
+            // numericUpDown3
+            // 
+            numericUpDown3.Enabled = false;
+            numericUpDown3.Location = new Point(95, 93);
+            numericUpDown3.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
+            numericUpDown3.Name = "numericUpDown3";
+            numericUpDown3.Size = new Size(76, 23);
+            numericUpDown3.TabIndex = 13;
+            numericUpDown3.ValueChanged += numericUpDown3_ValueChanged;
+            // 
+            // checkBox4
+            // 
+            checkBox4.AutoSize = true;
+            checkBox4.Location = new Point(9, 95);
+            checkBox4.Name = "checkBox4";
+            checkBox4.Size = new Size(84, 19);
+            checkBox4.TabIndex = 12;
+            checkBox4.Text = "pages limit";
+            checkBox4.UseVisualStyleBackColor = true;
+            checkBox4.CheckedChanged += checkBox4_CheckedChanged;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(336, 90);
+            label1.Name = "label1";
+            label1.Size = new Size(57, 15);
+            label1.TabIndex = 11;
+            label1.Text = "gray level";
+            // 
+            // numericUpDown2
+            // 
+            numericUpDown2.Location = new Point(399, 88);
+            numericUpDown2.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
+            numericUpDown2.Name = "numericUpDown2";
+            numericUpDown2.Size = new Size(76, 23);
+            numericUpDown2.TabIndex = 10;
+            numericUpDown2.Value = new decimal(new int[] { 200, 0, 0, 0 });
+            numericUpDown2.ValueChanged += numericUpDown2_ValueChanged;
             // 
             // checkBox3
             // 
@@ -197,24 +310,16 @@
             checkBox2.Text = "use dithering";
             checkBox2.UseVisualStyleBackColor = true;
             // 
-            // numericUpDown2
+            // checkBox6
             // 
-            numericUpDown2.Location = new Point(399, 88);
-            numericUpDown2.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
-            numericUpDown2.Name = "numericUpDown2";
-            numericUpDown2.Size = new Size(76, 23);
-            numericUpDown2.TabIndex = 10;
-            numericUpDown2.Value = new decimal(new int[] { 200, 0, 0, 0 });
-            numericUpDown2.ValueChanged += numericUpDown2_ValueChanged;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(336, 90);
-            label1.Name = "label1";
-            label1.Size = new Size(57, 15);
-            label1.TabIndex = 11;
-            label1.Text = "gray level";
+            checkBox6.AutoSize = true;
+            checkBox6.Location = new Point(348, 63);
+            checkBox6.Name = "checkBox6";
+            checkBox6.Size = new Size(124, 19);
+            checkBox6.TabIndex = 19;
+            checkBox6.Text = "adaptive threshold";
+            checkBox6.UseVisualStyleBackColor = true;
+            checkBox6.CheckedChanged += checkBox6_CheckedChanged;
             // 
             // Form1
             // 
@@ -231,6 +336,10 @@
             tableLayoutPanel1.ResumeLayout(false);
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown6).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown5).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown4).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown3).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDown2).EndInit();
             ResumeLayout(false);
         }
@@ -251,5 +360,13 @@
         private CheckBox checkBox3;
         private Label label1;
         private NumericUpDown numericUpDown2;
+        private NumericUpDown numericUpDown4;
+        private NumericUpDown numericUpDown3;
+        private CheckBox checkBox4;
+        private NumericUpDown numericUpDown5;
+        private CheckBox checkBox5;
+        private Label label2;
+        private NumericUpDown numericUpDown6;
+        private CheckBox checkBox6;
     }
 }

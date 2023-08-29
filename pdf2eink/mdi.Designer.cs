@@ -53,8 +53,8 @@
             toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
             toolStripButton1.ImageTransparentColor = Color.Magenta;
             toolStripButton1.Name = "toolStripButton1";
-            toolStripButton1.Size = new Size(61, 22);
-            toolStripButton1.Text = "pdf -> cb";
+            toolStripButton1.Size = new Size(43, 22);
+            toolStripButton1.Text = " -> cb";
             toolStripButton1.Click += toolStripButton1_Click;
             // 
             // toolStripButton2
