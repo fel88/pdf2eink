@@ -28,181 +28,211 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.cbPreviewOnly = new System.Windows.Forms.CheckBox();
-            this.cbRenderPageInfo = new System.Windows.Forms.CheckBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
-            this.tableLayoutPanel1.SuspendLayout();
-            this.panel1.SuspendLayout();
-            this.SuspendLayout();
+            button1 = new Button();
+            progressBar1 = new ProgressBar();
+            checkBox1 = new CheckBox();
+            button2 = new Button();
+            pictureBox1 = new PictureBox();
+            numericUpDown1 = new NumericUpDown();
+            tableLayoutPanel1 = new TableLayoutPanel();
+            panel1 = new Panel();
+            checkBox3 = new CheckBox();
+            cbPreviewOnly = new CheckBox();
+            cbRenderPageInfo = new CheckBox();
+            checkBox2 = new CheckBox();
+            numericUpDown2 = new NumericUpDown();
+            label1 = new Label();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
+            tableLayoutPanel1.SuspendLayout();
+            panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown2).BeginInit();
+            SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 11);
-            this.button1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(82, 22);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Export";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            button1.Location = new Point(12, 11);
+            button1.Margin = new Padding(3, 2, 3, 2);
+            button1.Name = "button1";
+            button1.Size = new Size(82, 22);
+            button1.TabIndex = 0;
+            button1.Text = "Export";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(9, 38);
-            this.progressBar1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(270, 22);
-            this.progressBar1.TabIndex = 1;
+            progressBar1.Location = new Point(9, 38);
+            progressBar1.Margin = new Padding(3, 2, 3, 2);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(270, 22);
+            progressBar1.TabIndex = 1;
             // 
             // checkBox1
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(118, 15);
-            this.checkBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(105, 19);
-            this.checkBox1.TabIndex = 2;
-            this.checkBox1.Text = "internal format";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            checkBox1.AutoSize = true;
+            checkBox1.Checked = true;
+            checkBox1.CheckState = CheckState.Checked;
+            checkBox1.Location = new Point(118, 15);
+            checkBox1.Margin = new Padding(3, 2, 3, 2);
+            checkBox1.Name = "checkBox1";
+            checkBox1.Size = new Size(105, 19);
+            checkBox1.TabIndex = 2;
+            checkBox1.Text = "internal format";
+            checkBox1.UseVisualStyleBackColor = true;
+            checkBox1.CheckedChanged += checkBox1_CheckedChanged;
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(33, 64);
-            this.button2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(101, 22);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "show preview";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            button2.Location = new Point(33, 64);
+            button2.Margin = new Padding(3, 2, 3, 2);
+            button2.Name = "button2";
+            button2.Size = new Size(101, 22);
+            button2.TabIndex = 3;
+            button2.Text = "show preview";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
             // 
             // pictureBox1
             // 
-            this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox1.Location = new System.Drawing.Point(3, 122);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(484, 251);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 4;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            pictureBox1.BorderStyle = BorderStyle.FixedSingle;
+            pictureBox1.Dock = DockStyle.Fill;
+            pictureBox1.Location = new Point(3, 122);
+            pictureBox1.Margin = new Padding(3, 2, 3, 2);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(484, 251);
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox1.TabIndex = 4;
+            pictureBox1.TabStop = false;
+            pictureBox1.Click += pictureBox1_Click;
             // 
             // numericUpDown1
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(129, 65);
-            this.numericUpDown1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(42, 23);
-            this.numericUpDown1.TabIndex = 5;
+            numericUpDown1.Location = new Point(129, 65);
+            numericUpDown1.Margin = new Padding(3, 2, 3, 2);
+            numericUpDown1.Name = "numericUpDown1";
+            numericUpDown1.Size = new Size(42, 23);
+            numericUpDown1.TabIndex = 5;
             // 
             // tableLayoutPanel1
             // 
-            this.tableLayoutPanel1.ColumnCount = 1;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.pictureBox1, 0, 1);
-            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 2;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 120F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(490, 375);
-            this.tableLayoutPanel1.TabIndex = 6;
+            tableLayoutPanel1.ColumnCount = 1;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.Controls.Add(panel1, 0, 0);
+            tableLayoutPanel1.Controls.Add(pictureBox1, 0, 1);
+            tableLayoutPanel1.Dock = DockStyle.Fill;
+            tableLayoutPanel1.Location = new Point(0, 0);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 2;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.Size = new Size(490, 375);
+            tableLayoutPanel1.TabIndex = 6;
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.checkBox3);
-            this.panel1.Controls.Add(this.cbPreviewOnly);
-            this.panel1.Controls.Add(this.cbRenderPageInfo);
-            this.panel1.Controls.Add(this.checkBox2);
-            this.panel1.Controls.Add(this.button1);
-            this.panel1.Controls.Add(this.numericUpDown1);
-            this.panel1.Controls.Add(this.progressBar1);
-            this.panel1.Controls.Add(this.button2);
-            this.panel1.Controls.Add(this.checkBox1);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(3, 3);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(484, 114);
-            this.panel1.TabIndex = 7;
-            // 
-            // cbPreviewOnly
-            // 
-            this.cbPreviewOnly.AutoSize = true;
-            this.cbPreviewOnly.Location = new System.Drawing.Point(348, 11);
-            this.cbPreviewOnly.Name = "cbPreviewOnly";
-            this.cbPreviewOnly.Size = new System.Drawing.Size(93, 19);
-            this.cbPreviewOnly.TabIndex = 8;
-            this.cbPreviewOnly.Text = "preview only";
-            this.cbPreviewOnly.UseVisualStyleBackColor = true;
-            this.cbPreviewOnly.CheckedChanged += new System.EventHandler(this.cbPreviewOnly_CheckedChanged);
-            // 
-            // cbRenderPageInfo
-            // 
-            this.cbRenderPageInfo.AutoSize = true;
-            this.cbRenderPageInfo.Location = new System.Drawing.Point(229, 14);
-            this.cbRenderPageInfo.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.cbRenderPageInfo.Name = "cbRenderPageInfo";
-            this.cbRenderPageInfo.Size = new System.Drawing.Size(113, 19);
-            this.cbRenderPageInfo.TabIndex = 7;
-            this.cbRenderPageInfo.Text = "render page info";
-            this.cbRenderPageInfo.UseVisualStyleBackColor = true;
-            this.cbRenderPageInfo.CheckedChanged += new System.EventHandler(this.cbRenderPageInfo_CheckedChanged);
-            // 
-            // checkBox2
-            // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(188, 69);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(95, 19);
-            this.checkBox2.TabIndex = 6;
-            this.checkBox2.Text = "use dithering";
-            this.checkBox2.UseVisualStyleBackColor = true;
+            panel1.Controls.Add(label1);
+            panel1.Controls.Add(numericUpDown2);
+            panel1.Controls.Add(checkBox3);
+            panel1.Controls.Add(cbPreviewOnly);
+            panel1.Controls.Add(cbRenderPageInfo);
+            panel1.Controls.Add(checkBox2);
+            panel1.Controls.Add(button1);
+            panel1.Controls.Add(numericUpDown1);
+            panel1.Controls.Add(progressBar1);
+            panel1.Controls.Add(button2);
+            panel1.Controls.Add(checkBox1);
+            panel1.Dock = DockStyle.Fill;
+            panel1.Location = new Point(3, 3);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(484, 114);
+            panel1.TabIndex = 7;
             // 
             // checkBox3
             // 
-            this.checkBox3.AutoSize = true;
-            this.checkBox3.Location = new System.Drawing.Point(300, 41);
-            this.checkBox3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(95, 19);
-            this.checkBox3.TabIndex = 9;
-            this.checkBox3.Text = "wear leveling";
-            this.checkBox3.UseVisualStyleBackColor = true;
-            this.checkBox3.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
+            checkBox3.AutoSize = true;
+            checkBox3.Checked = true;
+            checkBox3.CheckState = CheckState.Checked;
+            checkBox3.Location = new Point(300, 41);
+            checkBox3.Margin = new Padding(3, 2, 3, 2);
+            checkBox3.Name = "checkBox3";
+            checkBox3.Size = new Size(95, 19);
+            checkBox3.TabIndex = 9;
+            checkBox3.Text = "wear leveling";
+            checkBox3.UseVisualStyleBackColor = true;
+            checkBox3.CheckedChanged += checkBox3_CheckedChanged;
+            // 
+            // cbPreviewOnly
+            // 
+            cbPreviewOnly.AutoSize = true;
+            cbPreviewOnly.Location = new Point(348, 11);
+            cbPreviewOnly.Name = "cbPreviewOnly";
+            cbPreviewOnly.Size = new Size(93, 19);
+            cbPreviewOnly.TabIndex = 8;
+            cbPreviewOnly.Text = "preview only";
+            cbPreviewOnly.UseVisualStyleBackColor = true;
+            cbPreviewOnly.CheckedChanged += cbPreviewOnly_CheckedChanged;
+            // 
+            // cbRenderPageInfo
+            // 
+            cbRenderPageInfo.AutoSize = true;
+            cbRenderPageInfo.Checked = true;
+            cbRenderPageInfo.CheckState = CheckState.Checked;
+            cbRenderPageInfo.Location = new Point(229, 14);
+            cbRenderPageInfo.Margin = new Padding(3, 2, 3, 2);
+            cbRenderPageInfo.Name = "cbRenderPageInfo";
+            cbRenderPageInfo.Size = new Size(113, 19);
+            cbRenderPageInfo.TabIndex = 7;
+            cbRenderPageInfo.Text = "render page info";
+            cbRenderPageInfo.UseVisualStyleBackColor = true;
+            cbRenderPageInfo.CheckedChanged += cbRenderPageInfo_CheckedChanged;
+            // 
+            // checkBox2
+            // 
+            checkBox2.AutoSize = true;
+            checkBox2.Location = new Point(188, 69);
+            checkBox2.Name = "checkBox2";
+            checkBox2.Size = new Size(95, 19);
+            checkBox2.TabIndex = 6;
+            checkBox2.Text = "use dithering";
+            checkBox2.UseVisualStyleBackColor = true;
+            // 
+            // numericUpDown2
+            // 
+            numericUpDown2.Location = new Point(399, 88);
+            numericUpDown2.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
+            numericUpDown2.Name = "numericUpDown2";
+            numericUpDown2.Size = new Size(76, 23);
+            numericUpDown2.TabIndex = 10;
+            numericUpDown2.Value = new decimal(new int[] { 200, 0, 0, 0 });
+            numericUpDown2.ValueChanged += numericUpDown2_ValueChanged;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(336, 90);
+            label1.Name = "label1";
+            label1.Size = new Size(57, 15);
+            label1.TabIndex = 11;
+            label1.Text = "gray level";
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(490, 375);
-            this.Controls.Add(this.tableLayoutPanel1);
-            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.Name = "Form1";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Export";
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(490, 375);
+            Controls.Add(tableLayoutPanel1);
+            Margin = new Padding(3, 2, 3, 2);
+            Name = "Form1";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Export";
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
+            tableLayoutPanel1.ResumeLayout(false);
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDown2).EndInit();
+            ResumeLayout(false);
         }
 
         #endregion
@@ -219,5 +249,7 @@
         private CheckBox cbRenderPageInfo;
         private CheckBox cbPreviewOnly;
         private CheckBox checkBox3;
+        private Label label1;
+        private NumericUpDown numericUpDown2;
     }
 }
