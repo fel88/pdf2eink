@@ -1,9 +1,9 @@
 # pdf2eink
 
-convert pdf -> .cb (customized book)
+convert pdf/djvu -> .cb (customized book)
 
 ## Custom book format
-CB is a simple image based format for e-books
+CB is a simple WYSIWYG image based format for e-books
 
 | Offset    |Size (bytes)| Description |
 | -------- |--| ------- |
