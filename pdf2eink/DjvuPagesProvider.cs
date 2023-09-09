@@ -11,8 +11,7 @@ namespace pdf2eink
             bookName = fileName;
             Pages = GetPagesCount(bookName);
         }
-
-
+        public string SourcePath { get; set; }
         public int Pages { get; set; }
 
         public int Dpi { get; set; } = 300;
@@ -21,9 +20,11 @@ namespace pdf2eink
             Process compiler = new Process();
             compiler.StartInfo.FileName = Path.Combine(Settings.DjVuLibrePath, "ddjvu.exe");
 
-            compiler.StartInfo.Arguments = $"-page={index} -scale={Dpi} {bookName}";
+            compiler.StartInfo.Arguments = $"-page={index} -format=ppm -scale={Dpi} {Path.GetFileName(bookName)}";
             compiler.StartInfo.UseShellExecute = false;
             compiler.StartInfo.CreateNoWindow = true;
+            compiler.StartInfo.WorkingDirectory = Path.GetDirectoryName(bookName);
+
 
             int lcid = GetSystemDefaultLCID();
             var ci = System.Globalization.CultureInfo.GetCultureInfo(lcid);
@@ -34,21 +35,30 @@ namespace pdf2eink
             compiler.StartInfo.RedirectStandardOutput = true;
             //compiler.OutputDataReceived += Compiler_OutputDataReceived;
             compiler.Start();
-          
+
             var txt = compiler.StandardOutput.ReadToEnd();
             compiler.WaitForExit();
-
-            return FromPPM(txt);
+            if (string.IsNullOrEmpty(txt))
+                return null;
+            try
+            {
+                return FromPPM(txt);
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
         public int GetPagesCount(string book)
         {
             Process compiler = new Process();
-            compiler.StartInfo.FileName = Path.Combine(Settings.DjVuLibrePath, "djvused.exe");            
+            compiler.StartInfo.FileName = Path.Combine(Settings.DjVuLibrePath, "djvused.exe");
 
-            compiler.StartInfo.Arguments = $"-e n {book}";
+            compiler.StartInfo.Arguments = $"-e n {Path.GetFileName(book)}";
             compiler.StartInfo.UseShellExecute = false;
             compiler.StartInfo.CreateNoWindow = true;
+            compiler.StartInfo.WorkingDirectory = Path.GetDirectoryName(book);
 
             int lcid = GetSystemDefaultLCID();
             var ci = System.Globalization.CultureInfo.GetCultureInfo(lcid);
@@ -57,7 +67,7 @@ namespace pdf2eink
             var enc = CodePagesEncodingProvider.Instance.GetEncoding(page);
             compiler.StartInfo.StandardOutputEncoding = enc;
             compiler.StartInfo.RedirectStandardOutput = true;
-            
+
             compiler.Start();
 
             var txt = compiler.StandardOutput.ReadToEnd();

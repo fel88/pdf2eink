@@ -13,6 +13,8 @@ namespace pdf2eink
         PdfDocument pdoc;
         public int Pages => pdoc.PageCount;
 
+        public string SourcePath { get; set; }
+
         public Bitmap GetPage(int index)
         {
             return (Bitmap)pdoc.Render(index, Dpi, Dpi, PdfRenderFlags.CorrectFromDpi);
@@ -23,6 +25,5 @@ namespace pdf2eink
             if (pdoc != null)
                 pdoc.Dispose();
         }
-    }
-
+    }    
 }
