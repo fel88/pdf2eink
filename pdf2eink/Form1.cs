@@ -125,13 +125,13 @@ namespace pdf2eink
                             using var mat2 = mat.CvtColor(ColorConversionCodes.BGR2GRAY);
                             using Mat inv = new Mat();
                             Cv2.BitwiseNot(mat2, inv);
-
-                            using var coords = inv.FindNonZero();
+                            using var thr = Threshold(inv);
+                            using var coords = thr.FindNonZero();
                             var rect = Cv2.BoundingRect(coords);
                             if (rect.Width == 0 || rect.Height == 0)
                                 continue;
 
-                            var mat3 = mat2.Clone(rect);
+                            using var mat3 = mat2.Clone(rect);
 
                             using var rmat = mat3.Resize(new OpenCvSharp.Size(600, 448 * 2));
                             //search safe cut line
