@@ -18,15 +18,16 @@ namespace pdf2eink
         public SourceBookViewer()
         {
             InitializeComponent();
-            
+
         }
 
         public void Open(IPagesProvider pp)
-        {            
+        {
             book = pp;
             pictureBox1.Image = pp.GetPage(0);
             Text = pp.SourcePath;
             trackBar1.Maximum = pp.Pages;
+            toolStripStatusLabel1.Text = $"{pp.Pages} total pages";
         }
 
         IPagesProvider book;
@@ -43,7 +44,7 @@ namespace pdf2eink
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             pictureBox1.Image.Save("temp1.png");
-            ProcessStartInfo startInfo = new ProcessStartInfo("temp1.png");            
+            ProcessStartInfo startInfo = new ProcessStartInfo("temp1.png");
             startInfo.UseShellExecute = true;
 
             Process.Start(startInfo);
@@ -53,6 +54,22 @@ namespace pdf2eink
         {
             page = trackBar1.Value;
             pictureBox1.Image = book.GetPage(page);
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            d.AddNumericField("page", "Page", 0, book.Pages, decimalPlaces: 0);
+            if (!d.ShowDialog())
+                return;
+
+            page = d.GetIntegerNumericField("page");
+            pictureBox1.Image = book.GetPage(page);
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

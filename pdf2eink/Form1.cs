@@ -80,10 +80,13 @@ namespace pdf2eink
                     }
                     for (int i = sp; i < ep; i++)
                     {
-                        progressBar1.Invoke(() =>
+                        statusStrip1.Invoke(() =>
                         {
-                            progressBar1.Maximum = ep - sp;
-                            progressBar1.Value = i - sp;
+                            toolStripProgressBar1.Maximum = ep - sp;
+                            toolStripProgressBar1.Value = i - sp;
+                            toolStripProgressBar1.Visible = true;
+                            double perc = 100.0 * toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum;
+                            toolStripStatusLabel1.Text = $"progress: {i - sp}/{ep - sp} {Math.Round(perc, 1)}%";
                         });
 
                         using var img = pp.GetPage(i);
@@ -228,9 +231,11 @@ namespace pdf2eink
                 fs.Seek(4, SeekOrigin.Begin);
                 fs.Write(BitConverter.GetBytes(pages));
             }
-            progressBar1.Invoke(() =>
+            statusStrip1.Invoke(() =>
             {
-                progressBar1.Value = progressBar1.Maximum;
+                toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
+                toolStripStatusLabel1.Text = "done";
+                toolStripProgressBar1.Visible = false;
                 MessageBox.Show("done: " + outputFileName);
             });
         }

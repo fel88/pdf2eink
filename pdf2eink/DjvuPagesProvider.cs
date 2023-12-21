@@ -113,7 +113,9 @@ namespace pdf2eink
             var sizes = ln2.Split(' ');
             int w = int.Parse(sizes[0]);
             int h = int.Parse(sizes[1]);
-            Bitmap b = new Bitmap(w, h);
+            using DirectBitmap b = new DirectBitmap(w, h);
+            
+            //Bitmap b = new Bitmap(w, h);
             var max = int.Parse(ln3);
             int x = 0;
             int y = 0;
@@ -148,11 +150,10 @@ namespace pdf2eink
                 }
             }
 
-            return b;
+            return b.Bitmap.DeepClone();
         }
         public void Dispose()
         {
         }
     }
-
 }
