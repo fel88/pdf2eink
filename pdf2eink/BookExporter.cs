@@ -13,7 +13,7 @@ using System.Windows.Forms;
 namespace pdf2eink
 {
     public class BookExporter
-    {   
+    {
 
         private int CountNonZero(Mat mat, int y)
         {
@@ -21,7 +21,7 @@ namespace pdf2eink
             {
                 return mat.Cols - sub.CountNonZero();
             }
-        }        
+        }
 
         public static Mat Threshold(Mat top, BookExportParams eparams)
         {
@@ -63,7 +63,7 @@ namespace pdf2eink
                 return rmat.Height / 2;
             }
         }
-        
+
         private byte[] GetBuffer(Bitmap bmp)
         {
 
@@ -99,8 +99,8 @@ namespace pdf2eink
                     fs.Write(Encoding.UTF8.GetBytes("CB"));
                     fs.Write(BitConverter.GetBytes((byte)0));//format . 0 -simple without meta info
                     fs.Write(BitConverter.GetBytes(pp.Pages));
-                    fs.Write(BitConverter.GetBytes((ushort)600));//width
-                    fs.Write(BitConverter.GetBytes((ushort)448));//heigth
+                    fs.Write(BitConverter.GetBytes((ushort)eparams.Width));//width
+                    fs.Write(BitConverter.GetBytes((ushort)eparams.Height));//heigth
 
                     //var bounds = pdoc.GetTextBounds(new PdfTextSpan(0, 0, 0));
 
@@ -170,7 +170,7 @@ namespace pdf2eink
 
                             using var mat3 = mat2.Clone(rect);
 
-                            using var rmat = mat3.Resize(new OpenCvSharp.Size(600, 448 * 2));
+                            using var rmat = mat3.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height * 2));
                             //search safe cut line
                             var safeY = GetSafeY(rmat, eparams);
                             //rmat.Height / 2
@@ -184,17 +184,18 @@ namespace pdf2eink
                                 using var top = new Mat(rmat, item);
                                 if (eparams.RenderPageInfo)
                                 {
-                                    using var topResized = top.Resize(new OpenCvSharp.Size(600, 440));
-                                    using var total = new Mat(new OpenCvSharp.Size(600, 448), MatType.CV_8UC1);
-                                    topResized.CopyTo(total.RowRange(0, 440).ColRange(0, 600));
-                                    total.Rectangle(new Rect(0, 440, 600, 8), Scalar.White, -1);
+                                    using var topResized = top.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height - eparams.PageInfoHeight));
+                                    using var total = new Mat(new OpenCvSharp.Size(eparams.Width, eparams.Height), MatType.CV_8UC1);
+                                    topResized.CopyTo(total.RowRange(0, eparams.Height - eparams.PageInfoHeight).ColRange(0, eparams.Width));
+                                    total.Rectangle(new Rect(0, eparams.Height - eparams.PageInfoHeight, eparams.Width, eparams.PageInfoHeight), Scalar.White, -1);
                                     // total.Line(590, 0, 590, 448, Scalar.Black);
                                     //total.PutText((pages + 1) + " / " + pdoc.PageCount * 2,new OpenCvSharp.Point(591,5),HersheyFonts.HersheySimplex,1,Scalar.Black)
                                     using var temp1 = total.CvtColor(ColorConversionCodes.GRAY2BGR);
                                     using var bmp1 = temp1.ToBitmap();
                                     using (var gr = Graphics.FromImage(bmp1))
                                     {
-                                        gr.DrawLine(Pens.Black, 0, 439, 600, 439);
+                                        var hh = eparams.Height - eparams.PageInfoHeight - 1;
+                                        gr.DrawLine(Pens.Black, 0, hh, eparams.Width, hh);
                                         var str = (pages + 1) + " / " + pp.Pages * 2;
                                         /*for (int z = 0; z < str.Length; z++)
                                         {
@@ -203,9 +204,9 @@ namespace pdf2eink
                                         }*/
                                         var ms = gr.MeasureString("99999 / 99999", new Font("Consolas", 7));
 
-                                        int xx = (pages * 15) % (int)(600 - ms.Width - 1);
+                                        int xx = (pages * 15) % (int)(eparams.Width - ms.Width - 1);
                                         gr.DrawString(str.ToString(), new Font("Consolas", 7),
-                                         Brushes.Black, xx, 438);
+                                         Brushes.Black, xx, hh - 1);
                                     }
                                     var matTotal = bmp1.ToMat();
                                     using (var top1 = Threshold(matTotal, eparams))
@@ -238,7 +239,7 @@ namespace pdf2eink
                                     }
                                 }
                                 else
-                                    using (var topResized = top.Resize(new OpenCvSharp.Size(600, 448)))
+                                    using (var topResized = top.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height)))
                                     using (var top1 = Threshold(topResized, eparams))
                                     {
                                         if (top1.Width > 0 && top1.Height > 0)

@@ -132,7 +132,7 @@ namespace pdf2eink
                                     var rect = Cv2.BoundingRect(coords);
                                     var mat3 = mat2.Clone(rect);
 
-                                    using (var rmat = mat3.Resize(new OpenCvSharp.Size(600, 448 * 2)))
+                                    using (var rmat = mat3.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height * 2)))
                                     using (var top = new Mat(rmat, new Rect(0, 0, rmat.Width, rmat.Height / 2)))
                                     {
                                         using (var bottom = new Mat(rmat, new Rect(0, rmat.Height / 2, rmat.Width, rmat.Height / 2)))
@@ -213,7 +213,7 @@ namespace pdf2eink
                                     var rect = Cv2.BoundingRect(coords);
                                     var mat3 = mat2.Clone(rect);
 
-                                    using (var rmat = mat3.Resize(new OpenCvSharp.Size(600, 448 * 2)))
+                                    using (var rmat = mat3.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height * 2)))
                                     {
                                         if (checkBox2.Checked)
                                         {
@@ -308,6 +308,22 @@ namespace pdf2eink
         {
             eparams.AdaptiveThreshold = checkBox6.Checked;
         }
-    }
 
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var spl = comboBox1.Text.Split('x');
+            numericUpDown7.Value = int.Parse(spl[0]);
+            numericUpDown8.Value = int.Parse(spl[1]);
+        }
+
+        private void numericUpDown7_ValueChanged(object sender, EventArgs e)
+        {
+            eparams.Width = (int)numericUpDown7.Value;
+        }
+
+        private void numericUpDown8_ValueChanged(object sender, EventArgs e)
+        {
+            eparams.Height = (int)numericUpDown8.Value;
+        }
+    }
 }
