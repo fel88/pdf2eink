@@ -20,254 +20,12 @@ namespace pdf2eink
         {
             InitializeComponent();
         }
-        private byte[] GetBuffer(Bitmap bmp)
-        {
 
-            // Lock the bitmap's bits. 
-            Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-            System.Drawing.Imaging.BitmapData bmpData =
-             bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly,
-             bmp.PixelFormat);
-
-            // Get the address of the first line.
-            IntPtr ptr = bmpData.Scan0;
-
-            // Declare an array to hold the bytes of the bitmap.
-            int bytes = bmpData.Stride * bmp.Height;
-            byte[] rgbValues = new byte[bytes];
-
-            // Copy the RGB values into the array.
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes); bmp.UnlockBits(bmpData);
-
-            return rgbValues;
-        }
-
-        bool renderPageInfo = true;
         public class ExportResult
         {
             public bool Terminate;
         }
 
-        int minGray = 200;
-
-        int startPage = 0;
-        int endPage = 20;
-        bool usePagesLimit = false;
-        void ExportToInternalFormat(IPagesProvider pp, string outputFileName, Func<PageInfo, ExportResult> action = null)
-        {
-
-            using (var fs = new FileStream(outputFileName, FileMode.Create))
-            {
-                int pages = 0;
-
-                {
-                    fs.Write(Encoding.UTF8.GetBytes("CB"));
-                    fs.Write(BitConverter.GetBytes((byte)0));//format . 0 -simple without meta info
-                    fs.Write(BitConverter.GetBytes(pp.Pages));
-                    fs.Write(BitConverter.GetBytes((ushort)600));//width
-                    fs.Write(BitConverter.GetBytes((ushort)448));//heigth
-
-                    //var bounds = pdoc.GetTextBounds(new PdfTextSpan(0, 0, 0));
-
-
-
-                    int sp = 0;
-                    int ep = pp.Pages;
-                    if (usePagesLimit)
-                    {
-                        ep = Math.Min(endPage, pp.Pages);
-                        sp = Math.Max(0, startPage);
-                    }
-                    for (int i = sp; i < ep; i++)
-                    {
-                        statusStrip1.Invoke(() =>
-                        {
-                            toolStripProgressBar1.Maximum = ep - sp;
-                            toolStripProgressBar1.Value = i - sp;
-                            toolStripProgressBar1.Visible = true;
-                            double perc = 100.0 * toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum;
-                            toolStripStatusLabel1.Text = $"progress: {i - sp}/{ep - sp} {Math.Round(perc, 1)}%";
-                        });
-
-                        using var img = pp.GetPage(i);
-
-                        if (img == null)
-                            continue;
-
-                        using var tmat = img.ToMat();
-                        List<Mat> mats = new List<Mat>();
-                        if (splitWhenAspectGreater)
-                        {
-                            var aspect = ((decimal)tmat.Width / tmat.Height) * 100;
-                            if (aspect > numericUpDown5.Value)
-                            {
-                                Rect[] rects = new Rect[2]
-                                      {
-                                                new Rect (0, 0, tmat.Width/2,tmat.Height),
-                                                new Rect (tmat.Width/2, 0, tmat.Width/2,tmat.Height ),
-                                      };
-                                foreach (var item in rects)
-                                {
-                                    var top = new Mat(tmat, item);
-                                    mats.Add(top);
-                                }
-                            }
-                            else
-                            {
-                                mats.Add(tmat.Clone());
-                            }
-                        }
-                        else
-                            mats.Add(tmat.Clone());
-
-                        foreach (var mat in mats)
-                        {
-                            using var mat2 = mat.CvtColor(ColorConversionCodes.BGR2GRAY);
-                            using Mat inv = new Mat();
-                            Cv2.BitwiseNot(mat2, inv);
-                            using var thr = Threshold(inv);
-                            using var coords = thr.FindNonZero();
-                            var rect = Cv2.BoundingRect(coords);
-                            if (rect.Width == 0 || rect.Height == 0)
-                                continue;
-
-                            using var mat3 = mat2.Clone(rect);
-
-                            using var rmat = mat3.Resize(new OpenCvSharp.Size(600, 448 * 2));
-                            //search safe cut line
-                            var safeY = GetSafeY(rmat);
-                            //rmat.Height / 2
-                            Rect[] rects = new Rect[2]
-                            {
-                                                new Rect (0, 0, rmat.Width, safeY),
-                                                new Rect (0, safeY, rmat.Width, rmat.Height - safeY),
-                            };
-                            foreach (var item in rects)
-                            {
-                                using var top = new Mat(rmat, item);
-                                if (renderPageInfo)
-                                {
-                                    using var topResized = top.Resize(new OpenCvSharp.Size(600, 440));
-                                    using var total = new Mat(new OpenCvSharp.Size(600, 448), MatType.CV_8UC1);
-                                    topResized.CopyTo(total.RowRange(0, 440).ColRange(0, 600));
-                                    total.Rectangle(new Rect(0, 440, 600, 8), Scalar.White, -1);
-                                    // total.Line(590, 0, 590, 448, Scalar.Black);
-                                    //total.PutText((pages + 1) + " / " + pdoc.PageCount * 2,new OpenCvSharp.Point(591,5),HersheyFonts.HersheySimplex,1,Scalar.Black)
-                                    using var temp1 = total.CvtColor(ColorConversionCodes.GRAY2BGR);
-                                    using var bmp1 = temp1.ToBitmap();
-                                    using (var gr = Graphics.FromImage(bmp1))
-                                    {
-                                        gr.DrawLine(Pens.Black, 0, 439, 600, 439);
-                                        var str = (pages + 1) + " / " + pp.Pages * 2;
-                                        /*for (int z = 0; z < str.Length; z++)
-                                        {
-                                            gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
-                                         Brushes.Black, 0, 5 + z * 10);
-                                        }*/
-                                        var ms = gr.MeasureString("99999 / 99999", new Font("Consolas", 7));
-
-                                        int xx = (pages * 15) % (int)(600 - ms.Width - 1);
-                                        gr.DrawString(str.ToString(), new Font("Consolas", 7),
-                                         Brushes.Black, xx, 438);
-                                    }
-                                    var matTotal = bmp1.ToMat();
-                                    using (var top1 = Threshold(matTotal))
-                                    {
-                                        if (top1.Width > 0 && top1.Height > 0)
-                                        {
-                                            //top1.SaveImage(i + "_page_0.bmp");
-                                            using (var bmp = top1.ToBitmap())
-                                            {
-                                                if (action != null)
-                                                {
-                                                    var res = action(new PageInfo() { Page = pages, Bmp = bmp.Clone() as Bitmap });
-                                                    if (res.Terminate)
-                                                        return;
-                                                }
-                                                using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
-                                                {
-                                                    //clone.Save(i + "_page_0.bmp");
-                                                    var bts = GetBuffer(clone);
-                                                    fs.Write(bts);
-                                                    pages++;
-                                                }
-                                            }
-
-                                        }
-                                    }
-                                }
-                                else
-                                    using (var topResized = top.Resize(new OpenCvSharp.Size(600, 448)))
-                                    using (var top1 = Threshold(topResized))
-                                    {
-                                        if (top1.Width > 0 && top1.Height > 0)
-                                        {
-
-                                            //top1.SaveImage(i + "_page_0.bmp");
-                                            using (var bmp = top1.ToBitmap())
-                                            {
-                                                using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
-                                                {
-                                                    //clone.Save(i + "_page_0.bmp");
-                                                    var bts = GetBuffer(clone);
-                                                    fs.Write(bts);
-                                                    pages++;
-                                                }
-                                            }
-                                        }
-                                    }
-                            }
-                            //using (var bottom = new Mat(rmat, new Rect(0, safeY, rmat.Width, rmat.Height - safeY)))
-
-
-                        }
-                        foreach (var item in mats)
-                        {
-                            item.Dispose();
-                        }
-                    }
-                }
-
-                fs.Seek(4, SeekOrigin.Begin);
-                fs.Write(BitConverter.GetBytes(pages));
-            }
-            statusStrip1.Invoke(() =>
-            {
-                toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
-                toolStripStatusLabel1.Text = "done";
-                toolStripProgressBar1.Visible = false;
-                MessageBox.Show("done: " + outputFileName);
-            });
-        }
-
-        private int CountNonZero(Mat mat, int y)
-        {
-            using (var sub = mat.SubMat(y, y + 1, 0, mat.Cols))
-            {
-                return mat.Cols - sub.CountNonZero();
-            }
-        }
-        private int GetSafeY(Mat rmat)
-        {
-            using (var top1 = Threshold(rmat))
-            {
-                //top1.SaveImage("temp11.png");
-                for (int i = 0; i < 20; i++)
-                {
-                    var c1 = CountNonZero(top1, top1.Height / 2 + i);
-                    var c2 = CountNonZero(top1, top1.Height / 2 - i);
-                    if (c1 == 0)
-                    {
-                        return top1.Height / 2 + i;
-                    }
-                    if (c2 == 0)
-                    {
-                        return top1.Height / 2 - i;
-                    }
-                }
-                return rmat.Height / 2;
-            }
-        }
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -314,7 +72,31 @@ namespace pdf2eink
                     }
                     p1.Dpi = dpi;
                     //ExportToInternalFormat(ofd.FileName, sfd.FileName, action);
-                    ExportToInternalFormat(p1, sfd.FileName, action);
+                    var bex = new BookExporter();
+                    eparams.Progress = (now, max) =>
+                    {
+                        statusStrip1.Invoke(() =>
+                        {
+                            toolStripProgressBar1.Maximum = max;
+                            toolStripProgressBar1.Value = now;
+                            toolStripProgressBar1.Visible = true;
+                            double perc = 100.0 * toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum;
+                            toolStripStatusLabel1.Text = $"progress: {now}/{max} {Math.Round(perc, 1)}%";
+                        });
+                    };
+
+                    eparams.Finish = () =>
+                    {
+                        statusStrip1.Invoke(() =>
+                            {
+                                toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
+                                toolStripStatusLabel1.Text = "done";
+                                toolStripProgressBar1.Visible = false;
+                                MessageBox.Show("done: " + sfd.FileName);
+                            });
+                    };
+
+                    bex.ExportToInternalFormat(eparams, p1, sfd.FileName, action);
                     p1.Dispose();
                 });
                 th.IsBackground = true;
@@ -356,9 +138,9 @@ namespace pdf2eink
                                         using (var bottom = new Mat(rmat, new Rect(0, rmat.Height / 2, rmat.Width, rmat.Height / 2)))
                                         {
                                             //var res = top.AdaptiveThreshold(255, AdaptiveThresholdTypes.GaussianC, ThresholdTypes.Binary, 7, 11);
-                                            using (var top1 = Threshold(top))
+                                            using (var top1 = BookExporter.Threshold(top, eparams))
                                             {
-                                                using (var bottom1 = Threshold(bottom))
+                                                using (var bottom1 = BookExporter.Threshold(bottom, eparams))
                                                 {
                                                     if (top1.Width > 0 && top1.Height > 0)
                                                     {
@@ -397,27 +179,7 @@ namespace pdf2eink
             }
         }
 
-        bool adaptiveThreshold = false;
 
-        private Mat Threshold(Mat top)
-        {
-            if (adaptiveThreshold)
-            {
-                Mat ret = null;
-                Mat gray = null;
-                if (top.Channels() == 3)
-                {
-                    gray = top.CvtColor(ColorConversionCodes.RGB2GRAY);
-                    top = gray;
-                }
-                ret = top.AdaptiveThreshold(255, AdaptiveThresholdTypes.GaussianC, ThresholdTypes.Binary, 7, 11);
-                if (gray != null)
-                    gray.Dispose();
-
-                return ret;
-            }
-            return top.Threshold(minGray, 255, ThresholdTypes.Binary);
-        }
 
         bool internalFormat = true;
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -458,7 +220,7 @@ namespace pdf2eink
                                             Dithering d = new Dithering();
                                             pictureBox1.Image = d.Process(rmat.ToBitmap());
                                         }
-                                        else using (var top1 = Threshold(rmat))
+                                        else using (var top1 = BookExporter.Threshold(rmat, eparams))
                                             {
                                                 pictureBox1.Image = top1.ToBitmap();
                                             }
@@ -484,9 +246,11 @@ namespace pdf2eink
 
         }
 
+        BookExportParams eparams = new BookExportParams();
+
         private void cbRenderPageInfo_CheckedChanged(object sender, EventArgs e)
         {
-            renderPageInfo = cbRenderPageInfo.Checked;
+            eparams.RenderPageInfo = cbRenderPageInfo.Checked;
         }
 
         bool previewOnly;
@@ -503,36 +267,34 @@ namespace pdf2eink
 
         private void numericUpDown2_ValueChanged(object sender, EventArgs e)
         {
-            minGray = (int)numericUpDown2.Value;
+            eparams.MinGray = (int)numericUpDown2.Value;
         }
 
         private void checkBox4_CheckedChanged(object sender, EventArgs e)
         {
-            usePagesLimit = checkBox4.Checked;
+            eparams.UsePagesLimit = checkBox4.Checked;
             numericUpDown4.Enabled = checkBox4.Checked;
             numericUpDown3.Enabled = checkBox4.Checked;
         }
 
         private void numericUpDown3_ValueChanged(object sender, EventArgs e)
         {
-            startPage = (int)numericUpDown3.Value;
+            eparams.StartPage = (int)numericUpDown3.Value;
         }
 
         private void numericUpDown4_ValueChanged(object sender, EventArgs e)
         {
-            endPage = (int)numericUpDown4.Value;
+            eparams.EndPage = (int)numericUpDown4.Value;
         }
 
-        bool splitWhenAspectGreater = false;
         private void checkBox5_CheckedChanged(object sender, EventArgs e)
         {
-            splitWhenAspectGreater = checkBox5.Checked;
-            numericUpDown5.Enabled = splitWhenAspectGreater;
+            eparams.SplitWhenAspectGreater = checkBox5.Checked;
+            numericUpDown5.Enabled = eparams.SplitWhenAspectGreater;
         }
-
         private void numericUpDown5_ValueChanged(object sender, EventArgs e)
         {
-
+            eparams.AspectSplitLimit = (int)numericUpDown5.Value;
         }
 
         int dpi = 300;
@@ -544,7 +306,7 @@ namespace pdf2eink
 
         private void checkBox6_CheckedChanged(object sender, EventArgs e)
         {
-            adaptiveThreshold = checkBox6.Checked;
+            eparams.AdaptiveThreshold = checkBox6.Checked;
         }
     }
 
