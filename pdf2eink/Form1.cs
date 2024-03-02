@@ -22,88 +22,7 @@ namespace pdf2eink
 
         private void button1_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "All supported files (*.pdf,*.djvu)|*.djvu;*.pdf|Pdf files (*.pdf)|*.pdf|Djvu files (*.djvu)|*.djvu";
-            if (ofd.ShowDialog() != DialogResult.OK)
-                return;
 
-            if (!internalFormat)
-            {
-                ExportToBmpSeries(ofd.FileName);
-                return;
-            }
-
-            SaveFileDialog sfd = new SaveFileDialog();
-            sfd.AddExtension = true;
-            sfd.DefaultExt = "cb";
-            sfd.Filter = "CB files (*.cb)|*.cb";
-            sfd.FileName = Path.GetFileNameWithoutExtension(ofd.FileName);
-
-            if (sfd.ShowDialog() != DialogResult.OK)
-                return;
-
-            Thread th = new Thread(() =>
-            {
-                Func<PageInfo, ExportResult> action = null;
-
-                if (previewOnly)
-                {
-                    action = (x) =>
-                    {
-                        var term = numericUpDown1.Value == x.Page;
-                        if (term)
-                            pictureBox1.Image = x.Bmp;
-
-                        return new ExportResult() { Terminate = term };
-                    };
-                }
-                IPagesProvider p1 = null;
-                if (ofd.FileName.ToLower().EndsWith("pdf"))
-                {
-                    p1 = new PdfPagesProvider(ofd.FileName);
-                }
-                else
-                if (ofd.FileName.ToLower().EndsWith("djvu") || ofd.FileName.ToLower().EndsWith("djv"))
-                {
-                    p1 = new DjvuPagesProvider(ofd.FileName);
-                }
-                p1.Dpi = dpi;
-                //ExportToInternalFormat(ofd.FileName, sfd.FileName, action);
-                var bex = new BookExporter();
-                eparams.Progress = (now, max) =>
-                {
-                    statusStrip1.Invoke(() =>
-                    {
-                        toolStripProgressBar1.Maximum = max;
-                        toolStripProgressBar1.Value = now;
-                        toolStripProgressBar1.Visible = true;
-                        double perc = 100.0 * toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum;
-                        toolStripStatusLabel1.Text = $"progress: {now}/{max} {Math.Round(perc, 1)}%";
-                    });
-                };
-
-                eparams.Finish = () =>
-                {
-                    statusStrip1.Invoke(() =>
-                        {
-                            toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
-                            toolStripStatusLabel1.Text = "done";
-                            toolStripProgressBar1.Visible = false;
-                            if (MessageBox.Show($"Done: {sfd.FileName}. Open?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                            {
-                                Viewer v = new Viewer();
-                                v.Init(sfd.FileName);
-                                v.MdiParent = MdiParent;
-                                v.Show();
-                            }
-                        });
-                };
-
-                bex.ExportToInternalFormat(eparams, p1, sfd.FileName, action);
-                p1.Dispose();
-            });
-            th.IsBackground = true;
-            th.Start();
         }
 
         private void ExportToBmpSeries(string fileName)
@@ -338,6 +257,108 @@ namespace pdf2eink
         private void checkBox8_CheckedChanged(object sender, EventArgs e)
         {
             eparams.FlyRead = checkBox8.Checked;
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "All supported files (*.pdf,*.djvu)|*.djvu;*.pdf|Pdf files (*.pdf)|*.pdf|Djvu files (*.djvu)|*.djvu";
+            if (ofd.ShowDialog() != DialogResult.OK)
+                return;
+
+            if (!internalFormat)
+            {
+                ExportToBmpSeries(ofd.FileName);
+                return;
+            }
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.AddExtension = true;
+            sfd.DefaultExt = "cb";
+            sfd.Filter = "CB files (*.cb)|*.cb";
+            sfd.FileName = Path.GetFileNameWithoutExtension(ofd.FileName);
+
+            if (sfd.ShowDialog() != DialogResult.OK)
+                return;
+
+            Thread th = new Thread(() =>
+            {
+                Func<PageInfo, ExportResult> action = null;
+
+                if (previewOnly)
+                {
+                    action = (x) =>
+                    {
+                        var term = numericUpDown1.Value == x.Page;
+                        if (term)
+                            pictureBox1.Image = x.Bmp;
+
+                        return new ExportResult() { Terminate = term };
+                    };
+                }
+                IPagesProvider p1 = null;
+                if (ofd.FileName.ToLower().EndsWith("pdf"))
+                {
+                    p1 = new PdfPagesProvider(ofd.FileName);
+                }
+                else
+                if (ofd.FileName.ToLower().EndsWith("djvu") || ofd.FileName.ToLower().EndsWith("djv"))
+                {
+                    p1 = new DjvuPagesProvider(ofd.FileName);
+                }
+                p1.Dpi = dpi;
+                //ExportToInternalFormat(ofd.FileName, sfd.FileName, action);
+                var bex = new BookExporter();
+                eparams.Progress = (now, max) =>
+                {
+                    statusStrip1.Invoke(() =>
+                    {
+                        toolStripProgressBar1.Maximum = max;
+                        toolStripProgressBar1.Value = now;
+                        toolStripProgressBar1.Visible = true;
+                        double perc = 100.0 * toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum;
+                        toolStripStatusLabel1.Text = $"progress: {now}/{max} {Math.Round(perc, 1)}%";
+                    });
+                };
+
+                eparams.Finish = () =>
+                {
+                    statusStrip1.Invoke(() =>
+                    {
+                        toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
+                        toolStripStatusLabel1.Text = "done";
+                        toolStripProgressBar1.Visible = false;
+                        if (MessageBox.Show($"Done: {sfd.FileName}. Open?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                        {
+                            Viewer v = new Viewer();
+                            v.Init(sfd.FileName);
+                            v.MdiParent = MdiParent;
+                            v.Show();
+                        }
+                    });
+                };
+
+                bex.ExportToInternalFormat(eparams, p1, sfd.FileName, action);
+                p1.Dispose();
+            });
+            th.IsBackground = true;
+            th.Start();
+        }
+
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            var s = Clipboard.GetText();
+            StringReader rdr = new StringReader(s);
+            string t;
+            while ((t = rdr.ReadLine()) != null)
+            {
+                var spl = t.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+                eparams.TOC = new TOC();
+                eparams.TOC.Items.Add(new TOCItem() { Header = spl[0], Page = int.Parse(spl[1]), Ident = 0 });
+                TOCViewer tocv = new TOCViewer();
+                tocv.Init(eparams.TOC);
+                tocv.ShowDialog();
+            }
         }
     }
 }

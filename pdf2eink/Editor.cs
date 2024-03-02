@@ -187,5 +187,17 @@ namespace pdf2eink
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
         }
+
+        private void showToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void parseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var text = Clipboard.GetText();
+            StringReader s = new StringReader(text);
+            
+        }
     }
 }

@@ -17,5 +17,6 @@
         public bool SplitWhenAspectGreater = false;
         public bool RenderPageInfo = true;
         public int PageInfoHeight = 8;
+        public TOC TOC;
     }
 }
