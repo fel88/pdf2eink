@@ -1,16 +1,9 @@
 using PdfiumViewer;
 using OpenCvSharp.Extensions;
 using OpenCvSharp;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Drawing.Imaging;
-using System.Drawing;
-using System.Text;
-using System.Data;
-using static System.Net.Mime.MediaTypeNames;
 using System.Diagnostics;
 using DitheringLib;
-using System.Security.Cryptography;
-using System.Windows.Forms;
 
 namespace pdf2eink
 {
@@ -34,76 +27,83 @@ namespace pdf2eink
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
 
-            if (internalFormat)
+            if (!internalFormat)
             {
-                SaveFileDialog sfd = new SaveFileDialog();
-                sfd.AddExtension = true;
-                sfd.DefaultExt = "cb";
-                sfd.Filter = "CB files (*.cb)|*.cb";
-                sfd.FileName = Path.GetFileNameWithoutExtension(ofd.FileName);
-
-                if (sfd.ShowDialog() != DialogResult.OK)
-                    return;
-
-                Thread th = new Thread(() =>
-                {
-                    Func<PageInfo, ExportResult> action = null;
-
-                    if (previewOnly)
-                    {
-                        action = (x) =>
-                        {
-                            var term = numericUpDown1.Value == x.Page;
-                            if (term)
-                                pictureBox1.Image = x.Bmp;
-
-                            return new ExportResult() { Terminate = term };
-                        };
-                    }
-                    IPagesProvider p1 = null;
-                    if (ofd.FileName.ToLower().EndsWith("pdf"))
-                    {
-                        p1 = new PdfPagesProvider(ofd.FileName);
-                    }
-                    else
-                    if (ofd.FileName.ToLower().EndsWith("djvu") || ofd.FileName.ToLower().EndsWith("djv"))
-                    {
-                        p1 = new DjvuPagesProvider(ofd.FileName);
-                    }
-                    p1.Dpi = dpi;
-                    //ExportToInternalFormat(ofd.FileName, sfd.FileName, action);
-                    var bex = new BookExporter();
-                    eparams.Progress = (now, max) =>
-                    {
-                        statusStrip1.Invoke(() =>
-                        {
-                            toolStripProgressBar1.Maximum = max;
-                            toolStripProgressBar1.Value = now;
-                            toolStripProgressBar1.Visible = true;
-                            double perc = 100.0 * toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum;
-                            toolStripStatusLabel1.Text = $"progress: {now}/{max} {Math.Round(perc, 1)}%";
-                        });
-                    };
-
-                    eparams.Finish = () =>
-                    {
-                        statusStrip1.Invoke(() =>
-                            {
-                                toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
-                                toolStripStatusLabel1.Text = "done";
-                                toolStripProgressBar1.Visible = false;
-                                MessageBox.Show("done: " + sfd.FileName);
-                            });
-                    };
-
-                    bex.ExportToInternalFormat(eparams, p1, sfd.FileName, action);
-                    p1.Dispose();
-                });
-                th.IsBackground = true;
-                th.Start();
-            }
-            else
                 ExportToBmpSeries(ofd.FileName);
+                return;
+            }
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.AddExtension = true;
+            sfd.DefaultExt = "cb";
+            sfd.Filter = "CB files (*.cb)|*.cb";
+            sfd.FileName = Path.GetFileNameWithoutExtension(ofd.FileName);
+
+            if (sfd.ShowDialog() != DialogResult.OK)
+                return;
+
+            Thread th = new Thread(() =>
+            {
+                Func<PageInfo, ExportResult> action = null;
+
+                if (previewOnly)
+                {
+                    action = (x) =>
+                    {
+                        var term = numericUpDown1.Value == x.Page;
+                        if (term)
+                            pictureBox1.Image = x.Bmp;
+
+                        return new ExportResult() { Terminate = term };
+                    };
+                }
+                IPagesProvider p1 = null;
+                if (ofd.FileName.ToLower().EndsWith("pdf"))
+                {
+                    p1 = new PdfPagesProvider(ofd.FileName);
+                }
+                else
+                if (ofd.FileName.ToLower().EndsWith("djvu") || ofd.FileName.ToLower().EndsWith("djv"))
+                {
+                    p1 = new DjvuPagesProvider(ofd.FileName);
+                }
+                p1.Dpi = dpi;
+                //ExportToInternalFormat(ofd.FileName, sfd.FileName, action);
+                var bex = new BookExporter();
+                eparams.Progress = (now, max) =>
+                {
+                    statusStrip1.Invoke(() =>
+                    {
+                        toolStripProgressBar1.Maximum = max;
+                        toolStripProgressBar1.Value = now;
+                        toolStripProgressBar1.Visible = true;
+                        double perc = 100.0 * toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum;
+                        toolStripStatusLabel1.Text = $"progress: {now}/{max} {Math.Round(perc, 1)}%";
+                    });
+                };
+
+                eparams.Finish = () =>
+                {
+                    statusStrip1.Invoke(() =>
+                        {
+                            toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
+                            toolStripStatusLabel1.Text = "done";
+                            toolStripProgressBar1.Visible = false;
+                            if (MessageBox.Show($"Done: {sfd.FileName}. Open?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                            {
+                                Viewer v = new Viewer();
+                                v.Init(sfd.FileName);
+                                v.MdiParent = MdiParent;
+                                v.Show();
+                            }
+                        });
+                };
+
+                bex.ExportToInternalFormat(eparams, p1, sfd.FileName, action);
+                p1.Dispose();
+            });
+            th.IsBackground = true;
+            th.Start();
         }
 
         private void ExportToBmpSeries(string fileName)
@@ -324,6 +324,20 @@ namespace pdf2eink
         private void numericUpDown8_ValueChanged(object sender, EventArgs e)
         {
             eparams.Height = (int)numericUpDown8.Value;
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void checkBox7_CheckedChanged(object sender, EventArgs e)
+        {
+            eparams.Rotate90 = checkBox7.Checked;
+        }
+
+        private void checkBox8_CheckedChanged(object sender, EventArgs e)
+        {
+            eparams.FlyRead = checkBox8.Checked;
         }
     }
 }

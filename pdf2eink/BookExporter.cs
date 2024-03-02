@@ -9,17 +9,26 @@ using System.Threading.Tasks;
 using static pdf2eink.Form1;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Windows.Forms;
+using OpenCvSharp.Internal.Vectors;
+using System.Windows.Forms.VisualStyles;
 
 namespace pdf2eink
 {
     public class BookExporter
     {
 
-        private int CountNonZero(Mat mat, int y)
+        private int CountNonZeroX(Mat mat, int y)
         {
             using (var sub = mat.SubMat(y, y + 1, 0, mat.Cols))
             {
                 return mat.Cols - sub.CountNonZero();
+            }
+        }
+        private int CountNonZeroY(Mat mat, int x)
+        {
+            using (var sub = mat.SubMat(0, mat.Rows, x, x + 1))
+            {
+                return mat.Rows - sub.CountNonZero();
             }
         }
 
@@ -49,8 +58,8 @@ namespace pdf2eink
                 //top1.SaveImage("temp11.png");
                 for (int i = 0; i < 20; i++)
                 {
-                    var c1 = CountNonZero(top1, top1.Height / 2 + i);
-                    var c2 = CountNonZero(top1, top1.Height / 2 - i);
+                    var c1 = CountNonZeroX(top1, top1.Height / 2 + i);
+                    var c2 = CountNonZeroX(top1, top1.Height / 2 - i);
                     if (c1 == 0)
                     {
                         return top1.Height / 2 + i;
@@ -64,26 +73,92 @@ namespace pdf2eink
             }
         }
 
-        private byte[] GetBuffer(Bitmap bmp)
+        public int[] GetHorizontalCuts(Mat top1)
         {
+            List<int> hh = new List<int>();
 
-            // Lock the bitmap's bits. 
-            Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-            System.Drawing.Imaging.BitmapData bmpData =
-             bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly,
-             bmp.PixelFormat);
+            bool f = false;
+            for (int i = 0; i < top1.Height; i++)
+            {
+                var c1 = CountNonZeroX(top1, i);
+                if (c1 == 0 && f)
+                {
+                    hh.Add(i);
+                    f = false;
+                }
+                else
+                {
+                    f = true;
+                }
+            }
 
-            // Get the address of the first line.
-            IntPtr ptr = bmpData.Scan0;
+            return hh.ToArray();
+        }
 
-            // Declare an array to hold the bytes of the bitmap.
-            int bytes = bmpData.Stride * bmp.Height;
-            byte[] rgbValues = new byte[bytes];
+        public int[] GetVerticalCuts(Mat top1, int gap)
+        {
+            List<int> hh = new List<int>();            
+            int accum = 0;
+            for (int i = 0; i < top1.Width; i++)
+            {
+                var c1 = CountNonZeroY(top1, i);
+                if (c1 == 0 )
+                {
+                    accum++;                    
+                }
+                else
+                {
+                    accum = 0;
+                }
+                if (accum >= gap)
+                {
+                    accum = 0;
+                    hh.Add(i);                    
+                }                
+            }
 
-            // Copy the RGB values into the array.
-            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes); bmp.UnlockBits(bmpData);
+            return hh.ToArray();
+        }
 
-            return rgbValues;
+        public class BookExportContext
+        {
+            public int Pages;
+            public FileStream Stream;
+            private byte[] GetBuffer(Bitmap bmp)
+            {
+
+                // Lock the bitmap's bits. 
+                Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                System.Drawing.Imaging.BitmapData bmpData =
+                 bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly,
+                 bmp.PixelFormat);
+
+                // Get the address of the first line.
+                IntPtr ptr = bmpData.Scan0;
+
+                // Declare an array to hold the bytes of the bitmap.
+                int bytes = bmpData.Stride * bmp.Height;
+                byte[] rgbValues = new byte[bytes];
+
+                // Copy the RGB values into the array.
+                System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes); bmp.UnlockBits(bmpData);
+
+                return rgbValues;
+            }
+
+            public void AppendPage(Bitmap clone)
+            {
+                //clone.Save(i + "_page_0.bmp");
+                var bts = GetBuffer(clone);
+                Stream.Write(bts);
+                Pages++;
+            }
+
+            internal void UpdatePages()
+            {
+                Stream.Seek(4, SeekOrigin.Begin);
+                Stream.Write(BitConverter.GetBytes(Pages));
+            }
         }
 
         public void ExportToInternalFormat(BookExportParams eparams,
@@ -93,8 +168,8 @@ namespace pdf2eink
 
             using (var fs = new FileStream(outputFileName, FileMode.Create))
             {
-                int pages = 0;
-
+                BookExportContext ctx = new BookExportContext();
+                ctx.Stream = fs;
                 {
                     fs.Write(Encoding.UTF8.GetBytes("CB"));
                     fs.Write(BitConverter.GetBytes((byte)0));//format . 0 -simple without meta info
@@ -196,7 +271,7 @@ namespace pdf2eink
                                     {
                                         var hh = eparams.Height - eparams.PageInfoHeight - 1;
                                         gr.DrawLine(Pens.Black, 0, hh, eparams.Width, hh);
-                                        var str = (pages + 1) + " / " + pp.Pages * 2;
+                                        var str = (ctx.Pages + 1) + " / " + pp.Pages * 2;
                                         /*for (int z = 0; z < str.Length; z++)
                                         {
                                             gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
@@ -204,7 +279,7 @@ namespace pdf2eink
                                         }*/
                                         var ms = gr.MeasureString("99999 / 99999", new Font("Consolas", 7));
 
-                                        int xx = (pages * 15) % (int)(eparams.Width - ms.Width - 1);
+                                        int xx = (ctx.Pages * 15) % (int)(eparams.Width - ms.Width - 1);
                                         gr.DrawString(str.ToString(), new Font("Consolas", 7),
                                          Brushes.Black, xx, hh - 1);
                                     }
@@ -220,7 +295,7 @@ namespace pdf2eink
                                                 {
                                                     var res = action(new PageInfo()
                                                     {
-                                                        Page = pages,
+                                                        Page = ctx.Pages,
                                                         Bmp = bmp.Clone() as Bitmap
                                                     });
                                                     if (res.Terminate)
@@ -228,10 +303,7 @@ namespace pdf2eink
                                                 }
                                                 using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
                                                 {
-                                                    //clone.Save(i + "_page_0.bmp");
-                                                    var bts = GetBuffer(clone);
-                                                    fs.Write(bts);
-                                                    pages++;
+                                                    ctx.AppendPage(clone);
                                                 }
                                             }
 
@@ -250,10 +322,7 @@ namespace pdf2eink
                                             {
                                                 using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
                                                 {
-                                                    //clone.Save(i + "_page_0.bmp");
-                                                    var bts = GetBuffer(clone);
-                                                    fs.Write(bts);
-                                                    pages++;
+                                                    ctx.AppendPage(clone);
                                                 }
                                             }
                                         }
@@ -270,8 +339,8 @@ namespace pdf2eink
                     }
                 }
 
-                fs.Seek(4, SeekOrigin.Begin);
-                fs.Write(BitConverter.GetBytes(pages));
+                ctx.UpdatePages();
+
             }
             if (eparams.Finish != null)
                 eparams.Finish();
@@ -283,5 +352,7 @@ namespace pdf2eink
                 MessageBox.Show("done: " + outputFileName);
             });*/
         }
+
+
     }
 }

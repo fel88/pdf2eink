@@ -1,3 +1,6 @@
+using OpenCvSharp;
+using OpenCvSharp.Extensions;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace pdf2eink
@@ -16,17 +19,20 @@ namespace pdf2eink
 
         }
         int pages = 0;
-        public void showPage()
+
+        public Bitmap ExtractPage()
         {
-            toolStripStatusLabel3.Text = $"{pageNo + 1} / {pages}";
-            var size = 76 * 448;
+            var width = BitConverter.ToUInt16(bts, 8);
+            var height = BitConverter.ToUInt16(bts, 10);
+            int stride = 4 * (int)Math.Ceiling(width / 8 / 4f);//aligned 4
+            var size = stride * height;
             var page1 = bts.Skip(12).Skip(pageNo * size).Take(size).ToArray();
-            Bitmap bmp = new Bitmap(600, 448);
+            Bitmap bmp = new Bitmap(width, height);
 
             for (int j = 0; j < bmp.Height; j++)
             {
+                var line = page1.Skip(j * stride).Take(stride).ToArray();
 
-                var line = page1.Skip(j * 76).Take(76).ToArray();
                 int counter = 0;
                 for (int i = 0; i < bmp.Width; i++)
                 {
@@ -41,6 +47,13 @@ namespace pdf2eink
                     else { bmp.SetPixel(i, j, Color.Black); }
                 }
             }
+            return bmp;
+        }
+
+        public void showPage()
+        {
+            toolStripStatusLabel3.Text = $"{pageNo + 1} / {pages}";
+            var bmp = ExtractPage();
             pictureBox1.Image = bmp;
         }
 
@@ -71,7 +84,7 @@ namespace pdf2eink
             showPage();
         }
 
-        private void toolStripButton3_Click(object sender, EventArgs e)
+        public void DeletePage()
         {
             var size = 76 * 448;
 
@@ -87,6 +100,11 @@ namespace pdf2eink
             pages = BitConverter.ToInt32(bts, 4);
             trackBar1.Maximum = pages - 1;
             showPage();
+        }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            DeletePage();
         }
 
         private void toolStripButton4_Click(object sender, EventArgs e)
@@ -119,6 +137,55 @@ namespace pdf2eink
         private void almostWhiteToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void flyReadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var ep = ExtractPage();
+            BookExporter bex = new BookExporter();
+            var mat = ep.ToMat();
+            using (var mat2 = mat.CvtColor(ColorConversionCodes.BGR2GRAY))
+            using (var threshold = BookExporter.Threshold(mat2, new BookExportParams() { }))
+            {
+                var cuts = bex.GetHorizontalCuts(threshold);
+                int lastY = 0;
+                int odd = 0;
+                for (int i = 0; i < cuts.Length; i++)
+                {
+                    //get crop
+                    if ((lastY - cuts[i]) == 0)
+                    {
+                        lastY = cuts[i];
+                        continue;
+                    }
+                    using (var sub = threshold.SubMat(lastY, cuts[i], 0, mat.Cols))
+                    {                       
+                        odd++;
+                        if (odd % 2 == 0)
+                        {
+                            //reverse
+                            var vcuts = bex.GetVerticalCuts(sub, 5);
+                            List<Mat> clones = new List<Mat>();
+                            for (int j = 1; j < vcuts.Length; j++)
+                            {
+                                using (var sub1 = threshold.SubMat(0, sub.Rows, vcuts[j - 1], vcuts[j]))
+                                {
+                                    clones.Add(sub1.Clone());
+                                }
+                            }
+                        }
+                    }
+                    lastY = cuts[i];
+                }
+            }
+        }
+
+        private void attachSourceBookToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "All supported files (*.pdf,*.djvu)|*.djvu;*.pdf|Pdf files (*.pdf)|*.pdf|Djvu files (*.djvu)|*.djvu";
+            if (ofd.ShowDialog() != DialogResult.OK)
+                return;
         }
     }
 }

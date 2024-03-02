@@ -35,6 +35,8 @@
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.checkBox8 = new System.Windows.Forms.CheckBox();
+            this.checkBox7 = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label5 = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
@@ -149,6 +151,8 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.checkBox8);
+            this.panel1.Controls.Add(this.checkBox7);
             this.panel1.Controls.Add(this.groupBox1);
             this.panel1.Controls.Add(this.checkBox6);
             this.panel1.Controls.Add(this.label2);
@@ -174,6 +178,28 @@
             this.panel1.Size = new System.Drawing.Size(449, 214);
             this.panel1.TabIndex = 7;
             // 
+            // checkBox8
+            // 
+            this.checkBox8.AutoSize = true;
+            this.checkBox8.Location = new System.Drawing.Point(330, 67);
+            this.checkBox8.Name = "checkBox8";
+            this.checkBox8.Size = new System.Drawing.Size(65, 19);
+            this.checkBox8.TabIndex = 24;
+            this.checkBox8.Text = "fly read";
+            this.checkBox8.UseVisualStyleBackColor = true;
+            this.checkBox8.CheckedChanged += new System.EventHandler(this.checkBox8_CheckedChanged);
+            // 
+            // checkBox7
+            // 
+            this.checkBox7.AutoSize = true;
+            this.checkBox7.Location = new System.Drawing.Point(247, 67);
+            this.checkBox7.Name = "checkBox7";
+            this.checkBox7.Size = new System.Drawing.Size(77, 19);
+            this.checkBox7.TabIndex = 23;
+            this.checkBox7.Text = "rotate 90°";
+            this.checkBox7.UseVisualStyleBackColor = true;
+            this.checkBox7.CheckedChanged += new System.EventHandler(this.checkBox7_CheckedChanged);
+            // 
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.label5);
@@ -192,7 +218,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(269, 27);
+            this.label5.Location = new System.Drawing.Point(271, 24);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(44, 15);
             this.label5.TabIndex = 25;
@@ -204,8 +230,9 @@
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.Items.AddRange(new object[] {
             "600x448",
-            "648x480"});
-            this.comboBox1.Location = new System.Drawing.Point(322, 22);
+            "648x480",
+            "800x480"});
+            this.comboBox1.Location = new System.Drawing.Point(321, 21);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(104, 23);
             this.comboBox1.TabIndex = 24;
@@ -436,7 +463,7 @@
             // cbPreviewOnly
             // 
             this.cbPreviewOnly.AutoSize = true;
-            this.cbPreviewOnly.Location = new System.Drawing.Point(348, 11);
+            this.cbPreviewOnly.Location = new System.Drawing.Point(348, 15);
             this.cbPreviewOnly.Name = "cbPreviewOnly";
             this.cbPreviewOnly.Size = new System.Drawing.Size(93, 19);
             this.cbPreviewOnly.TabIndex = 8;
@@ -467,6 +494,7 @@
             this.checkBox2.TabIndex = 6;
             this.checkBox2.Text = "use dithering";
             this.checkBox2.UseVisualStyleBackColor = true;
+            this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
             // 
             // statusStrip1
             // 
@@ -564,5 +592,7 @@
         private Label label4;
         private Label label5;
         private ComboBox comboBox1;
+        private CheckBox checkBox7;
+        private CheckBox checkBox8;
     }
 }

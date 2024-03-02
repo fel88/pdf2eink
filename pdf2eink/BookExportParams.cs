@@ -8,6 +8,8 @@
         public int Height = 448;
         public int StartPage = 0;
         public int EndPage = 20;
+        public bool Rotate90;
+        public bool FlyRead;
         public bool UsePagesLimit = false;
         public int AspectSplitLimit = 120;
         public Action<int, int> Progress;

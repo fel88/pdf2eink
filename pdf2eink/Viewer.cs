@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace pdf2eink
 {
@@ -19,8 +20,13 @@ namespace pdf2eink
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
 
-            Text = $"Viewer: {ofd.FileName}";
-            bts = File.ReadAllBytes(ofd.FileName);
+            Init(ofd.FileName);          
+        }
+
+        public void Init(string path)
+        {
+            Text = $"Viewer: {path}";
+            bts = File.ReadAllBytes(path);
             pages = BitConverter.ToInt32(bts, 4);
             trackBar1.Maximum = pages - 1;
             showPage();
