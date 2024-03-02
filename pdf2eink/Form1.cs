@@ -4,6 +4,7 @@ using OpenCvSharp;
 using System.Drawing.Imaging;
 using System.Diagnostics;
 using DitheringLib;
+using System.Runtime.Intrinsics.Arm;
 
 namespace pdf2eink
 {
@@ -347,18 +348,34 @@ namespace pdf2eink
 
         private void toolStripButton2_Click(object sender, EventArgs e)
         {
+
+        }
+
+        private void fromClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             var s = Clipboard.GetText();
             StringReader rdr = new StringReader(s);
             string t;
+            eparams.TOC = new TOC();
             while ((t = rdr.ReadLine()) != null)
             {
-                var spl = t.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
-                eparams.TOC = new TOC();
-                eparams.TOC.Items.Add(new TOCItem() { Header = spl[0], Page = int.Parse(spl[1]), Ident = 0 });
-                TOCViewer tocv = new TOCViewer();
-                tocv.Init(eparams.TOC);
-                tocv.ShowDialog();
+                var spl = t.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+                if (spl.Length == 0 || !spl.Last().All(char.IsDigit))
+                    continue;
+                
+                eparams.TOC.Items.Add(new TOCItem() { Header = string.Join(' ', spl.Take(spl.Length - 1).ToArray()), Page = int.Parse(spl.Last()), Ident = 0 });
             }
+            TOCViewer tocv = new TOCViewer();
+            tocv.Init(eparams.TOC);
+            tocv.ShowDialog();
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            eparams.TOC = new TOC();            
+            TOCViewer tocv = new TOCViewer();
+            tocv.Init(eparams.TOC);
+            tocv.ShowDialog();
         }
     }
 }

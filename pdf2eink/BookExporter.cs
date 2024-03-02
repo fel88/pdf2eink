@@ -184,6 +184,8 @@ namespace pdf2eink
                             h1.Add(0);
                         }
 
+                        fs.Write(BitConverter.GetBytes(item.Page));
+                        fs.Write(BitConverter.GetBytes((ushort)item.Ident));
                         fs.Write(BitConverter.GetBytes((ushort)h1.Count));
                         fs.Write(h1.ToArray());
                     }

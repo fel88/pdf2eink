@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace pdf2eink
 {
@@ -20,20 +21,53 @@ namespace pdf2eink
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
 
-            Init(ofd.FileName);          
+            Init(ofd.FileName);
         }
+
+        public void ParseTOC()
+        {
+            toolStripDropDownButton1.Enabled = true;
+            //parse toc here
+            var tocItems = BitConverter.ToUInt32(bts, 4);
+            int accum = 8;
+            for (int i = 0; i < tocItems; i++)
+            {
+                var page = BitConverter.ToInt32(bts, (int)accum);
+                accum += 4;
+                var ident = BitConverter.ToUInt16(bts, (int)accum);
+                accum += 2;
+                var len = BitConverter.ToInt32(bts, (int)accum);
+                accum += 4;
+                var str = Encoding.UTF8.GetString(bts, accum, len);
+                accum += len;
+                toc.Items.Add(new TOCItem() { Header = str, Page = page, Ident = ident });
+            }
+        }
+
+        TOC toc = new TOC();
 
         public void Init(string path)
         {
             Text = $"Viewer: {path}";
             bts = File.ReadAllBytes(path);
+            var format = bts[4];
+            if (format == 1)
+            {
+                ParseTOC();
+            }
             pages = BitConverter.ToInt32(bts, 4);
             trackBar1.Maximum = pages - 1;
             showPage();
         }
 
+        public int Pages => pages;
         int pages = 0;
-
+        public void ShowPage(int page)
+        {
+            pageNo = page;
+            trackBar1.Value = page;
+            showPage();
+        }
         public void showPage()
         {
             toolStripStatusLabel3.Text = $"{pageNo + 1} / {pages}";
@@ -67,7 +101,7 @@ namespace pdf2eink
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-         
+
         }
 
         private void trackBar1_Scroll(object sender, EventArgs e)
@@ -114,6 +148,13 @@ namespace pdf2eink
             startInfo.UseShellExecute = true;
 
             Process.Start(startInfo);
+        }
+
+        private void showToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            TOCViewer t = new TOCViewer();
+            t.Init(toc,this);
+            t.Show();                
         }
     }
 }
