@@ -29,7 +29,11 @@ namespace pdf2eink
             listView1.Items.Clear();
             foreach (var item in WorkTOC.Items)
             {
-                listView1.Items.Add(new ListViewItem(new string[] { item.Header, item.Page.ToString(), item.Ident.ToString() }) { Tag = item });
+                listView1.Items.Add(new ListViewItem(new string[] {
+                    item.Header,
+                    $"{item.Page+1}",
+                    item.Ident.ToString() })
+                { Tag = item });
             }
         }
 
@@ -81,7 +85,7 @@ namespace pdf2eink
             WorkTOC.Items.Add(s);
             UpdateList();
         }
-        
+
         private void multToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var d = AutoDialog.DialogHelpers.StartDialog();
@@ -94,7 +98,7 @@ namespace pdf2eink
             foreach (var item in listView1.SelectedItems)
             {
                 ((item as ListViewItem).Tag as TOCItem).Page *= factor;
-            }            
+            }
 
             UpdateList();
         }
@@ -111,11 +115,12 @@ namespace pdf2eink
             }
         }
 
-        Viewer Viewer;
-        internal void Init(TOC toc, Viewer viewer)
+        ICbViewer Viewer;
+        internal void Init(TOC toc, ICbViewer viewer)
         {
             Init(toc);
             Viewer = viewer;
+            contextMenuStrip1.Enabled = false;
         }
 
         private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)

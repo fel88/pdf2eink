@@ -354,17 +354,9 @@ namespace pdf2eink
         private void fromClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var s = Clipboard.GetText();
-            StringReader rdr = new StringReader(s);
-            string t;
+            
             eparams.TOC = new TOC();
-            while ((t = rdr.ReadLine()) != null)
-            {
-                var spl = t.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
-                if (spl.Length == 0 || !spl.Last().All(char.IsDigit))
-                    continue;
-                
-                eparams.TOC.Items.Add(new TOCItem() { Header = string.Join(' ', spl.Take(spl.Length - 1).ToArray()), Page = int.Parse(spl.Last()), Ident = 0 });
-            }
+            eparams.TOC.Parse(s);
             TOCViewer tocv = new TOCViewer();
             tocv.Init(eparams.TOC);
             tocv.ShowDialog();

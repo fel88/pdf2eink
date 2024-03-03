@@ -1,65 +1,27 @@
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace pdf2eink
 {
-    public partial class Editor : Form
+    public partial class Editor : Form, ICbViewer
     {
         public Editor()
         {
             InitializeComponent();
         }
-        byte[] bts;
+
         int pageNo;
-        private void toolStripButton1_Click(object sender, EventArgs e)
-        {
-
-
-        }
-        int pages = 0;
-
-        public Bitmap ExtractPage()
-        {
-            var width = BitConverter.ToUInt16(bts, 8);
-            var height = BitConverter.ToUInt16(bts, 10);
-            int stride = 4 * (int)Math.Ceiling(width / 8 / 4f);//aligned 4
-            var size = stride * height;
-            var page1 = bts.Skip(12).Skip(pageNo * size).Take(size).ToArray();
-            Bitmap bmp = new Bitmap(width, height);
-
-            for (int j = 0; j < bmp.Height; j++)
-            {
-                var line = page1.Skip(j * stride).Take(stride).ToArray();
-
-                int counter = 0;
-                for (int i = 0; i < bmp.Width; i++)
-                {
-                    int byteNo = counter / 8;
-                    int bitNo = counter % 8;
-                    counter++;
-                    var b = (byte)(line[byteNo] & (1 << (8 - 1 - bitNo))) > 0;
-                    if (b)
-                    {
-                        bmp.SetPixel(i, j, Color.White);
-                    }
-                    else { bmp.SetPixel(i, j, Color.Black); }
-                }
-            }
-            return bmp;
-        }
 
         public void showPage()
         {
-            toolStripStatusLabel3.Text = $"{pageNo + 1} / {pages}";
-            var bmp = ExtractPage();
+            toolStripStatusLabel3.Text = $"{pageNo + 1} / {book.pages}";
+            var bmp = book.GetPage(pageNo);
             pictureBox1.Image = bmp;
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            if (pageNo == pages - 1)
+            if (pageNo == book.pages - 1)
                 return;
 
             pageNo++;
@@ -75,7 +37,7 @@ namespace pdf2eink
         private void toolStripButton2_Click(object sender, EventArgs e)
         {
             var d = AutoDialog.DialogHelpers.StartDialog();
-            d.AddNumericField("page", "Page", max: pages, min: 1, decimalPlaces: 0);
+            d.AddNumericField("page", "Page", max: book.pages, min: 1, decimalPlaces: 0);
             d.ShowDialog();
 
             var page = d.GetIntegerNumericField("page") - 1;
@@ -84,27 +46,16 @@ namespace pdf2eink
             showPage();
         }
 
-        public void DeletePage()
-        {
-            var size = 76 * 448;
-
-            List<byte> part0 = new List<byte>();
-            part0.AddRange(Encoding.UTF8.GetBytes("CB"));
-            part0.AddRange(BitConverter.GetBytes((byte)0));//format . 0 -simple without meta info
-            part0.AddRange(BitConverter.GetBytes(pages - 1));
-
-            var part1 = bts.Skip(8).Take(4 + pageNo * size).ToArray();
-            var part2 = bts.Skip(12 + pageNo * size).Skip(size).ToArray();
-
-            bts = part0.Concat(part1).Concat(part2).ToArray();
-            pages = BitConverter.ToInt32(bts, 4);
-            trackBar1.Maximum = pages - 1;
-            showPage();
-        }
-
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
             DeletePage();
+        }
+
+        private void DeletePage()
+        {
+            book.DeletePage(pageNo);
+            trackBar1.Maximum = book.pages - 1;
+            showPage();
         }
 
         private void toolStripButton4_Click(object sender, EventArgs e)
@@ -113,15 +64,23 @@ namespace pdf2eink
             showPage();
         }
 
+        CbBook book;
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
 
-            bts = File.ReadAllBytes(ofd.FileName);
-            pages = BitConverter.ToInt32(bts, 4);
-            trackBar1.Maximum = pages - 1;
+            book = new CbBook(ofd.FileName);
+
+            trackBar1.Maximum = book.pages - 1;
+            showPage();
+        }
+
+        public void ShowPage(int page)
+        {
+            pageNo = page;
+            trackBar1.Value = page;
             showPage();
         }
 
@@ -131,7 +90,7 @@ namespace pdf2eink
             if (sfd.ShowDialog() != DialogResult.OK)
                 return;
 
-            File.WriteAllBytes(sfd.FileName, bts);
+            book.SaveAs(sfd.FileName);
         }
 
         private void almostWhiteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -141,7 +100,7 @@ namespace pdf2eink
 
         private void flyReadToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var ep = ExtractPage();
+            var ep = book.GetPage(pageNo);
             BookExporter bex = new BookExporter();
             var mat = ep.ToMat();
             using (var mat2 = mat.CvtColor(ColorConversionCodes.BGR2GRAY))
@@ -159,7 +118,7 @@ namespace pdf2eink
                         continue;
                     }
                     using (var sub = threshold.SubMat(lastY, cuts[i], 0, mat.Cols))
-                    {                       
+                    {
                         odd++;
                         if (odd % 2 == 0)
                         {
@@ -186,18 +145,24 @@ namespace pdf2eink
             ofd.Filter = "All supported files (*.pdf,*.djvu)|*.djvu;*.pdf|Pdf files (*.pdf)|*.pdf|Djvu files (*.djvu)|*.djvu";
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
+
+            //attach source here
         }
 
         private void showToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            TOCViewer t = new TOCViewer();
+            t.Init(book.toc, this);
+            t.Show();
         }
 
         private void parseToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var text = Clipboard.GetText();
-            StringReader s = new StringReader(text);
-            
+
+            var t = new TOC();
+            t.Parse(text);
+            book.toc = t;
         }
     }
 }
