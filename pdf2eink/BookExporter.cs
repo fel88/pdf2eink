@@ -86,7 +86,7 @@ namespace pdf2eink
                     hh.Add(i);
                     f = false;
                 }
-                else
+                else if (c1 != 0)
                 {
                     f = true;
                 }
@@ -99,21 +99,26 @@ namespace pdf2eink
         {
             List<int> hh = new List<int>();
             int accum = 0;
+            bool was = false;
             for (int i = 0; i < top1.Width; i++)
             {
                 var c1 = CountNonZeroY(top1, i);
                 if (c1 == 0)
                 {
-                    accum++;
+                    if (was)
+                        accum++;
                 }
                 else
                 {
+                    was = true;
                     accum = 0;
                 }
                 if (accum >= gap)
                 {
                     accum = 0;
-                    hh.Add(i);
+                    if (was)
+                        hh.Add(i);
+                    was = false;
                 }
             }
 
@@ -289,10 +294,21 @@ namespace pdf2eink
                                 using var total = new Mat(new OpenCvSharp.Size(eparams.Width, eparams.Height), MatType.CV_8UC1);
                                 topResized.CopyTo(total.RowRange(0, eparams.Height - eparams.PageInfoHeight).ColRange(0, eparams.Width));
                                 total.Rectangle(new Rect(0, eparams.Height - eparams.PageInfoHeight, eparams.Width, eparams.PageInfoHeight), Scalar.White, -1);
+
+                                var rtotal = total;
+                                if (eparams.FlyRead)
+                                {
+                                    rtotal = FlyRead(total);
+                                }
+
                                 // total.Line(590, 0, 590, 448, Scalar.Black);
                                 //total.PutText((pages + 1) + " / " + pdoc.PageCount * 2,new OpenCvSharp.Point(591,5),HersheyFonts.HersheySimplex,1,Scalar.Black)
-                                using var temp1 = total.CvtColor(ColorConversionCodes.GRAY2BGR);
+                                using var temp1 = rtotal.CvtColor(ColorConversionCodes.GRAY2BGR);
                                 using var bmp1 = temp1.ToBitmap();
+                                if (rtotal != total)
+                                {
+                                    rtotal.Dispose();
+                                }
                                 using (var gr = Graphics.FromImage(bmp1))
                                 {
                                     var hh = eparams.Height - eparams.PageInfoHeight - 1;
@@ -314,7 +330,9 @@ namespace pdf2eink
                                 {
                                     if (top1.Width > 0 && top1.Height > 0)
                                     {
+
                                         //top1.SaveImage(i + "_page_0.bmp");
+
                                         using (var bmp = top1.ToBitmap())
                                         {
                                             if (action != null)
@@ -332,7 +350,6 @@ namespace pdf2eink
                                                 ctx.AppendPage(clone);
                                             }
                                         }
-
                                     }
                                 }
                             }
@@ -366,6 +383,85 @@ namespace pdf2eink
             }
             if (eparams.Finish != null)
                 eparams.Finish();
+        }
+
+        private Mat FlyRead(Mat mat2)
+        {
+
+            BookExporter bex = new BookExporter();
+
+            Mat result = null;
+            //using (var mat2 = mat.CvtColor(ColorConversionCodes.BGR2GRAY))
+            using (var threshold = BookExporter.Threshold(mat2, new BookExportParams() { }))
+            {
+                result = new Mat(threshold.Size(), threshold.Type());
+                var cuts = bex.GetHorizontalCuts(threshold);
+                int lastY = 0;
+                int odd = 0;
+                for (int i = 0; i < cuts.Length; i++)
+                {
+                    //get crop
+                    if ((lastY - cuts[i]) == 0)
+                    {
+                        lastY = cuts[i];
+                        continue;
+                    }
+                    using (var sub = threshold.SubMat(lastY, cuts[i], 0, mat2.Cols))
+                    {
+                        odd++;
+                        //Directory.CreateDirectory("temp");
+                        //sub.SaveImage(Path.Combine("temp", $"line{odd}.png"));
+                        if (odd % 2 == 0)
+                        {
+                            //reverse
+                            var vcuts = bex.GetVerticalCuts(sub, 5).ToList();
+                            vcuts.Add(sub.Width - 1);
+                            List<Mat> clones = new List<Mat>();
+                            for (int j = 0; j < vcuts.Count; j++)
+                            {
+                                int x0 = 0;
+                                if (j > 0)
+                                    x0 = vcuts[j - 1];
+
+                                using (var sub1 = sub.SubMat(0, sub.Rows, x0, vcuts[j]))
+                                {
+                                    clones.Add(sub1.Clone());
+                                    //  clones.Last().SaveImage(Path.Combine("temp", $"clone{odd}_{j}.png"));
+                                }
+                            }
+                            Mat mat3 = new Mat(sub.Size(), sub.Type());
+                            mat3.SetTo(Scalar.White);
+                            int xx = 0;
+                            clones.Reverse();
+                            xx = 0;
+                            foreach (var item in clones)
+                            {
+                                if (xx < 0)
+                                    break;
+
+                                var roi = new Mat(mat3, new Rect(xx, 0, item.Width, item.Height));
+                                xx += item.Width;
+                                item.CopyTo(roi);
+                            }
+                            mat3.Line(mat3.Width - 1, 0, mat3.Width - 1, mat3.Height, Scalar.Black, 2);
+                            var roi2 = new Mat(result, new Rect(0, lastY, mat3.Width, mat3.Height));
+                            mat3.CopyTo(roi2);
+                            //mat3.SaveImage(Path.Combine("temp", "combo.png"));
+                        }
+                        else
+                        {
+                            var mat3 = new Mat(threshold, new Rect(0, lastY, threshold.Width, cuts[i] - lastY));
+
+                            var roi2 = new Mat(result, new Rect(0, lastY, mat3.Width, mat3.Height));
+                            mat3.CopyTo(roi2);
+                            result.Line(0, lastY, 0, lastY + mat3.Height, Scalar.Black, 2);
+
+                        }
+                    }
+                    lastY = cuts[i];
+                }
+            }
+            return result;
         }
     }
 }

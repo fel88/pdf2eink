@@ -1,5 +1,8 @@
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using System;
+using System.Diagnostics;
+using System.Drawing;
 
 namespace pdf2eink
 {
@@ -103,9 +106,11 @@ namespace pdf2eink
             var ep = book.GetPage(pageNo);
             BookExporter bex = new BookExporter();
             var mat = ep.ToMat();
+            Mat result = null;
             using (var mat2 = mat.CvtColor(ColorConversionCodes.BGR2GRAY))
             using (var threshold = BookExporter.Threshold(mat2, new BookExportParams() { }))
             {
+                result = new Mat(threshold.Size(), threshold.Type());
                 var cuts = bex.GetHorizontalCuts(threshold);
                 int lastY = 0;
                 int odd = 0;
@@ -120,23 +125,55 @@ namespace pdf2eink
                     using (var sub = threshold.SubMat(lastY, cuts[i], 0, mat.Cols))
                     {
                         odd++;
+                        //Directory.CreateDirectory("temp");
+                        //sub.SaveImage(Path.Combine("temp", $"line{odd}.png"));
                         if (odd % 2 == 0)
                         {
                             //reverse
-                            var vcuts = bex.GetVerticalCuts(sub, 5);
+                            var vcuts = bex.GetVerticalCuts(sub, 5).ToList();
+                            vcuts.Add(sub.Width - 1);
                             List<Mat> clones = new List<Mat>();
-                            for (int j = 1; j < vcuts.Length; j++)
+                            for (int j = 0; j < vcuts.Count; j++)
                             {
-                                using (var sub1 = threshold.SubMat(0, sub.Rows, vcuts[j - 1], vcuts[j]))
+                                int x0 = 0;
+                                if (j > 0)
+                                    x0 = vcuts[j - 1];
+
+                                using (var sub1 = sub.SubMat(0, sub.Rows, x0, vcuts[j]))
                                 {
                                     clones.Add(sub1.Clone());
+                                    //  clones.Last().SaveImage(Path.Combine("temp", $"clone{odd}_{j}.png"));
                                 }
                             }
+                            Mat mat3 = new Mat(sub.Size(), sub.Type());
+                            mat3.SetTo(Scalar.White);
+                            int xx = 0;
+                            clones.Reverse();
+                            xx = 0;
+                            foreach (var item in clones)
+                            {
+                                if (xx < 0)
+                                    break;
+
+                                var roi = new Mat(mat3, new Rect(xx, 0, item.Width, item.Height));
+                                xx += item.Width;
+                                item.CopyTo(roi);
+                            }
+                            var roi2 = new Mat(result, new Rect(0, lastY, mat3.Width, mat3.Height));                            
+                            mat3.CopyTo(roi2);
+                            //mat3.SaveImage(Path.Combine("temp", "combo.png"));
+                        }
+                        else
+                        {
+                            var mat3 = new Mat(threshold, new Rect(0, lastY, threshold.Width, cuts[i] - lastY));
+                            var roi2 = new Mat(result, new Rect(0, lastY, mat3.Width, mat3.Height));
+                            mat3.CopyTo(roi2);
                         }
                     }
                     lastY = cuts[i];
                 }
             }
+            //result.SaveImage(Path.Combine("temp", "result.png"));
         }
 
         private void attachSourceBookToolStripMenuItem_Click(object sender, EventArgs e)
