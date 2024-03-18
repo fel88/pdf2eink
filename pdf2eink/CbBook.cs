@@ -15,10 +15,13 @@ namespace pdf2eink
         }
         int tocRawSize = 0;
         byte[] bts;
+        byte[] header;
+        byte[] body;
         public void ParseTOC()
         {
             //toolStripDropDownButton1.Enabled = true;
             //parse toc here
+            Toc = new TOC();
             var tocItems = BitConverter.ToUInt32(bts, 12);
             tocRawSize = BitConverter.ToInt32(bts, 16);
             int accum = 20;
@@ -32,7 +35,7 @@ namespace pdf2eink
                 accum += 2;
                 var str = Encoding.UTF8.GetString(bts, accum, len);
                 accum += len;
-                toc.Items.Add(new TOCItem() { Header = str, Page = page, Ident = ident });
+                Toc.Items.Add(new TOCItem() { Header = str, Page = page, Ident = ident });
             }
         }
 
@@ -83,26 +86,42 @@ namespace pdf2eink
             return bmp;
         }
 
+        public byte Format => bts[3];
+        public void AppendTOC(TOC toc)
+        {
+            header[3] = 1;
+            Toc = toc;
+           
+        }
         internal void Open(string path)
         {
             bts = File.ReadAllBytes(path);
+            header = bts.Take(12).ToArray();
+            body = bts.Skip(12).ToArray();
             var format = bts[3];
             if (format == 1)
             {
                 ParseTOC();
+                body = body.Skip(tocRawSize).ToArray();
             }
             pages = BitConverter.ToInt32(bts, 4);
         }
 
         internal void SaveAs(string fileName)
         {
-            File.WriteAllBytes(fileName, bts);
+            MemoryStream ms = new MemoryStream();
+            ms.Write(header, 0, header.Length);
+            
+            BookExporter.AppendTOC(Toc, ms);
+            ms.Write(body, 0, body.Length);
+
+            File.WriteAllBytes(fileName, ms.ToArray());            
         }
 
         public int pages;
 
-        public TOC toc = new TOC();
+        public TOC Toc { get; private set; } 
 
-        public bool HasTOC => toc != null && toc.Items.Any();
+        public bool HasTOC => Toc != null && Toc.Items.Any();
     }
 }

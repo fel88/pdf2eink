@@ -39,6 +39,9 @@
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.multToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.moveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.upToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.downToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -80,9 +83,10 @@
             this.editToolStripMenuItem,
             this.addToolStripMenuItem,
             this.deleteToolStripMenuItem,
-            this.pagesToolStripMenuItem});
+            this.pagesToolStripMenuItem,
+            this.moveToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(107, 92);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(107, 114);
             // 
             // editToolStripMenuItem
             // 
@@ -120,6 +124,29 @@
             this.multToolStripMenuItem.Text = "mult";
             this.multToolStripMenuItem.Click += new System.EventHandler(this.multToolStripMenuItem_Click);
             // 
+            // moveToolStripMenuItem
+            // 
+            this.moveToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.upToolStripMenuItem,
+            this.downToolStripMenuItem});
+            this.moveToolStripMenuItem.Name = "moveToolStripMenuItem";
+            this.moveToolStripMenuItem.Size = new System.Drawing.Size(106, 22);
+            this.moveToolStripMenuItem.Text = "move";
+            // 
+            // upToolStripMenuItem
+            // 
+            this.upToolStripMenuItem.Name = "upToolStripMenuItem";
+            this.upToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.upToolStripMenuItem.Text = "up";
+            this.upToolStripMenuItem.Click += new System.EventHandler(this.upToolStripMenuItem_Click);
+            // 
+            // downToolStripMenuItem
+            // 
+            this.downToolStripMenuItem.Name = "downToolStripMenuItem";
+            this.downToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.downToolStripMenuItem.Text = "down";
+            this.downToolStripMenuItem.Click += new System.EventHandler(this.downToolStripMenuItem_Click);
+            // 
             // TOCViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -127,6 +154,7 @@
             this.ClientSize = new System.Drawing.Size(408, 320);
             this.Controls.Add(this.listView1);
             this.Name = "TOCViewer";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "TOC";
             this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -145,5 +173,8 @@
         private ToolStripMenuItem deleteToolStripMenuItem;
         private ToolStripMenuItem pagesToolStripMenuItem;
         private ToolStripMenuItem multToolStripMenuItem;
+        private ToolStripMenuItem moveToolStripMenuItem;
+        private ToolStripMenuItem upToolStripMenuItem;
+        private ToolStripMenuItem downToolStripMenuItem;
     }
 }

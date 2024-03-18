@@ -103,7 +103,7 @@ namespace pdf2eink
         private void showToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             TOCViewer t = new TOCViewer();
-            t.Init(book.toc, this);
+            t.Init(book.Toc, this);
             t.Show();
         }
     }

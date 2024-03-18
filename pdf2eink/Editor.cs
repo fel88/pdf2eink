@@ -1,8 +1,5 @@
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
-using System;
-using System.Diagnostics;
-using System.Drawing;
 
 namespace pdf2eink
 {
@@ -51,7 +48,8 @@ namespace pdf2eink
 
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
-            DeletePage();
+            if (MessageBox.Show("Are you sure to delete current page?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                DeletePage();
         }
 
         private void DeletePage()
@@ -159,7 +157,7 @@ namespace pdf2eink
                                 xx += item.Width;
                                 item.CopyTo(roi);
                             }
-                            var roi2 = new Mat(result, new Rect(0, lastY, mat3.Width, mat3.Height));                            
+                            var roi2 = new Mat(result, new Rect(0, lastY, mat3.Width, mat3.Height));
                             mat3.CopyTo(roi2);
                             //mat3.SaveImage(Path.Combine("temp", "combo.png"));
                         }
@@ -188,8 +186,11 @@ namespace pdf2eink
 
         private void showToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (book.Toc == null)
+                return;
+
             TOCViewer t = new TOCViewer();
-            t.Init(book.toc, this);
+            t.Init(book.Toc, this);
             t.Show();
         }
 
@@ -199,7 +200,22 @@ namespace pdf2eink
 
             var t = new TOC();
             t.Parse(text);
-            book.toc = t;
+            book.AppendTOC(t);
+        }
+
+        private void editToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (book.Toc == null)
+            {
+                if (MessageBox.Show("Book doesn't have a TOC. Create one?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+                    return;
+
+                book.AppendTOC(new TOC());
+            }
+
+            TOCViewer tocv = new TOCViewer();
+            tocv.Init(book.Toc, this, true);
+            tocv.Show();
         }
     }
 }

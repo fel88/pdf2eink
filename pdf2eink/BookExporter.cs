@@ -188,28 +188,8 @@ namespace pdf2eink
                 fs.Write(BitConverter.GetBytes((ushort)eparams.Width));//width
                 fs.Write(BitConverter.GetBytes((ushort)eparams.Height));//heigth
 
-                if (eparams.TOC != null && eparams.TOC.Items.Count > 0)
-                {
-                    fs.Write(BitConverter.GetBytes((int)eparams.TOC.Items.Count));
-                    var offset = fs.Position;
-                    fs.Write(BitConverter.GetBytes(0));//total section len in bytes
-                    foreach (var item in eparams.TOC.Items)
-                    {
-                        var h1 = Encoding.UTF8.GetBytes(item.Header).ToList();
-                        //while (h1.Count % 4 != 0)
-                        //     h1.Add(0);
-                        //     
-                        fs.Write(BitConverter.GetBytes(item.Page));
-                        fs.Write(BitConverter.GetBytes((ushort)item.Ident));
-                        fs.Write(BitConverter.GetBytes((ushort)h1.Count));
-                        fs.Write(h1.ToArray());
-                    }
-                    var totalLen = fs.Position - offset + 4;
-                    var offset2 = fs.Position;
-                    fs.Seek(offset, SeekOrigin.Begin);
-                    fs.Write(BitConverter.GetBytes((int)totalLen));
-                    fs.Seek(offset2, SeekOrigin.Begin);
-                }
+                if (eparams.TOC != null)                
+                    AppendTOC(eparams.TOC, fs);                
 
                 //var bounds = pdoc.GetTextBounds(new PdfTextSpan(0, 0, 0));
                 int sp = 0;
@@ -383,6 +363,32 @@ namespace pdf2eink
             }
             if (eparams.Finish != null)
                 eparams.Finish();
+        }
+
+        public static void AppendTOC(TOC toc, Stream fs)
+        {
+            if (toc != null && toc.Items.Count > 0)
+            {
+                fs.Write(BitConverter.GetBytes((int)toc.Items.Count));
+                var offset = fs.Position;
+                fs.Write(BitConverter.GetBytes(0));//total section len in bytes
+                foreach (var item in toc.Items)
+                {
+                    var h1 = Encoding.UTF8.GetBytes(item.Header).ToList();
+                    //while (h1.Count % 4 != 0)
+                    //     h1.Add(0);
+                    //     
+                    fs.Write(BitConverter.GetBytes(item.Page));
+                    fs.Write(BitConverter.GetBytes((ushort)item.Ident));
+                    fs.Write(BitConverter.GetBytes((ushort)h1.Count));
+                    fs.Write(h1.ToArray());
+                }
+                var totalLen = fs.Position - offset + 4;
+                var offset2 = fs.Position;
+                fs.Seek(offset, SeekOrigin.Begin);
+                fs.Write(BitConverter.GetBytes((int)totalLen));
+                fs.Seek(offset2, SeekOrigin.Begin);
+            }            
         }
 
         private Mat FlyRead(Mat mat2)

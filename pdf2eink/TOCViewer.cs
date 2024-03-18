@@ -24,6 +24,14 @@ namespace pdf2eink
             UpdateList();
         }
 
+        ICbViewer Viewer;
+        internal void Init(TOC toc, ICbViewer viewer, bool allowEdit = false)
+        {
+            Init(toc);
+            Viewer = viewer;
+            contextMenuStrip1.Enabled = allowEdit;
+        }
+
         public void UpdateList()
         {
             listView1.Items.Clear();
@@ -79,7 +87,7 @@ namespace pdf2eink
 
             TOCItem s = new TOCItem();
             s.Header = d.GetStringField("header");
-            s.Page = d.GetIntegerNumericField("page");
+            s.Page = d.GetIntegerNumericField("page") - 1;
             s.Ident = d.GetIntegerNumericField("ident");
 
             WorkTOC.Items.Add(s);
@@ -115,13 +123,7 @@ namespace pdf2eink
             }
         }
 
-        ICbViewer Viewer;
-        internal void Init(TOC toc, ICbViewer viewer)
-        {
-            Init(toc);
-            Viewer = viewer;
-            contextMenuStrip1.Enabled = false;
-        }
+
 
         private void listView1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
@@ -130,6 +132,36 @@ namespace pdf2eink
 
             var s = listView1.SelectedItems[0].Tag as TOCItem;
             Viewer.ShowPage(s.Page);
+        }
+
+        private void upToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count == 0)
+                return;
+
+            var s = listView1.SelectedItems[0].Tag as TOCItem;
+            var ind1 = WorkTOC.Items.IndexOf(s);
+            if (ind1 > 0)
+            {
+                WorkTOC.Items.Remove(s);
+                WorkTOC.Items.Insert(ind1 - 1, s);
+            }
+            UpdateList();
+        }
+
+        private void downToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count == 0)
+                return;
+
+            var s = listView1.SelectedItems[0].Tag as TOCItem;
+            var ind1 = WorkTOC.Items.IndexOf(s);
+            if (ind1 < WorkTOC.Items.Count - 1)
+            {
+                WorkTOC.Items.Remove(s);
+                WorkTOC.Items.Insert(ind1 + 1, s);
+            }
+            UpdateList();
         }
     }
 }
