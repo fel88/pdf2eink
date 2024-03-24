@@ -11,6 +11,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Windows.Forms;
 using OpenCvSharp.Internal.Vectors;
 using System.Windows.Forms.VisualStyles;
+using DitheringLib;
 
 namespace pdf2eink
 {
@@ -128,7 +129,7 @@ namespace pdf2eink
         public class BookExportContext
         {
             public int Pages;
-            public FileStream Stream;
+            public Stream Stream;
             private byte[] GetBuffer(Bitmap bmp)
             {
 
@@ -165,202 +166,233 @@ namespace pdf2eink
                 Stream.Write(BitConverter.GetBytes(Pages));
             }
         }
-
         public void ExportToInternalFormat(BookExportParams eparams,
-            IPagesProvider pp, string outputFileName,
-            Func<PageInfo, ExportResult> action = null)
+         IPagesProvider pp, string outputFileName,
+         Func<PageInfo, ExportResult> action = null)
         {
             using (var fs = new FileStream(outputFileName, FileMode.Create))
             {
-                BookExportContext ctx = new BookExportContext();
-                ctx.Stream = fs;
+                ExportToInternalFormat(eparams, pp, fs, action);
+            }
+        }
 
-                //fs.Write(Encoding.UTF8.GetBytes("CB" + '\0'));
-                fs.Write(Encoding.UTF8.GetBytes("CB"));
-                fs.WriteByte(0x1);//version CB format
-                if (eparams.TOC != null && eparams.TOC.Items.Count > 0)
-                    fs.WriteByte(0x1);//format . 1 -with TOC
-                                      //wite TOC here                  
-                else
-                    fs.WriteByte(0x0);//format . 0 -simple without meta info
+        public void ExportToInternalFormat(BookExportParams eparams,
+        IPagesProvider pp, Stream stream,
+        Func<PageInfo, ExportResult> action = null)
+        {
+            var fs = stream;
+            BookExportContext ctx = new BookExportContext();
+            ctx.Stream = stream;
 
-                fs.Write(BitConverter.GetBytes(pp.Pages));
-                fs.Write(BitConverter.GetBytes((ushort)eparams.Width));//width
-                fs.Write(BitConverter.GetBytes((ushort)eparams.Height));//heigth
+            //fs.Write(Encoding.UTF8.GetBytes("CB" + '\0'));
+            fs.Write(Encoding.UTF8.GetBytes("CB"));
+            fs.WriteByte(0x1);//version CB format
+            if (eparams.TOC != null && eparams.TOC.Items.Count > 0)
+                fs.WriteByte(0x1);//format . 1 -with TOC
+                                  //wite TOC here                  
+            else
+                fs.WriteByte(0x0);//format . 0 -simple without meta info
 
-                if (eparams.TOC != null)                
-                    AppendTOC(eparams.TOC, fs);                
+            fs.Write(BitConverter.GetBytes(pp.Pages));
+            fs.Write(BitConverter.GetBytes((ushort)eparams.Width));//width
+            fs.Write(BitConverter.GetBytes((ushort)eparams.Height));//heigth
 
-                //var bounds = pdoc.GetTextBounds(new PdfTextSpan(0, 0, 0));
-                int sp = 0;
-                int ep = pp.Pages;
-                if (eparams.UsePagesLimit)
+            if (eparams.TOC != null)
+                AppendTOC(eparams.TOC, fs);
+
+            //var bounds = pdoc.GetTextBounds(new PdfTextSpan(0, 0, 0));
+            int sp = 0;
+            int ep = pp.Pages;
+            if (eparams.UsePagesLimit)
+            {
+                ep = Math.Min(eparams.EndPage, pp.Pages);
+                sp = Math.Max(0, eparams.StartPage);
+            }
+            for (int i = sp; i < ep; i++)
+            {
+                if (eparams.Progress != null)
+                    eparams.Progress(i - sp, ep - sp);
+                /*statusStrip1.Invoke(() =>
                 {
-                    ep = Math.Min(eparams.EndPage, pp.Pages);
-                    sp = Math.Max(0, eparams.StartPage);
-                }
-                for (int i = sp; i < ep; i++)
+                    toolStripProgressBar1.Maximum = ep - sp;
+                    toolStripProgressBar1.Value = i - sp;
+                    toolStripProgressBar1.Visible = true;
+                    double perc = 100.0 * toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum;
+                    toolStripStatusLabel1.Text = $"progress: {i - sp}/{ep - sp} {Math.Round(perc, 1)}%";
+                });*/
+
+                using var img = pp.GetPage(i);
+
+                if (img == null)
+                    continue;
+
+                using var tmat = img.ToMat();
+                List<Mat> mats = new List<Mat>();
+                if (eparams.SplitWhenAspectGreater)
                 {
-                    if (eparams.Progress != null)
-                        eparams.Progress(i - sp, ep - sp);
-                    /*statusStrip1.Invoke(() =>
+                    var aspect = ((decimal)tmat.Width / tmat.Height) * 100;
+                    if (aspect > eparams.AspectSplitLimit)
                     {
-                        toolStripProgressBar1.Maximum = ep - sp;
-                        toolStripProgressBar1.Value = i - sp;
-                        toolStripProgressBar1.Visible = true;
-                        double perc = 100.0 * toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum;
-                        toolStripStatusLabel1.Text = $"progress: {i - sp}/{ep - sp} {Math.Round(perc, 1)}%";
-                    });*/
-
-                    using var img = pp.GetPage(i);
-
-                    if (img == null)
-                        continue;
-
-                    using var tmat = img.ToMat();
-                    List<Mat> mats = new List<Mat>();
-                    if (eparams.SplitWhenAspectGreater)
-                    {
-                        var aspect = ((decimal)tmat.Width / tmat.Height) * 100;
-                        if (aspect > eparams.AspectSplitLimit)
-                        {
-                            Rect[] rects = new Rect[2]
-                                  {
+                        Rect[] rects = new Rect[2]
+                              {
                                                 new Rect (0, 0, tmat.Width/2,tmat.Height),
                                                 new Rect (tmat.Width/2, 0, tmat.Width/2,tmat.Height ),
-                                  };
-                            foreach (var item in rects)
-                            {
-                                var top = new Mat(tmat, item);
-                                mats.Add(top);
-                            }
-                        }
-                        else
+                              };
+                        foreach (var item in rects)
                         {
-                            mats.Add(tmat.Clone());
+                            var top = new Mat(tmat, item);
+                            mats.Add(top);
                         }
                     }
                     else
-                        mats.Add(tmat.Clone());
-
-                    foreach (var mat in mats)
                     {
-                        using var mat2 = mat.CvtColor(ColorConversionCodes.BGR2GRAY);
+                        mats.Add(tmat.Clone());
+                    }
+                }
+                else
+                    mats.Add(tmat.Clone());
+
+                foreach (var mat in mats)
+                {
+                    var ttmat = mat;
+
+                    Mat thr = null;
+                    if (eparams.AutoDithering)
+                    {
+                        Dithering d = new Dithering();
+                        using var tt = mat.ToBitmap();
+                        using var res = d.Process(tt);
+                        ttmat = res.ToMat();
+                    }
+                    
+                    using var mat2 = ttmat.CvtColor(ColorConversionCodes.BGR2GRAY);
+                    if (eparams.AutoDithering)
+                    {
+                        ttmat.Dispose();
+                        thr = mat2;
+                    }
+                    else
+                    {
                         using Mat inv = new Mat();
                         Cv2.BitwiseNot(mat2, inv);
-                        using var thr = Threshold(inv, eparams);
-                        using var coords = thr.FindNonZero();
-                        var rect = Cv2.BoundingRect(coords);
-                        if (rect.Width == 0 || rect.Height == 0)
-                            continue;
+                        thr = Threshold(inv, eparams);
+                    }
+                    using var coords = thr.FindNonZero();
+                    if (!eparams.AutoDithering)
+                    {
+                        thr.Dispose();
+                    }
+                    var rect = Cv2.BoundingRect(coords);
+                    if (rect.Width == 0 || rect.Height == 0)
+                        continue;
 
-                        using var mat3 = mat2.Clone(rect);
+                    using var mat3 = mat2.Clone(rect);
 
-                        using var rmat = mat3.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height * 2));
-                        //search safe cut line
-                        var safeY = GetSafeY(rmat, eparams);
-                        //rmat.Height / 2
-                        Rect[] rects = new Rect[2]
-                        {
+                    using var rmat = mat3.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height * 2));
+                    //search safe cut line
+                    var safeY = GetSafeY(rmat, eparams);
+                    //rmat.Height / 2
+                    Rect[] rects = new Rect[2]
+                    {
                                                 new Rect (0, 0, rmat.Width, safeY),
                                                 new Rect (0, safeY, rmat.Width, rmat.Height - safeY),
-                        };
-                        foreach (var item in rects)
+                    };
+                    foreach (var item in rects)
+                    {
+                        using var top = new Mat(rmat, item);
+                        if (eparams.RenderPageInfo)
                         {
-                            using var top = new Mat(rmat, item);
-                            if (eparams.RenderPageInfo)
+                            using var topResized = top.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height - eparams.PageInfoHeight));
+                            using var total = new Mat(new OpenCvSharp.Size(eparams.Width, eparams.Height), MatType.CV_8UC1);
+                            topResized.CopyTo(total.RowRange(0, eparams.Height - eparams.PageInfoHeight).ColRange(0, eparams.Width));
+                            total.Rectangle(new Rect(0, eparams.Height - eparams.PageInfoHeight, eparams.Width, eparams.PageInfoHeight), Scalar.White, -1);
+
+                            var rtotal = total;
+                            if (eparams.FlyRead)
                             {
-                                using var topResized = top.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height - eparams.PageInfoHeight));
-                                using var total = new Mat(new OpenCvSharp.Size(eparams.Width, eparams.Height), MatType.CV_8UC1);
-                                topResized.CopyTo(total.RowRange(0, eparams.Height - eparams.PageInfoHeight).ColRange(0, eparams.Width));
-                                total.Rectangle(new Rect(0, eparams.Height - eparams.PageInfoHeight, eparams.Width, eparams.PageInfoHeight), Scalar.White, -1);
+                                rtotal = FlyRead(total);
+                            }
 
-                                var rtotal = total;
-                                if (eparams.FlyRead)
+                            // total.Line(590, 0, 590, 448, Scalar.Black);
+                            //total.PutText((pages + 1) + " / " + pdoc.PageCount * 2,new OpenCvSharp.Point(591,5),HersheyFonts.HersheySimplex,1,Scalar.Black)
+                            using var temp1 = rtotal.CvtColor(ColorConversionCodes.GRAY2BGR);
+                            using var bmp1 = temp1.ToBitmap();
+                            if (rtotal != total)
+                            {
+                                rtotal.Dispose();
+                            }
+                            using (var gr = Graphics.FromImage(bmp1))
+                            {
+                                var hh = eparams.Height - eparams.PageInfoHeight - 1;
+                                gr.DrawLine(Pens.Black, 0, hh, eparams.Width, hh);
+                                var str = (ctx.Pages + 1) + " / " + pp.Pages * 2;
+                                /*for (int z = 0; z < str.Length; z++)
                                 {
-                                    rtotal = FlyRead(total);
-                                }
+                                    gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
+                                 Brushes.Black, 0, 5 + z * 10);
+                                }*/
+                                var ms = gr.MeasureString("99999 / 99999", new Font("Consolas", 7));
 
-                                // total.Line(590, 0, 590, 448, Scalar.Black);
-                                //total.PutText((pages + 1) + " / " + pdoc.PageCount * 2,new OpenCvSharp.Point(591,5),HersheyFonts.HersheySimplex,1,Scalar.Black)
-                                using var temp1 = rtotal.CvtColor(ColorConversionCodes.GRAY2BGR);
-                                using var bmp1 = temp1.ToBitmap();
-                                if (rtotal != total)
+                                int xx = (ctx.Pages * 15) % (int)(eparams.Width - ms.Width - 1);
+                                gr.DrawString(str.ToString(), new Font("Consolas", 7),
+                                 Brushes.Black, xx, hh - 1);
+                            }
+                            var matTotal = bmp1.ToMat();
+                            using (var top1 = Threshold(matTotal, eparams))
+                            {
+                                if (top1.Width > 0 && top1.Height > 0)
                                 {
-                                    rtotal.Dispose();
-                                }
-                                using (var gr = Graphics.FromImage(bmp1))
-                                {
-                                    var hh = eparams.Height - eparams.PageInfoHeight - 1;
-                                    gr.DrawLine(Pens.Black, 0, hh, eparams.Width, hh);
-                                    var str = (ctx.Pages + 1) + " / " + pp.Pages * 2;
-                                    /*for (int z = 0; z < str.Length; z++)
+
+                                    //top1.SaveImage(i + "_page_0.bmp");
+
+                                    using (var bmp = top1.ToBitmap())
                                     {
-                                        gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
-                                     Brushes.Black, 0, 5 + z * 10);
-                                    }*/
-                                    var ms = gr.MeasureString("99999 / 99999", new Font("Consolas", 7));
-
-                                    int xx = (ctx.Pages * 15) % (int)(eparams.Width - ms.Width - 1);
-                                    gr.DrawString(str.ToString(), new Font("Consolas", 7),
-                                     Brushes.Black, xx, hh - 1);
-                                }
-                                var matTotal = bmp1.ToMat();
-                                using (var top1 = Threshold(matTotal, eparams))
-                                {
-                                    if (top1.Width > 0 && top1.Height > 0)
-                                    {
-
-                                        //top1.SaveImage(i + "_page_0.bmp");
-
-                                        using (var bmp = top1.ToBitmap())
+                                        if (action != null)
                                         {
-                                            if (action != null)
+                                            var res = action(new PageInfo()
                                             {
-                                                var res = action(new PageInfo()
-                                                {
-                                                    Page = ctx.Pages,
-                                                    Bmp = bmp.Clone() as Bitmap
-                                                });
-                                                if (res.Terminate)
-                                                    return;
-                                            }
-                                            using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
-                                            {
-                                                ctx.AppendPage(clone);
-                                            }
+                                                Page = ctx.Pages,
+                                                Bmp = bmp.Clone() as Bitmap
+                                            });
+                                            if (res.Terminate)
+                                                return;
+                                        }
+                                        using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+                                        {
+                                            ctx.AppendPage(clone);
                                         }
                                     }
                                 }
                             }
-                            else
-                                using (var topResized = top.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height)))
-                                using (var top1 = Threshold(topResized, eparams))
+                        }
+                        else
+                            using (var topResized = top.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height)))
+                            using (var top1 = Threshold(topResized, eparams))
+                            {
+                                if (top1.Width > 0 && top1.Height > 0)
                                 {
-                                    if (top1.Width > 0 && top1.Height > 0)
-                                    {
 
-                                        //top1.SaveImage(i + "_page_0.bmp");
-                                        using (var bmp = top1.ToBitmap())
+                                    //top1.SaveImage(i + "_page_0.bmp");
+                                    using (var bmp = top1.ToBitmap())
+                                    {
+                                        using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
                                         {
-                                            using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
-                                            {
-                                                ctx.AppendPage(clone);
-                                            }
+                                            ctx.AppendPage(clone);
                                         }
                                     }
                                 }
-                        }
-                        //using (var bottom = new Mat(rmat, new Rect(0, safeY, rmat.Width, rmat.Height - safeY)))
+                            }
                     }
-                    foreach (var item in mats)
-                    {
-                        item.Dispose();
-                    }
+                    //using (var bottom = new Mat(rmat, new Rect(0, safeY, rmat.Width, rmat.Height - safeY)))
                 }
-
-                ctx.UpdatePages();
+                foreach (var item in mats)
+                {
+                    item.Dispose();
+                }
             }
+
+            ctx.UpdatePages();
+
             if (eparams.Finish != null)
                 eparams.Finish();
         }
@@ -388,7 +420,7 @@ namespace pdf2eink
                 fs.Seek(offset, SeekOrigin.Begin);
                 fs.Write(BitConverter.GetBytes((int)totalLen));
                 fs.Seek(offset2, SeekOrigin.Begin);
-            }            
+            }
         }
 
         private Mat FlyRead(Mat mat2)

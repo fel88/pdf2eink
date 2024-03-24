@@ -30,9 +30,6 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.checkBox8 = new System.Windows.Forms.CheckBox();
@@ -67,8 +64,6 @@
             this.toolStripButton2 = new System.Windows.Forms.ToolStripDropDownButton();
             this.fromClipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -97,51 +92,17 @@
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(11, 64);
-            this.button2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(101, 22);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "show preview";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox1.Location = new System.Drawing.Point(3, 222);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(449, 104);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 4;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
-            // 
-            // numericUpDown1
-            // 
-            this.numericUpDown1.Location = new System.Drawing.Point(118, 63);
-            this.numericUpDown1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(42, 23);
-            this.numericUpDown1.TabIndex = 5;
-            // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 1;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.pictureBox1, 0, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 25);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 2;
+            this.tableLayoutPanel1.RowCount = 1;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 220F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(455, 328);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(455, 187);
             this.tableLayoutPanel1.TabIndex = 6;
             // 
             // panel1
@@ -163,8 +124,6 @@
             this.panel1.Controls.Add(this.cbPreviewOnly);
             this.panel1.Controls.Add(this.cbRenderPageInfo);
             this.panel1.Controls.Add(this.checkBox2);
-            this.panel1.Controls.Add(this.numericUpDown1);
-            this.panel1.Controls.Add(this.button2);
             this.panel1.Controls.Add(this.checkBox1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 3);
@@ -202,7 +161,7 @@
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.numericUpDown7);
             this.groupBox1.Controls.Add(this.label3);
-            this.groupBox1.Location = new System.Drawing.Point(9, 91);
+            this.groupBox1.Location = new System.Drawing.Point(9, 60);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(432, 52);
             this.groupBox1.TabIndex = 22;
@@ -310,7 +269,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(285, 180);
+            this.label2.Location = new System.Drawing.Point(285, 149);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(24, 15);
             this.label2.TabIndex = 18;
@@ -318,7 +277,7 @@
             // 
             // numericUpDown6
             // 
-            this.numericUpDown6.Location = new System.Drawing.Point(348, 178);
+            this.numericUpDown6.Location = new System.Drawing.Point(348, 147);
             this.numericUpDown6.Maximum = new decimal(new int[] {
             600,
             0,
@@ -342,7 +301,7 @@
             // numericUpDown5
             // 
             this.numericUpDown5.Enabled = false;
-            this.numericUpDown5.Location = new System.Drawing.Point(188, 178);
+            this.numericUpDown5.Location = new System.Drawing.Point(188, 147);
             this.numericUpDown5.Maximum = new decimal(new int[] {
             255,
             0,
@@ -361,7 +320,7 @@
             // checkBox5
             // 
             this.checkBox5.AutoSize = true;
-            this.checkBox5.Location = new System.Drawing.Point(9, 182);
+            this.checkBox5.Location = new System.Drawing.Point(9, 151);
             this.checkBox5.Name = "checkBox5";
             this.checkBox5.Size = new System.Drawing.Size(178, 19);
             this.checkBox5.TabIndex = 15;
@@ -372,7 +331,7 @@
             // numericUpDown4
             // 
             this.numericUpDown4.Enabled = false;
-            this.numericUpDown4.Location = new System.Drawing.Point(177, 154);
+            this.numericUpDown4.Location = new System.Drawing.Point(177, 123);
             this.numericUpDown4.Maximum = new decimal(new int[] {
             5000,
             0,
@@ -391,7 +350,7 @@
             // numericUpDown3
             // 
             this.numericUpDown3.Enabled = false;
-            this.numericUpDown3.Location = new System.Drawing.Point(95, 153);
+            this.numericUpDown3.Location = new System.Drawing.Point(95, 122);
             this.numericUpDown3.Maximum = new decimal(new int[] {
             255,
             0,
@@ -405,7 +364,7 @@
             // checkBox4
             // 
             this.checkBox4.AutoSize = true;
-            this.checkBox4.Location = new System.Drawing.Point(9, 155);
+            this.checkBox4.Location = new System.Drawing.Point(9, 124);
             this.checkBox4.Name = "checkBox4";
             this.checkBox4.Size = new System.Drawing.Size(84, 19);
             this.checkBox4.TabIndex = 12;
@@ -416,7 +375,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(285, 151);
+            this.label1.Location = new System.Drawing.Point(285, 120);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(57, 15);
             this.label1.TabIndex = 11;
@@ -424,7 +383,7 @@
             // 
             // numericUpDown2
             // 
-            this.numericUpDown2.Location = new System.Drawing.Point(348, 149);
+            this.numericUpDown2.Location = new System.Drawing.Point(348, 118);
             this.numericUpDown2.Maximum = new decimal(new int[] {
             255,
             0,
@@ -496,7 +455,7 @@
             this.toolStripStatusLabel1,
             this.toolStripStatusLabel2,
             this.toolStripProgressBar1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 353);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 212);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(455, 22);
             this.statusStrip1.TabIndex = 7;
@@ -557,14 +516,14 @@
             // fromClipboardToolStripMenuItem
             // 
             this.fromClipboardToolStripMenuItem.Name = "fromClipboardToolStripMenuItem";
-            this.fromClipboardToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.fromClipboardToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
             this.fromClipboardToolStripMenuItem.Text = "from clipboard";
             this.fromClipboardToolStripMenuItem.Click += new System.EventHandler(this.fromClipboardToolStripMenuItem_Click);
             // 
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
             this.newToolStripMenuItem.Text = "new";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
@@ -572,7 +531,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(455, 375);
+            this.ClientSize = new System.Drawing.Size(455, 234);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.toolStrip1);
@@ -580,8 +539,6 @@
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Export";
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
@@ -605,9 +562,6 @@
 
         #endregion
         private CheckBox checkBox1;
-        private Button button2;
-        private PictureBox pictureBox1;
-        private NumericUpDown numericUpDown1;
         private TableLayoutPanel tableLayoutPanel1;
         private Panel panel1;
         private CheckBox checkBox2;

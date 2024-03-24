@@ -2,6 +2,7 @@
 {
     public class BookExportParams
     {
+        public bool AutoDithering = false;
         public bool AdaptiveThreshold = false;
         public int MinGray = 200;
         public int Width = 600;

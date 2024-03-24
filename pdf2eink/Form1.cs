@@ -2,9 +2,7 @@ using PdfiumViewer;
 using OpenCvSharp.Extensions;
 using OpenCvSharp;
 using System.Drawing.Imaging;
-using System.Diagnostics;
 using DitheringLib;
-using System.Runtime.Intrinsics.Arm;
 
 namespace pdf2eink
 {
@@ -107,64 +105,53 @@ namespace pdf2eink
             internalFormat = checkBox1.Checked;
         }
 
-        private void button2_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog ofd = new OpenFileDialog();
-            if (ofd.ShowDialog() != DialogResult.OK) return;
+        //private void button2_Click(object sender, EventArgs e)
+        //{
+        //    OpenFileDialog ofd = new OpenFileDialog();
+        //    if (ofd.ShowDialog() != DialogResult.OK) return;
 
-            using (var pdoc = PdfDocument.Load(ofd.FileName))
-            {
-                var bounds = pdoc.GetTextBounds(new PdfTextSpan(0, 0, 0));
+        //    using (var pdoc = PdfDocument.Load(ofd.FileName))
+        //    {
+        //        var bounds = pdoc.GetTextBounds(new PdfTextSpan(0, 0, 0));
 
-                var fn = Path.GetFileNameWithoutExtension(ofd.FileName);
+        //        var fn = Path.GetFileNameWithoutExtension(ofd.FileName);
 
-                {
-                    using (var img = pdoc.Render((int)numericUpDown1.Value, dpi, dpi, PdfRenderFlags.CorrectFromDpi) as Bitmap)
-                    using (var mat = img.ToMat())
-                    {
-                        using (var mat2 = mat.CvtColor(ColorConversionCodes.BGR2GRAY))
-                        {
-                            using (Mat inv = new Mat())
-                            {
-                                Cv2.BitwiseNot(mat2, inv);
+        //        {
+        //            using (var img = pdoc.Render((int)numericUpDown1.Value, dpi, dpi, PdfRenderFlags.CorrectFromDpi) as Bitmap)
+        //            using (var mat = img.ToMat())
+        //            {
+        //                using (var mat2 = mat.CvtColor(ColorConversionCodes.BGR2GRAY))
+        //                {
+        //                    using (Mat inv = new Mat())
+        //                    {
+        //                        Cv2.BitwiseNot(mat2, inv);
 
-                                using (var coords = inv.FindNonZero())
-                                {
-                                    var rect = Cv2.BoundingRect(coords);
-                                    var mat3 = mat2.Clone(rect);
+        //                        using (var coords = inv.FindNonZero())
+        //                        {
+        //                            var rect = Cv2.BoundingRect(coords);
+        //                            var mat3 = mat2.Clone(rect);
 
-                                    using (var rmat = mat3.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height * 2)))
-                                    {
-                                        if (checkBox2.Checked)
-                                        {
-                                            Dithering d = new Dithering();
-                                            pictureBox1.Image = d.Process(rmat.ToBitmap());
-                                        }
-                                        else using (var top1 = BookExporter.Threshold(rmat, eparams))
-                                            {
-                                                pictureBox1.Image = top1.ToBitmap();
-                                            }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        //                            using (var rmat = mat3.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height * 2)))
+        //                            {
+        //                                if (checkBox2.Checked)
+        //                                {
+        //                                    Dithering d = new Dithering();
+        //                                    pictureBox1.Image = d.Process(rmat.ToBitmap());
+        //                                }
+        //                                else using (var top1 = BookExporter.Threshold(rmat, eparams))
+        //                                    {
+        //                                        pictureBox1.Image = top1.ToBitmap();
+        //                                    }
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
 
 
-        }
-
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-            pictureBox1.Image.Save("temp1.png");
-            ProcessStartInfo startInfo = new ProcessStartInfo("temp1.png");
-            //startInfo.Verb = "edit";
-            startInfo.UseShellExecute = true;
-
-            Process.Start(startInfo);
-
-        }
+        //}
 
         BookExportParams eparams = new BookExportParams();
 
@@ -248,6 +235,7 @@ namespace pdf2eink
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
+            eparams.AutoDithering = checkBox2.Checked;            
         }
 
         private void checkBox7_CheckedChanged(object sender, EventArgs e)
@@ -274,19 +262,23 @@ namespace pdf2eink
             }
 
             SaveFileDialog sfd = new SaveFileDialog();
-            sfd.AddExtension = true;
-            sfd.DefaultExt = "cb";
-            sfd.Filter = "CB files (*.cb)|*.cb";
-            sfd.FileName = Path.GetFileNameWithoutExtension(ofd.FileName);
+            MemoryStream ms = new MemoryStream();
+            if (!previewOnly)
+            {
+                sfd.AddExtension = true;
+                sfd.DefaultExt = "cb";
+                sfd.Filter = "CB files (*.cb)|*.cb";
+                sfd.FileName = Path.GetFileNameWithoutExtension(ofd.FileName);
 
-            if (sfd.ShowDialog() != DialogResult.OK)
-                return;
+                if (sfd.ShowDialog() != DialogResult.OK)
+                    return;
+            }
 
             Thread th = new Thread(() =>
             {
                 Func<PageInfo, ExportResult> action = null;
 
-                if (previewOnly)
+                /*if (previewOnly)
                 {
                     action = (x) =>
                     {
@@ -296,7 +288,7 @@ namespace pdf2eink
 
                         return new ExportResult() { Terminate = term };
                     };
-                }
+                }*/
                 IPagesProvider p1 = null;
                 if (ofd.FileName.ToLower().EndsWith("pdf"))
                 {
@@ -329,17 +321,35 @@ namespace pdf2eink
                         toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
                         toolStripStatusLabel1.Text = "done";
                         toolStripProgressBar1.Visible = false;
-                        if (MessageBox.Show($"Done: {sfd.FileName}. Open?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                        if (previewOnly)
                         {
-                            Viewer v = new Viewer();
-                            v.Init(sfd.FileName);
-                            v.MdiParent = MdiParent;
-                            v.Show();
+                            if (MessageBox.Show($"Done. Open?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                            {
+                                Viewer v = new Viewer();
+                                ms.Seek(0, SeekOrigin.Begin);
+                                v.Init(ms, $"stream of {Path.GetFileName(ofd.FileName)}");
+                                v.MdiParent = MdiParent;
+                                v.Show();
+                            }
+                        }
+                        else
+                        {
+                            if (MessageBox.Show($"Done: {sfd.FileName}. Open?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                            {
+                                Viewer v = new Viewer();
+                                v.Init(sfd.FileName);
+                                v.MdiParent = MdiParent;
+                                v.Show();
+                            }
                         }
                     });
                 };
 
-                bex.ExportToInternalFormat(eparams, p1, sfd.FileName, action);
+                if (previewOnly)                
+                    bex.ExportToInternalFormat(eparams, p1, ms, action);                
+                else
+                    bex.ExportToInternalFormat(eparams, p1, sfd.FileName, action);
+
                 p1.Dispose();
             });
             th.IsBackground = true;
@@ -354,7 +364,7 @@ namespace pdf2eink
         private void fromClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var s = Clipboard.GetText();
-            
+
             eparams.TOC = new TOC();
             eparams.TOC.Parse(s);
             TOCViewer tocv = new TOCViewer();
@@ -364,7 +374,7 @@ namespace pdf2eink
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            eparams.TOC = new TOC();            
+            eparams.TOC = new TOC();
             TOCViewer tocv = new TOCViewer();
             tocv.Init(eparams.TOC);
             tocv.ShowDialog();

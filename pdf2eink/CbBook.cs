@@ -9,10 +9,16 @@ namespace pdf2eink
         {
 
         }
+
         public CbBook(string path)
         {
             Open(path);
         }
+        public CbBook(Stream stream)
+        {
+            Open(stream);
+        }
+
         int tocRawSize = 0;
         byte[] bts;
         byte[] header;
@@ -91,8 +97,36 @@ namespace pdf2eink
         {
             header[3] = 1;
             Toc = toc;
-           
+
         }
+        public static byte[] ReadFully(Stream input)
+        {
+            byte[] buffer = new byte[16 * 1024];
+            using (MemoryStream ms = new MemoryStream())
+            {
+                int read;
+                while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    ms.Write(buffer, 0, read);
+                }
+                return ms.ToArray();
+            }
+        }
+
+        internal void Open(Stream stream)
+        {
+            bts = ReadFully(stream);            
+            header = bts.Take(12).ToArray();
+            body = bts.Skip(12).ToArray();
+            var format = bts[3];
+            if (format == 1)
+            {
+                ParseTOC();
+                body = body.Skip(tocRawSize).ToArray();
+            }
+            pages = BitConverter.ToInt32(bts, 4);
+        }
+
         internal void Open(string path)
         {
             bts = File.ReadAllBytes(path);
@@ -111,16 +145,16 @@ namespace pdf2eink
         {
             MemoryStream ms = new MemoryStream();
             ms.Write(header, 0, header.Length);
-            
+
             BookExporter.AppendTOC(Toc, ms);
             ms.Write(body, 0, body.Length);
 
-            File.WriteAllBytes(fileName, ms.ToArray());            
+            File.WriteAllBytes(fileName, ms.ToArray());
         }
 
         public int pages;
 
-        public TOC Toc { get; private set; } 
+        public TOC Toc { get; private set; }
 
         public bool HasTOC => Toc != null && Toc.Items.Any();
     }

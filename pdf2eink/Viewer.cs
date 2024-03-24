@@ -32,7 +32,17 @@ namespace pdf2eink
             trackBar1.Maximum = book.pages - 1;
             showPage();
         }
+        public void Init(Stream stream, string name)
+        {
+            Text = $"Viewer: {name}";
+            book = new CbBook(stream);
 
+            if (book.HasTOC)
+                toolStripDropDownButton1.Enabled = true;
+
+            trackBar1.Maximum = book.pages - 1;
+            showPage();
+        }
         public int Pages => book.pages;
 
         public void ShowPage(int page)
