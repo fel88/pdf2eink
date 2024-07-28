@@ -62,8 +62,14 @@ namespace pdf2eink
             //trackBar1.Maximum = pages - 1;
             //showPage();
         }
+
         public Bitmap GetPage(int pageNo)
         {
+            if (Format == 2)//parse sections
+            {
+                return GetPagesViaSections(pageNo);
+            }
+            //old format
             var width = BitConverter.ToUInt16(bts, 8);
             var height = BitConverter.ToUInt16(bts, 10);
             int stride = 4 * (int)Math.Ceiling(width / 8 / 4f);//aligned 4
@@ -92,7 +98,77 @@ namespace pdf2eink
             return bmp;
         }
 
-        public byte Format => bts[3];
+        public int GetPageOffset(int page)
+        {
+            var pagesArraySectionOffset = GetSectionOffset(0xC0);
+            var pagesTableSectionOffset = GetSectionOffset(0xB0) + 9;
+            return pagesArraySectionOffset + BitConverter.ToInt32(bts, pagesTableSectionOffset + page * 4);
+        }
+
+        private Bitmap GetPagesViaSections(int pageNo)
+        {
+            //parse sections
+            var bookInfoSectionOffset = GetSectionOffset(0x10) + 5;
+
+            var width = BitConverter.ToUInt16(bts, bookInfoSectionOffset + 4);
+            var height = BitConverter.ToUInt16(bts, bookInfoSectionOffset + 6);
+
+            int stride = 4 * (int)Math.Ceiling(width / 8 / 4f);//aligned 4
+            var size = stride * height;
+
+            //get page offset
+            var pOffset = GetPageOffset(pageNo);
+            var pageType = bts[pOffset];
+            Bitmap bmp = new Bitmap(width, height);
+
+            if (pageType == 0x1)
+            {
+                //raw
+                var page1 = bts.Skip(pOffset + 1).Take(size).ToArray();
+                for (int j = 0; j < bmp.Height; j++)
+                {
+                    var line = page1.Skip(j * stride).Take(stride).ToArray();
+                    int counter = 0;
+                    for (int i = 0; i < bmp.Width; i++)
+                    {
+                        int byteNo = counter / 8;
+                        int bitNo = counter % 8;
+                        counter++;
+                        var b = (byte)(line[byteNo] & (1 << (8 - 1 - bitNo))) > 0;
+                        if (b)
+                        {
+                            bmp.SetPixel(i, j, Color.White);
+                        }
+                        else { bmp.SetPixel(i, j, Color.Black); }
+                    }
+                }
+            }
+            else
+            {
+                throw new NotImplementedException("not implemented yet");
+            }
+
+            return bmp;
+        }
+
+        private int GetSectionOffset(byte searchType)
+        {
+            int pos = 4;
+            while (pos < bts.Length)
+            {
+                var len = BitConverter.ToUInt16(bts, pos);
+                var type = bts[pos + 4];
+
+                if (type == searchType)
+                    return pos;
+
+                pos += len;
+            }
+            return -1;
+        }
+
+        public byte Format => bts[2];
+        public byte Flags => bts[3];
         public void AppendTOC(TOC toc)
         {
             header[3] = 1;
@@ -115,7 +191,12 @@ namespace pdf2eink
 
         internal void Open(Stream stream)
         {
-            bts = ReadFully(stream);            
+            bts = ReadFully(stream);
+            Load(bts);           
+        }
+
+        void Load(byte[] data)
+        {
             header = bts.Take(12).ToArray();
             body = bts.Skip(12).ToArray();
             var format = bts[3];
@@ -124,21 +205,20 @@ namespace pdf2eink
                 ParseTOC();
                 body = body.Skip(tocRawSize).ToArray();
             }
-            pages = BitConverter.ToInt32(bts, 4);
+            if (Format == 2)
+            {
+                //parse sections
+                var bookInfoSectionOffset = GetSectionOffset(0x10) + 5;
+                pages = BitConverter.ToInt32(bts, bookInfoSectionOffset);
+            }
+            else
+                pages = BitConverter.ToInt32(bts, 4);
         }
 
         internal void Open(string path)
         {
             bts = File.ReadAllBytes(path);
-            header = bts.Take(12).ToArray();
-            body = bts.Skip(12).ToArray();
-            var format = bts[3];
-            if (format == 1)
-            {
-                ParseTOC();
-                body = body.Skip(tocRawSize).ToArray();
-            }
-            pages = BitConverter.ToInt32(bts, 4);
+            Load(bts);
         }
 
         internal void SaveAs(string fileName)

@@ -13,11 +13,7 @@ namespace pdf2eink
             InitializeComponent();
         }
 
-        public class ExportResult
-        {
-            public bool Terminate;
-        }
-
+        
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -349,6 +345,9 @@ namespace pdf2eink
                     bex.ExportToInternalFormat(eparams, p1, ms, action);                
                 else
                     bex.ExportToInternalFormat(eparams, p1, sfd.FileName, action);
+
+                if (eparams.Finish != null)
+                    eparams.Finish();
 
                 p1.Dispose();
             });
