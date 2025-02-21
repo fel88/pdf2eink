@@ -15,7 +15,7 @@ CB is a simple WYSIWYG image based format for e-books
 | 0x0C  |variable. Pages x Width x Height / 8  | Monochrome pages image data   |
 
 
-You can read CB book using ArduinoBook (https://github.com/fel88/ArduinoBook)
+You can read CB book using TurtleBook (https://github.com/fel88/TurtleBook)
 
 
 ### References
