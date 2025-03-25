@@ -3,7 +3,31 @@
     public class BookExportContext
     {
         public int Pages;
-        public Stream Stream; 
+        public Stream Stream;
+        public static void PrintFooter(int page, int totalPages, Bitmap bmp1, int pageInfoHeight)
+        {
+            using var gr = Graphics.FromImage(bmp1);
+            /* gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+             gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixel;
+             gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;*/
+            var hh = bmp1.Height - pageInfoHeight - 1;
+            gr.FillRectangle(Brushes.White, 0, hh, bmp1.Width, pageInfoHeight + 1);
+            
+            gr.DrawLine(Pens.Black, 0, hh, bmp1.Width, hh);
+            
+            var str = $"{page} / {totalPages}";
+            /*for (int z = 0; z < str.Length; z++)
+            {
+                gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
+             Brushes.Black, 0, 5 + z * 10);
+            }*/
+            var ms = gr.MeasureString("99999 / 99999", new Font("Consolas", 7));
+
+            int xx = (page * 15) % (int)(bmp1.Width - ms.Width - 1);
+            gr.DrawString(str.ToString(), new Font("Consolas", 7), Brushes.Black, xx, hh - 1);
+            
+        }
+
         public static byte[] GetBuffer(Bitmap bmp)
         {
 
@@ -54,7 +78,7 @@
         public long PagesArraySectionOffset;
 
         public void AppendPage(Bitmap clone)
-        {            
+        {
             var bts = GetBuffer(clone);
             PagesOffsets.Add(Stream.Position - PagesArraySectionOffset);
             Stream.Write(bts);

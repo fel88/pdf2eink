@@ -3,6 +3,8 @@ using OpenCvSharp;
 using System.Drawing.Imaging;
 using System.Text;
 using DitheringLib;
+using System.Runtime.Intrinsics.X86;
+using System;
 
 namespace pdf2eink
 {
@@ -127,7 +129,7 @@ namespace pdf2eink
             }
         }
 
-        public void ExportToInternalFormat(
+        public void ExportToInternalFormatWithSections(
             BookExportParams eparams,
             IPagesProvider pp, Stream stream,
             Func<PageInfo, ExportResult> action = null
@@ -210,11 +212,101 @@ namespace pdf2eink
             foreach (var item in ctx.PagesOffsets)
             {
                 fs.Write(BitConverter.GetBytes((int)(item)));
-            }            
+            }
 
             //ctx.UpdatePages();          
         }
-        
+
+        public void ExportToInternalFormat(BookExportParams eparams,
+       IPagesProvider pp, Stream stream,
+       Func<PageInfo, ExportResult> action = null)
+        {
+            var fs = stream;
+            BookExportContext ctx = new BookExportContext();
+            ctx.Stream = stream;
+
+            //fs.Write(Encoding.UTF8.GetBytes("CB" + '\0'));
+            fs.Write(Encoding.UTF8.GetBytes("CB"));
+            fs.WriteByte(0x1);//version CB format
+            if (eparams.TOC != null && eparams.TOC.Items.Count > 0)
+                fs.WriteByte(0x1);//format . 1 -with TOC
+                                  //wite TOC here                  
+            else
+                fs.WriteByte(0x0);//format . 0 -simple without meta info
+
+            fs.Write(BitConverter.GetBytes(pp.Pages));
+            fs.Write(BitConverter.GetBytes((ushort)eparams.Width));//width
+            fs.Write(BitConverter.GetBytes((ushort)eparams.Height));//heigth
+
+            if (eparams.TOC != null)
+                AppendTOC(eparams.TOC, fs);
+
+            //var bounds = pdoc.GetTextBounds(new PdfTextSpan(0, 0, 0));
+            int sp = 0;
+            int ep = pp.Pages;
+            if (eparams.UsePagesLimit)
+            {
+                ep = Math.Min(eparams.EndPage, pp.Pages);
+                sp = Math.Max(0, eparams.StartPage);
+            }
+            for (int i = sp; i < ep; i++)
+            {
+                if (eparams.Progress != null)
+                    eparams.Progress(i - sp, ep - sp);
+                /*statusStrip1.Invoke(() =>
+                {
+                    toolStripProgressBar1.Maximum = ep - sp;
+                    toolStripProgressBar1.Value = i - sp;
+                    toolStripProgressBar1.Visible = true;
+                    double perc = 100.0 * toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum;
+                    toolStripStatusLabel1.Text = $"progress: {i - sp}/{ep - sp} {Math.Round(perc, 1)}%";
+                });*/
+
+                using var img = pp.GetPage(i);
+
+                if (img == null)
+                    continue;
+
+                using var tmat = img.ToMat();
+                List<Mat> mats = new List<Mat>();
+                if (eparams.SplitWhenAspectGreater)
+                {
+                    var aspect = ((decimal)tmat.Width / tmat.Height) * 100;
+                    if (aspect > eparams.AspectSplitLimit)
+                    {
+                        var rects = new Rect[2]
+                              {
+                                                new Rect (0, 0, tmat.Width/2,tmat.Height),
+                                                new Rect (tmat.Width/2, 0, tmat.Width/2,tmat.Height ),
+                              };
+                        foreach (var item in rects)
+                        {
+                            var top = new Mat(tmat, item);
+                            mats.Add(top);
+                        }
+                    }
+                    else
+                    {
+                        mats.Add(tmat.Clone());
+                    }
+                }
+                else
+                    mats.Add(tmat.Clone());
+
+                foreach (var mat in mats)
+                {
+                    MatProcess(mat, ctx, eparams, pp, action);
+                    mat.Dispose();
+                }
+            }
+
+            ctx.UpdatePages();
+
+            /* if (eparams.Finish != null)
+                 eparams.Finish();*/
+        }
+
+
         private void AppendPagesSection(BookExportContext ctx, IPagesProvider pp, int sp, int ep, BookExportParams eparams, Func<PageInfo, ExportResult> action)
         {
             var fs = ctx.Stream;
@@ -340,22 +432,9 @@ namespace pdf2eink
                     {
                         rtotal.Dispose();
                     }
-                    using (var gr = Graphics.FromImage(bmp1))
-                    {
-                        var hh = eparams.Height - eparams.PageInfoHeight - 1;
-                        gr.DrawLine(Pens.Black, 0, hh, eparams.Width, hh);
-                        var str = (ctx.Pages + 1) + " / " + pp.Pages * 2;
-                        /*for (int z = 0; z < str.Length; z++)
-                        {
-                            gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
-                         Brushes.Black, 0, 5 + z * 10);
-                        }*/
-                        var ms = gr.MeasureString("99999 / 99999", new Font("Consolas", 7));
 
-                        int xx = (ctx.Pages * 15) % (int)(eparams.Width - ms.Width - 1);
-                        gr.DrawString(str.ToString(), new Font("Consolas", 7),
-                         Brushes.Black, xx, hh - 1);
-                    }
+                    BookExportContext.PrintFooter(ctx.Pages, pp.Pages * 2, bmp1, eparams.PageInfoHeight);
+
                     var matTotal = bmp1.ToMat();
                     using (var top1 = Threshold(matTotal, eparams))
                     {
@@ -404,6 +483,8 @@ namespace pdf2eink
             }
             //using (var bottom = new Mat(rmat, new Rect(0, safeY, rmat.Width, rmat.Height - safeY)))
         }
+
+
 
         public static void AppendTOC(TOC toc, Stream fs)
         {

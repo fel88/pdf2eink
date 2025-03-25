@@ -2,6 +2,8 @@ using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System.Diagnostics;
 using System.Drawing.Imaging;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace pdf2eink
 {
@@ -326,6 +328,87 @@ namespace pdf2eink
 
             var pageNo = d.GetIntegerNumericField("page");
             book.InsertPage(pageNo);
+        }
+
+        private void printToPageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            d.AddNumericField("fontSize", "Font size", 12, 60, 6);
+            d.AddNumericField("hGap", "X gap", 20, 600, 0);
+            d.AddNumericField("vGap", "Y gap", 15, 600, 0);
+
+            if (!d.ShowDialog())
+                return;
+
+            var fs = d.GetNumericField("fontSize");
+            var hGap = (float)d.GetNumericField("hGap");
+            var vGap = (float)d.GetNumericField("vGap");
+
+            using var bmp = new Bitmap(book.Width, book.Height);
+            using var gr = Graphics.FromImage(bmp);
+            gr.Clear(Color.White);
+            for (int i1 = 0; i1 < book.Toc.Items.Count; i1++)
+            {
+                var page = book.Toc.Items[i1];
+
+                gr.DrawString($"{page.Page}. {page.Text}", new Font("Arial", (float)fs), Brushes.Black, page.Ident * hGap, i1 * vGap);
+            }
+
+            using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+            {
+                var buf = BookExportContext.GetBuffer(clone);
+                book.UpdatePage(buf, pageNo);
+            }
+
+            showPage();
+        }
+
+        public void UpdateFooter(int pageNo, int minGray = 180)
+        {
+            var bmp = book.GetPage(pageNo);
+
+            BookExportParams bep = new BookExportParams();
+            BookExportContext.PrintFooter(pageNo + 1, book.pages, bmp, bep.PageInfoHeight);
+
+            using var mat = bmp.ToMat();
+
+            using var mat2 = mat.Threshold(minGray, 255, ThresholdTypes.Binary);
+            using var bmp1 = mat2.ToBitmap();
+
+            using (var clone = bmp1.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+            {
+                var buf = BookExportContext.GetBuffer(clone);
+                book.UpdatePage(buf, pageNo);
+            }
+        }
+        
+        private void singlePageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            UpdateFooter(pageNo);
+            showPage();
+        }
+
+        private void allPagesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            toolStripProgressBar1.Maximum = book.pages;
+            toolStripProgressBar1.Visible = true;
+            Thread th = new Thread(() =>
+            {
+                for (int i = 0; i < book.pages; i++)
+                {
+                    statusStrip1.Invoke(() =>
+                    {
+                        toolStripProgressBar1.Value = i;
+                    });
+                    UpdateFooter(i);
+                }
+                statusStrip1.Invoke(() =>
+                {
+                    toolStripProgressBar1.Visible = false;
+                });
+
+            });
+            th.Start();
         }
     }
 }

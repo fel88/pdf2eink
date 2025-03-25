@@ -6,14 +6,14 @@ namespace pdf2eink
     public static class BitmapExtensions
     {
         public static Bitmap DeepClone(this Bitmap source)
-        {
+        {            
             IFormatter formatter = new BinaryFormatter();
-            Stream stream = new MemoryStream();
+            var stream = new MemoryStream();
+            source.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+            stream.Seek(0, SeekOrigin.Begin);
             using (stream)
-            {
-                formatter.Serialize(stream, source);
-                stream.Seek(0, SeekOrigin.Begin);
-                return (Bitmap)formatter.Deserialize(stream);
+            {                
+                return (Bitmap)Bitmap.FromStream(stream);
             }
         }
     }
