@@ -1,5 +1,7 @@
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using System.Diagnostics;
+using System.Drawing.Imaging;
 
 namespace pdf2eink
 {
@@ -21,11 +23,7 @@ namespace pdf2eink
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            if (pageNo == book.pages - 1)
-                return;
 
-            pageNo++;
-            showPage();
         }
 
         private void trackBar1_Scroll(object sender, EventArgs e)
@@ -171,6 +169,15 @@ namespace pdf2eink
                     lastY = cuts[i];
                 }
             }
+            var bmp = result.ToBitmap();
+            Form ff = new Form();
+            ff.MdiParent = MdiParent;
+            PictureBox pb = new PictureBox();
+            pb.Dock = DockStyle.Fill;
+            pb.Image = bmp;
+            pb.SizeMode = PictureBoxSizeMode.Zoom;
+            ff.Controls.Add(pb);
+            ff.Show();
             //result.SaveImage(Path.Combine("temp", "result.png"));
         }
 
@@ -216,6 +223,98 @@ namespace pdf2eink
             TOCViewer tocv = new TOCViewer();
             tocv.Init(book.Toc, this, true);
             tocv.Show();
+        }
+
+        private void bustofedonToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var ep = book.GetPage(pageNo);
+            BookExporter bex = new BookExporter();
+            var mat = ep.ToMat();
+            Mat result = null;
+            using (var mat2 = mat.CvtColor(ColorConversionCodes.BGR2GRAY))
+            using (var threshold = BookExporter.Threshold(mat2, new BookExportParams() { }))
+            {
+                result = new Mat(threshold.Size(), threshold.Type());
+                var cuts = bex.GetHorizontalCuts(threshold);
+                int lastY = 0;
+                int odd = 0;
+                for (int i = 0; i < cuts.Length; i++)
+                {
+                    //get crop
+                    if ((lastY - cuts[i]) == 0)
+                    {
+                        lastY = cuts[i];
+                        continue;
+                    }
+                    using (var sub = threshold.SubMat(lastY, cuts[i], 0, mat.Cols))
+                    {
+                        odd++;
+                        //Directory.CreateDirectory("temp");
+                        //sub.SaveImage(Path.Combine("temp", $"line{odd}.png"));
+                        if (odd % 2 == 0 && i != cuts.Length - 1)
+                        {
+                            //reverse
+                            using var mat3 = sub.Flip(FlipMode.Y);
+                            var roi2 = new Mat(result, new Rect(0, lastY, mat3.Width, mat3.Height));
+
+                            mat3.CopyTo(roi2);
+                            //mat3.SaveImage(Path.Combine("temp", "combo.png"));
+                        }
+                        else
+                        {
+                            var mat3 = new Mat(threshold, new Rect(0, lastY, threshold.Width, cuts[i] - lastY));
+                            var roi2 = new Mat(result, new Rect(0, lastY, mat3.Width, mat3.Height));
+                            mat3.CopyTo(roi2);
+                        }
+                    }
+                    lastY = cuts[i];
+                }
+            }
+
+            var bmp = result.ToBitmap();
+            ImageViewer ff = new ImageViewer();
+            ff.Tag = pageNo;
+            ff.MdiParent = MdiParent;
+            ff.Init(bmp);
+            var m = new ToolStripMenuItem() { Text = "apply to book", Tag = ff };
+            m.Click += M_Click;
+            ff.ContextMenu.Items.Add(m);
+            ff.Show();
+            //result.SaveImage(Path.Combine("temp", "result.png"));
+        }
+
+        private void M_Click(object? sender, EventArgs e)
+        {
+            var tsmi = (sender as ToolStripMenuItem);
+            var imv = tsmi.Tag as ImageViewer;
+            var pageNo = (int)imv.Tag;
+            var bmp = (imv.PictureBox.Image as Bitmap);
+            using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+            {
+                var buf = BookExportContext.GetBuffer(clone);
+                book.UpdatePage(buf, pageNo);
+            }
+        }
+
+        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                if (pageNo == book.pages - 1)
+                    return;
+
+                pageNo++;
+                showPage();
+            }
+        }
+
+        private void showImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            pictureBox1.Image.Save("temp1.png");
+            ProcessStartInfo startInfo = new ProcessStartInfo("temp1.png");
+            startInfo.UseShellExecute = true;
+
+            Process.Start(startInfo);
         }
     }
 }

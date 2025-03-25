@@ -41,8 +41,33 @@ namespace pdf2eink
                 accum += 2;
                 var str = Encoding.UTF8.GetString(bts, accum, len);
                 accum += len;
-                Toc.Items.Add(new TOCItem() { Header = str, Page = page, Ident = ident });
+                var len2 = BitConverter.ToUInt16(bts, (int)accum);
+                accum += 2;
+                var str2 = Encoding.UTF8.GetString(bts, accum, len2);
+                accum += len2;
+                Toc.Items.Add(new TOCItem()
+                {
+                    Header = str,
+                    Text = str2,
+                    Page = page,
+                    Ident = ident
+                });
             }
+        }
+
+        public void UpdatePage(byte[] data, int pageNo)
+        {
+            var width = BitConverter.ToUInt16(bts, 8);
+            var height = BitConverter.ToUInt16(bts, 10);
+            int stride = 4 * (int)Math.Ceiling(width / 8 / 4f);//aligned 4
+            var size = stride * height;
+            var pageOffset = 12 + tocRawSize + size * pageNo;
+
+            var part1 = bts.Take(pageOffset).ToArray();
+            var part2 = bts.Skip(pageOffset).Skip(size).ToArray();
+
+            bts = part1.Concat(data).Concat(part2).ToArray();
+            pages = BitConverter.ToInt32(bts, 4);
         }
 
         public void DeletePage(int pageNo)
@@ -192,8 +217,11 @@ namespace pdf2eink
         internal void Open(Stream stream)
         {
             bts = ReadFully(stream);
-            Load(bts);           
+            Load(bts);
         }
+
+        public int Width { get; private set; }
+        public int Height { get; private set; }
 
         void Load(byte[] data)
         {
@@ -212,9 +240,25 @@ namespace pdf2eink
                 pages = BitConverter.ToInt32(bts, bookInfoSectionOffset);
             }
             else
+            {
                 pages = BitConverter.ToInt32(bts, 4);
+                Width = BitConverter.ToUInt16(bts, 8);
+                Height = BitConverter.ToUInt16(bts, 10);
+            }
         }
+        
+        void UpdateBodyAndHeader()
+        {
+            header = bts.Take(12).ToArray();
+            body = bts.Skip(12).ToArray();
+            var format = bts[3];
+            if (format == 1)
+            {
+                //ParseTOC();
+                body = body.Skip(tocRawSize).ToArray();
+            }
 
+        }
         internal void Open(string path)
         {
             bts = File.ReadAllBytes(path);
@@ -223,6 +267,7 @@ namespace pdf2eink
 
         internal void SaveAs(string fileName)
         {
+            UpdateBodyAndHeader();
             MemoryStream ms = new MemoryStream();
             ms.Write(header, 0, header.Length);
 

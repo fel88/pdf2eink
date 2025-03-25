@@ -26,8 +26,15 @@ namespace pdf2eink
             Text = $"Viewer: {path}";
             book = new CbBook(path);
 
+            Init();
+        }
+
+        void Init()
+        {
             if (book.HasTOC)
                 toolStripDropDownButton1.Enabled = true;
+
+            toolStripStatusLabel1.Text = $"{book.Width} x {book.Height}";
 
             trackBar1.Maximum = book.pages - 1;
             showPage();
@@ -36,12 +43,7 @@ namespace pdf2eink
         {
             Text = $"Viewer: {name}";
             book = new CbBook(stream);
-
-            if (book.HasTOC)
-                toolStripDropDownButton1.Enabled = true;
-
-            trackBar1.Maximum = book.pages - 1;
-            showPage();
+            Init();          
         }
         public int Pages => book.pages;
 

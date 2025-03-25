@@ -82,7 +82,7 @@ namespace pdf2eink
                     f = true;
                 }
             }
-
+            hh.Add(top1.Height);
             return hh.ToArray();
         }
 
@@ -410,6 +410,35 @@ namespace pdf2eink
             if (toc == null || toc.Items.Count <= 0)
                 return;
 
+            fs.Write(BitConverter.GetBytes((int)toc.Items.Count));
+            var offset = fs.Position;
+            fs.Write(BitConverter.GetBytes(0));//total section len in bytes
+            foreach (var item in toc.Items)
+            {
+                var h1 = Encoding.UTF8.GetBytes(item.Header).ToList();
+                var h2 = Encoding.UTF8.GetBytes(item.Text).ToList();
+                //while (h1.Count % 4 != 0)
+                //     h1.Add(0);
+                //     
+                fs.Write(BitConverter.GetBytes(item.Page));
+                fs.Write(BitConverter.GetBytes((ushort)item.Ident));
+                fs.Write(BitConverter.GetBytes((ushort)h1.Count));
+                fs.Write(h1.ToArray());
+                fs.Write(BitConverter.GetBytes((ushort)h2.Count));
+                fs.Write(h2.ToArray());
+            }
+            var totalLen = fs.Position - offset + 4;
+            var offset2 = fs.Position;
+            fs.Seek(offset, SeekOrigin.Begin);
+            fs.Write(BitConverter.GetBytes((int)totalLen));
+            fs.Seek(offset2, SeekOrigin.Begin);
+        }
+
+        public static void AppendTOCAsSection(TOC toc, Stream fs)
+        {
+            if (toc == null || toc.Items.Count <= 0)
+                return;
+
             MemoryStream ms = new MemoryStream();
             ms.Write(BitConverter.GetBytes((int)toc.Items.Count));
             var offset = fs.Position;
@@ -417,6 +446,7 @@ namespace pdf2eink
             foreach (var item in toc.Items)
             {
                 var h1 = Encoding.UTF8.GetBytes(item.Header).ToList();
+                var h2 = Encoding.UTF8.GetBytes(item.Text).ToList();
                 //while (h1.Count % 4 != 0)
                 //     h1.Add(0);
                 //     
@@ -424,6 +454,8 @@ namespace pdf2eink
                 ms.Write(BitConverter.GetBytes((ushort)item.Ident));
                 ms.Write(BitConverter.GetBytes((ushort)h1.Count));
                 ms.Write(h1.ToArray());
+                ms.Write(BitConverter.GetBytes((ushort)h2.Count));
+                ms.Write(h2.ToArray());
             }
             var totalLen = ms.Position - offset + 4;
             var offset2 = ms.Position;

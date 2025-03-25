@@ -2,7 +2,8 @@
 {
     public class TOCItem
     {
-        public string Header;
+        public string Header;//oled 
+        public string Text;
         public int Page;
         public int Ident;//identation level
     }
