@@ -160,10 +160,22 @@ namespace pdf2eink
             }
             UpdateList();
         }
-
-        private void TOCViewer_Load(object sender, EventArgs e)
+               
+        private void addToolStripMenuItem1_Click(object sender, EventArgs e)
         {
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            d.AddIntegerNumericField("add", "Add");
 
+            if (!d.ShowDialog())
+                return;
+
+            var add = d.GetIntegerNumericField("add");
+            foreach (var item in listView1.SelectedItems)
+            {
+                ((item as ListViewItem).Tag as TOCItem).Page += add;
+            }
+
+            UpdateList();
         }
     }
 }

@@ -31,6 +31,7 @@
             components = new System.ComponentModel.Container();
             listView1 = new ListView();
             columnHeader1 = new ColumnHeader();
+            columnHeader4 = new ColumnHeader();
             columnHeader2 = new ColumnHeader();
             columnHeader3 = new ColumnHeader();
             contextMenuStrip1 = new ContextMenuStrip(components);
@@ -42,7 +43,7 @@
             moveToolStripMenuItem = new ToolStripMenuItem();
             upToolStripMenuItem = new ToolStripMenuItem();
             downToolStripMenuItem = new ToolStripMenuItem();
-            columnHeader4 = new ColumnHeader();
+            addToolStripMenuItem1 = new ToolStripMenuItem();
             contextMenuStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -67,6 +68,11 @@
             columnHeader1.Text = "Header";
             columnHeader1.Width = 100;
             // 
+            // columnHeader4
+            // 
+            columnHeader4.Text = "Text";
+            columnHeader4.Width = 200;
+            // 
             // columnHeader2
             // 
             columnHeader2.Text = "Page";
@@ -79,40 +85,40 @@
             // 
             contextMenuStrip1.Items.AddRange(new ToolStripItem[] { editToolStripMenuItem, addToolStripMenuItem, deleteToolStripMenuItem, pagesToolStripMenuItem, moveToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(107, 114);
+            contextMenuStrip1.Size = new Size(181, 136);
             // 
             // editToolStripMenuItem
             // 
             editToolStripMenuItem.Name = "editToolStripMenuItem";
-            editToolStripMenuItem.Size = new Size(106, 22);
+            editToolStripMenuItem.Size = new Size(180, 22);
             editToolStripMenuItem.Text = "edit";
             editToolStripMenuItem.Click += editToolStripMenuItem_Click;
             // 
             // addToolStripMenuItem
             // 
             addToolStripMenuItem.Name = "addToolStripMenuItem";
-            addToolStripMenuItem.Size = new Size(106, 22);
+            addToolStripMenuItem.Size = new Size(180, 22);
             addToolStripMenuItem.Text = "add";
             addToolStripMenuItem.Click += addToolStripMenuItem_Click;
             // 
             // deleteToolStripMenuItem
             // 
             deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            deleteToolStripMenuItem.Size = new Size(106, 22);
+            deleteToolStripMenuItem.Size = new Size(180, 22);
             deleteToolStripMenuItem.Text = "delete";
             deleteToolStripMenuItem.Click += deleteToolStripMenuItem_Click;
             // 
             // pagesToolStripMenuItem
             // 
-            pagesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { multToolStripMenuItem });
+            pagesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { multToolStripMenuItem, addToolStripMenuItem1 });
             pagesToolStripMenuItem.Name = "pagesToolStripMenuItem";
-            pagesToolStripMenuItem.Size = new Size(106, 22);
+            pagesToolStripMenuItem.Size = new Size(180, 22);
             pagesToolStripMenuItem.Text = "pages";
             // 
             // multToolStripMenuItem
             // 
             multToolStripMenuItem.Name = "multToolStripMenuItem";
-            multToolStripMenuItem.Size = new Size(99, 22);
+            multToolStripMenuItem.Size = new Size(180, 22);
             multToolStripMenuItem.Text = "mult";
             multToolStripMenuItem.Click += multToolStripMenuItem_Click;
             // 
@@ -120,27 +126,29 @@
             // 
             moveToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { upToolStripMenuItem, downToolStripMenuItem });
             moveToolStripMenuItem.Name = "moveToolStripMenuItem";
-            moveToolStripMenuItem.Size = new Size(106, 22);
+            moveToolStripMenuItem.Size = new Size(180, 22);
             moveToolStripMenuItem.Text = "move";
             // 
             // upToolStripMenuItem
             // 
             upToolStripMenuItem.Name = "upToolStripMenuItem";
-            upToolStripMenuItem.Size = new Size(104, 22);
+            upToolStripMenuItem.Size = new Size(180, 22);
             upToolStripMenuItem.Text = "up";
             upToolStripMenuItem.Click += upToolStripMenuItem_Click;
             // 
             // downToolStripMenuItem
             // 
             downToolStripMenuItem.Name = "downToolStripMenuItem";
-            downToolStripMenuItem.Size = new Size(104, 22);
+            downToolStripMenuItem.Size = new Size(180, 22);
             downToolStripMenuItem.Text = "down";
             downToolStripMenuItem.Click += downToolStripMenuItem_Click;
             // 
-            // columnHeader4
+            // addToolStripMenuItem1
             // 
-            columnHeader4.Text = "Text";
-            columnHeader4.Width = 200;
+            addToolStripMenuItem1.Name = "addToolStripMenuItem1";
+            addToolStripMenuItem1.Size = new Size(180, 22);
+            addToolStripMenuItem1.Text = "add";
+            addToolStripMenuItem1.Click += addToolStripMenuItem1_Click;
             // 
             // TOCViewer
             // 
@@ -171,5 +179,6 @@
         private ToolStripMenuItem upToolStripMenuItem;
         private ToolStripMenuItem downToolStripMenuItem;
         private ColumnHeader columnHeader4;
+        private ToolStripMenuItem addToolStripMenuItem1;
     }
 }

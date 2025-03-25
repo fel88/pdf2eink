@@ -52,6 +52,7 @@
             parseToolStripMenuItem = new ToolStripMenuItem();
             showToolStripMenuItem = new ToolStripMenuItem();
             editToolStripMenuItem = new ToolStripMenuItem();
+            toolStripButton1 = new ToolStripButton();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolStripStatusLabel2 = new ToolStripStatusLabel();
@@ -110,7 +111,7 @@
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new Size(20, 20);
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripDropDownButton1, toolStripButton2, toolStripButton3, toolStripButton4, toolStripDropDownButton2, toolStripDropDownButton3, toolStripDropDownButton4 });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripDropDownButton1, toolStripButton2, toolStripButton1, toolStripButton3, toolStripButton4, toolStripDropDownButton2, toolStripDropDownButton3, toolStripDropDownButton4 });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(700, 27);
@@ -217,14 +218,14 @@
             // flyReadToolStripMenuItem
             // 
             flyReadToolStripMenuItem.Name = "flyReadToolStripMenuItem";
-            flyReadToolStripMenuItem.Size = new Size(180, 22);
+            flyReadToolStripMenuItem.Size = new Size(133, 22);
             flyReadToolStripMenuItem.Text = "fly read";
             flyReadToolStripMenuItem.Click += flyReadToolStripMenuItem_Click;
             // 
             // mirrorReadToolStripMenuItem
             // 
             mirrorReadToolStripMenuItem.Name = "mirrorReadToolStripMenuItem";
-            mirrorReadToolStripMenuItem.Size = new Size(180, 22);
+            mirrorReadToolStripMenuItem.Size = new Size(133, 22);
             mirrorReadToolStripMenuItem.Text = "mirror read";
             mirrorReadToolStripMenuItem.Click += bustofedonToolStripMenuItem_Click;
             // 
@@ -258,6 +259,15 @@
             editToolStripMenuItem.Size = new Size(102, 22);
             editToolStripMenuItem.Text = "edit";
             editToolStripMenuItem.Click += editToolStripMenuItem_Click;
+            // 
+            // toolStripButton1
+            // 
+            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
+            toolStripButton1.ImageTransparentColor = Color.Magenta;
+            toolStripButton1.Name = "toolStripButton1";
+            toolStripButton1.Size = new Size(89, 24);
+            toolStripButton1.Text = "insert page";
+            toolStripButton1.Click += toolStripButton1_Click;
             // 
             // statusStrip1
             // 
@@ -354,5 +364,6 @@
         private ToolStripMenuItem mirrorReadToolStripMenuItem;
         private ContextMenuStrip contextMenuStrip1;
         private ToolStripMenuItem showImageToolStripMenuItem;
+        private ToolStripButton toolStripButton1;
     }
 }

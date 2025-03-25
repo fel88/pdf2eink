@@ -67,23 +67,53 @@ namespace pdf2eink
             var part2 = bts.Skip(pageOffset).Skip(size).ToArray();
 
             bts = part1.Concat(data).Concat(part2).ToArray();
-            pages = BitConverter.ToInt32(bts, 4);
+        }
+
+        public void InsertPage(int pageNo)
+        {
+            var width = BitConverter.ToUInt16(bts, 8);
+            var height = BitConverter.ToUInt16(bts, 10);
+            int stride = 4 * (int)Math.Ceiling(width / 8 / 4f);//aligned 4
+            var size = stride * height;
+
+            var pageOffset = 12 + tocRawSize + size * pageNo;
+
+            var part1 = bts.Take(pageOffset).ToArray();
+            byte[] blank = new byte[size];
+            for (int i = 0; i < blank.Length; i++)
+            {
+                blank[i] = 0xff;
+            }
+            var part2 = bts.Skip(pageOffset).ToArray();
+
+            bts = part1.Concat(blank).Concat(part2).ToArray();
+            pages++;
+            UpdatePagesCount();
+        }
+
+        public void UpdatePagesCount()
+        {
+            var upd1 = BitConverter.GetBytes(pages);
+            for (int i = 0; i < upd1.Length; i++)
+            {
+                bts[4 + i] = upd1[i];
+            }
         }
 
         public void DeletePage(int pageNo)
         {
-            var size = 76 * 448;
+            var width = BitConverter.ToUInt16(bts, 8);
+            var height = BitConverter.ToUInt16(bts, 10);
+            int stride = 4 * (int)Math.Ceiling(width / 8 / 4f);//aligned 4
+            var size = stride * height;
 
-            List<byte> part0 = new List<byte>();
-            part0.AddRange(Encoding.UTF8.GetBytes("CB"));
-            part0.AddRange(BitConverter.GetBytes((byte)0));//format . 0 -simple without meta info
-            part0.AddRange(BitConverter.GetBytes(pages - 1));
-
-            var part1 = bts.Skip(8).Take(4 + pageNo * size).ToArray();
+            var part1 = bts.Take(12 + tocRawSize + pageNo * size).ToArray();
             var part2 = bts.Skip(12 + tocRawSize + pageNo * size).Skip(size).ToArray();
 
-            bts = part0.Concat(part1).Concat(part2).ToArray();
-            pages = BitConverter.ToInt32(bts, 4);
+            bts = part1.Concat(part2).ToArray();
+
+            pages--;
+            UpdatePagesCount();
             //trackBar1.Maximum = pages - 1;
             //showPage();
         }
@@ -246,7 +276,7 @@ namespace pdf2eink
                 Height = BitConverter.ToUInt16(bts, 10);
             }
         }
-        
+
         void UpdateBodyAndHeader()
         {
             header = bts.Take(12).ToArray();

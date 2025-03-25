@@ -316,5 +316,16 @@ namespace pdf2eink
 
             Process.Start(startInfo);
         }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            d.AddIntegerNumericField("page", "Page");
+            if (!d.ShowDialog())
+                return;
+
+            var pageNo = d.GetIntegerNumericField("page");
+            book.InsertPage(pageNo);
+        }
     }
 }
