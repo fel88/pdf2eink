@@ -7,8 +7,9 @@ CB is a simple WYSIWYG image based format for e-books
 
 | Offset    |Size (bytes)| Description |
 | -------- |--| ------- |
-| 0x00 | 3|'CB' Signature    |
-| 0x03 | 1|Format type|
+| 0x00 | 2|'CB' Signature    |
+| 0x02 | 1|Format type|
+| 0x03 | 1|Flags (0- without TOC, 1 - with TOC)|
 | 0x04 | 4|Pages qty     |
 | 0x08  |2  | Width    |
 | 0x0A  |2  | Height   |
