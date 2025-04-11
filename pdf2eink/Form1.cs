@@ -3,6 +3,7 @@ using OpenCvSharp.Extensions;
 using OpenCvSharp;
 using System.Drawing.Imaging;
 using DitheringLib;
+using System.Collections.Immutable;
 
 namespace pdf2eink
 {
@@ -13,7 +14,7 @@ namespace pdf2eink
             InitializeComponent();
         }
 
-        
+
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -231,7 +232,7 @@ namespace pdf2eink
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
-            eparams.AutoDithering = checkBox2.Checked;            
+            eparams.AutoDithering = checkBox2.Checked;
         }
 
         private void checkBox7_CheckedChanged(object sender, EventArgs e)
@@ -247,7 +248,9 @@ namespace pdf2eink
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Multiselect = true;
             ofd.Filter = "All supported files (*.pdf,*.djvu)|*.djvu;*.pdf|Pdf files (*.pdf)|*.pdf|Djvu files (*.djvu)|*.djvu";
+
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
 
@@ -286,16 +289,32 @@ namespace pdf2eink
                     };
                 }*/
                 IPagesProvider p1 = null;
-                if (ofd.FileName.ToLower().EndsWith("pdf"))
+                if (ofd.FileNames.Count() > 1)
                 {
-                    p1 = new PdfPagesProvider(ofd.FileName);
+                    List<IPagesProvider> combo = new List<IPagesProvider>();
+                    foreach (var item in ofd.FileNames)
+                    {
+                        if (item.ToLower().EndsWith("pdf"))                        
+                            combo.Add(new PdfPagesProvider(item));                        
+                        else if (item.ToLower().EndsWith("djvu") || item.ToLower().EndsWith("djv"))                        
+                            combo.Add(new DjvuPagesProvider(item));
+                    }
+                    p1 = new CombinedPagesProvider(combo.ToArray());
                 }
                 else
-                if (ofd.FileName.ToLower().EndsWith("djvu") || ofd.FileName.ToLower().EndsWith("djv"))
                 {
-                    p1 = new DjvuPagesProvider(ofd.FileName);
+                    if (ofd.FileName.ToLower().EndsWith("pdf"))
+                    {
+                        p1 = new PdfPagesProvider(ofd.FileName);
+                    }
+                    else
+                    if (ofd.FileName.ToLower().EndsWith("djvu") || ofd.FileName.ToLower().EndsWith("djv"))
+                    {
+                        p1 = new DjvuPagesProvider(ofd.FileName);
+                    }
                 }
                 p1.Dpi = dpi;
+
                 //ExportToInternalFormat(ofd.FileName, sfd.FileName, action);
                 var bex = new BookExporter();
                 eparams.Progress = (now, max) =>
@@ -341,8 +360,8 @@ namespace pdf2eink
                     });
                 };
 
-                if (previewOnly)                
-                    bex.ExportToInternalFormat(eparams, p1, ms, action);                
+                if (previewOnly)
+                    bex.ExportToInternalFormat(eparams, p1, ms, action);
                 else
                     bex.ExportToInternalFormat(eparams, p1, sfd.FileName, action);
 

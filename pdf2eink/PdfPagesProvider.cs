@@ -25,5 +25,5 @@ namespace pdf2eink
             if (pdoc != null)
                 pdoc.Dispose();
         }
-    }    
+    }
 }
