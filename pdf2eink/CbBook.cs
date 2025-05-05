@@ -82,7 +82,7 @@ namespace pdf2eink
             byte[] blank = new byte[size];
             for (int i = 0; i < blank.Length; i++)
             {
-                blank[i] = 0xff;
+                blank[i] = 0x0;
             }
             var part2 = bts.Skip(pageOffset).ToArray();
 
@@ -134,7 +134,6 @@ namespace pdf2eink
 
             for (int j = 0; j < bmp.Height; j++)
             {
-
                 var line = page1.Skip(j * stride).Take(stride).ToArray();
                 int counter = 0;
                 for (int i = 0; i < bmp.Width; i++)
@@ -143,11 +142,7 @@ namespace pdf2eink
                     int bitNo = counter % 8;
                     counter++;
                     var b = (byte)(line[byteNo] & (1 << (8 - 1 - bitNo))) > 0;
-                    if (b)
-                    {
-                        bmp.SetPixel(i, j, Color.White);
-                    }
-                    else { bmp.SetPixel(i, j, Color.Black); }
+                    bmp.SetPixel(i, j, b ? Color.Black : Color.White);
                 }
             }
             return bmp;

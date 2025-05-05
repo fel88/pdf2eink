@@ -381,7 +381,23 @@ namespace pdf2eink
                 book.UpdatePage(buf, pageNo);
             }
         }
-        
+
+        public void InverseColors(int pageNo)
+        {
+            var bmp = book.GetPage(pageNo);
+                      
+
+            using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+            {
+                var buf = BookExportContext.GetBuffer(clone);
+                for (int i = 0; i < buf.Length; i++)
+                {
+                    //buf[i] = (byte)~buf[i];
+                }    
+                book.UpdatePage(buf, pageNo);
+            }
+        }
+
         private void singlePageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             UpdateFooter(pageNo);
@@ -409,6 +425,40 @@ namespace pdf2eink
 
             });
             th.Start();
+        }
+
+        private void inverseColorsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void allPagesToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            toolStripProgressBar1.Maximum = book.pages;
+            toolStripProgressBar1.Visible = true;
+            Thread th = new Thread(() =>
+            {
+                for (int i = 0; i < book.pages; i++)
+                {
+                    statusStrip1.Invoke(() =>
+                    {
+                        toolStripProgressBar1.Value = i;
+                    });
+                    InverseColors(i);
+                }
+                statusStrip1.Invoke(() =>
+                {
+                    toolStripProgressBar1.Visible = false;
+                });
+
+            });
+            th.Start();
+        }
+
+        private void thisPageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            InverseColors(pageNo);
+            showPage();
         }
     }
 }

@@ -49,6 +49,9 @@
             toolStripDropDownButton3 = new ToolStripDropDownButton();
             flyReadToolStripMenuItem = new ToolStripMenuItem();
             mirrorReadToolStripMenuItem = new ToolStripMenuItem();
+            inverseColorsToolStripMenuItem = new ToolStripMenuItem();
+            thisPageToolStripMenuItem = new ToolStripMenuItem();
+            allPagesToolStripMenuItem1 = new ToolStripMenuItem();
             toolStripDropDownButton4 = new ToolStripDropDownButton();
             parseToolStripMenuItem = new ToolStripMenuItem();
             showToolStripMenuItem = new ToolStripMenuItem();
@@ -223,7 +226,7 @@
             // toolStripDropDownButton3
             // 
             toolStripDropDownButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { flyReadToolStripMenuItem, mirrorReadToolStripMenuItem });
+            toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { flyReadToolStripMenuItem, mirrorReadToolStripMenuItem, inverseColorsToolStripMenuItem });
             toolStripDropDownButton3.Image = (Image)resources.GetObject("toolStripDropDownButton3.Image");
             toolStripDropDownButton3.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton3.Name = "toolStripDropDownButton3";
@@ -233,16 +236,38 @@
             // flyReadToolStripMenuItem
             // 
             flyReadToolStripMenuItem.Name = "flyReadToolStripMenuItem";
-            flyReadToolStripMenuItem.Size = new Size(133, 22);
+            flyReadToolStripMenuItem.Size = new Size(180, 22);
             flyReadToolStripMenuItem.Text = "fly read";
             flyReadToolStripMenuItem.Click += flyReadToolStripMenuItem_Click;
             // 
             // mirrorReadToolStripMenuItem
             // 
             mirrorReadToolStripMenuItem.Name = "mirrorReadToolStripMenuItem";
-            mirrorReadToolStripMenuItem.Size = new Size(133, 22);
+            mirrorReadToolStripMenuItem.Size = new Size(180, 22);
             mirrorReadToolStripMenuItem.Text = "mirror read";
             mirrorReadToolStripMenuItem.Click += bustofedonToolStripMenuItem_Click;
+            // 
+            // inverseColorsToolStripMenuItem
+            // 
+            inverseColorsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { thisPageToolStripMenuItem, allPagesToolStripMenuItem1 });
+            inverseColorsToolStripMenuItem.Name = "inverseColorsToolStripMenuItem";
+            inverseColorsToolStripMenuItem.Size = new Size(180, 22);
+            inverseColorsToolStripMenuItem.Text = "inverse colors";
+            inverseColorsToolStripMenuItem.Click += inverseColorsToolStripMenuItem_Click;
+            // 
+            // thisPageToolStripMenuItem
+            // 
+            thisPageToolStripMenuItem.Name = "thisPageToolStripMenuItem";
+            thisPageToolStripMenuItem.Size = new Size(180, 22);
+            thisPageToolStripMenuItem.Text = "this page";
+            thisPageToolStripMenuItem.Click += thisPageToolStripMenuItem_Click;
+            // 
+            // allPagesToolStripMenuItem1
+            // 
+            allPagesToolStripMenuItem1.Name = "allPagesToolStripMenuItem1";
+            allPagesToolStripMenuItem1.Size = new Size(180, 22);
+            allPagesToolStripMenuItem1.Text = "all pages";
+            allPagesToolStripMenuItem1.Click += allPagesToolStripMenuItem1_Click;
             // 
             // toolStripDropDownButton4
             // 
@@ -300,14 +325,14 @@
             // singlePageToolStripMenuItem
             // 
             singlePageToolStripMenuItem.Name = "singlePageToolStripMenuItem";
-            singlePageToolStripMenuItem.Size = new Size(180, 22);
+            singlePageToolStripMenuItem.Size = new Size(134, 22);
             singlePageToolStripMenuItem.Text = "single page";
             singlePageToolStripMenuItem.Click += singlePageToolStripMenuItem_Click;
             // 
             // allPagesToolStripMenuItem
             // 
             allPagesToolStripMenuItem.Name = "allPagesToolStripMenuItem";
-            allPagesToolStripMenuItem.Size = new Size(180, 22);
+            allPagesToolStripMenuItem.Size = new Size(134, 22);
             allPagesToolStripMenuItem.Text = "all pages";
             allPagesToolStripMenuItem.Click += allPagesToolStripMenuItem_Click;
             // 
@@ -419,5 +444,8 @@
         private ToolStripProgressBar toolStripProgressBar1;
         private ToolStripMenuItem singlePageToolStripMenuItem;
         private ToolStripMenuItem allPagesToolStripMenuItem;
+        private ToolStripMenuItem inverseColorsToolStripMenuItem;
+        private ToolStripMenuItem thisPageToolStripMenuItem;
+        private ToolStripMenuItem allPagesToolStripMenuItem1;
     }
 }

@@ -80,6 +80,10 @@
         public void AppendPage(Bitmap clone)
         {
             var bts = GetBuffer(clone);
+            for (int i = 0; i < bts.Length; i++)
+            {
+                bts[i] = (byte)(~bts[i]);
+            }
             PagesOffsets.Add(Stream.Position - PagesArraySectionOffset);
             Stream.Write(bts);
             Pages++;
