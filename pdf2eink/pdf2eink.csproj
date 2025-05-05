@@ -6,7 +6,12 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>quill.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="quill.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoDialog" Version="1.0.0.7" />
