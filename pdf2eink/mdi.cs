@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.Intrinsics.Arm;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,6 +18,19 @@ namespace pdf2eink
         public mdi()
         {
             InitializeComponent();
+            Shown += Mdi_Shown;
+        }
+
+        private void Mdi_Shown(object? sender, EventArgs e)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            if (!args.Any(z => z.ToLower().EndsWith(".cb")))
+                return;
+
+            Viewer v = new Viewer();
+            v.MdiParent = this;
+            v.Init(args.First(z => z.ToLower().EndsWith(".cb")));
+            v.Show();
         }
 
         private void toolStripButton1_Click(object sender, EventArgs e)
@@ -56,7 +70,7 @@ namespace pdf2eink
             IPagesProvider p1 = null;
             if (ofd.FileName.ToLower().EndsWith("pdf"))
             {
-                
+
                 p1 = new PdfPagesProvider(ofd.FileName);
             }
             else
@@ -64,7 +78,7 @@ namespace pdf2eink
             {
                 //var fsi = File.CreateSymbolicLink("link1.temp", ofd.FileName);
                 //fsi.Delete();
-                p1 = new DjvuPagesProvider(ofd.FileName);                
+                p1 = new DjvuPagesProvider(ofd.FileName);
             }
 
             p1.Dpi = 300;
@@ -108,7 +122,7 @@ namespace pdf2eink
             ofd.Filter = "CB files (*.cb)|*.cb";
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
-            
+
         }
     }
 }

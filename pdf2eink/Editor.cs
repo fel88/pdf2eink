@@ -3,6 +3,8 @@ using OpenCvSharp.Extensions;
 using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace pdf2eink
@@ -72,8 +74,12 @@ namespace pdf2eink
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
 
-            book = new CbBook(ofd.FileName);
+            Init(ofd.FileName);
+        }
 
+        public void Init(string path)
+        {
+            book = new CbBook(path);
             trackBar1.Maximum = book.pages - 1;
             showPage();
         }

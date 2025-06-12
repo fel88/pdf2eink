@@ -21,10 +21,12 @@ namespace pdf2eink
             Init(ofd.FileName);
         }
 
+        string currentPath;
         public void Init(string path)
         {
             Text = $"Viewer: {path}";
             book = new CbBook(path);
+            currentPath = path;
 
             Init();
         }
@@ -43,7 +45,7 @@ namespace pdf2eink
         {
             Text = $"Viewer: {name}";
             book = new CbBook(stream);
-            Init();          
+            Init();
         }
         public int Pages => book.pages;
 
@@ -117,6 +119,14 @@ namespace pdf2eink
             TOCViewer t = new TOCViewer();
             t.Init(book.Toc, this);
             t.Show();
+        }
+
+        private void toolStripButton4_Click(object sender, EventArgs e)
+        {
+            Editor v = new Editor();
+            v.Init(currentPath);
+            v.MdiParent = MdiParent;
+            v.Show();
         }
     }
 }
