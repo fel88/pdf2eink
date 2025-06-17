@@ -391,7 +391,7 @@ namespace pdf2eink
         public void InverseColors(int pageNo)
         {
             var bmp = book.GetPage(pageNo);
-                      
+
 
             using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
             {
@@ -399,7 +399,7 @@ namespace pdf2eink
                 for (int i = 0; i < buf.Length; i++)
                 {
                     //buf[i] = (byte)~buf[i];
-                }    
+                }
                 book.UpdatePage(buf, pageNo);
             }
         }
@@ -465,6 +465,33 @@ namespace pdf2eink
         {
             InverseColors(pageNo);
             showPage();
+        }
+
+
+        private void extractTilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (book == null)
+            {
+                TilesViewer tvv = new TilesViewer();
+                tvv.MdiParent = MdiParent;
+                tvv.Init(new TiledPageInfo() { Infos = new TileInfo[0] });
+                tvv.Show();
+                return;
+            }
+            var bmp = book.GetPage(pageNo);
+            TileProcessor tp = new TileProcessor();
+            tp.Init(bmp);
+            //tp.GetDebugBitmap().Save("debug1.jpg");
+            tp.MakeGroups();
+            //  tp.GetDebugBitmap().Save("debug2.jpg");
+            tp.SimplifyMarks();
+            // tp.GetDebugBitmap().Save("debug3.jpg");
+
+            var tiles = tp.ExtractTiles();
+            TilesViewer tv = new TilesViewer();
+            tv.MdiParent = MdiParent;
+            tv.Init(new TiledPageInfo() { Width = bmp.Width, Heigth = bmp.Height, Infos = tiles });
+            tv.Show();
         }
     }
 }

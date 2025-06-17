@@ -8,7 +8,7 @@ namespace pdf2eink
         public void Init(Bitmap bmp)
         {
             this.bmp = bmp;
-
+            map = new int[bmp.Width, bmp.Height];
             int currentMark = 1;
 
             for (int i = 0; i < bmp.Width; i++)
@@ -42,6 +42,34 @@ namespace pdf2eink
             }
         }
 
+        public Bitmap GetDebugBitmap()
+        {
+            int maxW = 32;
+            const int CellSize = 28;
+            Bitmap debugBmp = new Bitmap(maxW * CellSize, maxW * CellSize);
+            var gr = Graphics.FromImage(debugBmp);
+
+
+
+            for (int i = 0; i < maxW; i++)
+            {
+                for (int j = 0; j < maxW; j++)
+                {
+                    var px = bmp.GetPixel(i, j);
+                    if (px.R > 0)
+                    {
+                        gr.FillRectangle(Brushes.Black, i * CellSize, j * CellSize, CellSize, CellSize);
+                    }
+                    else
+                    {
+                        gr.FillRectangle(Brushes.White, i * CellSize, j * CellSize, CellSize, CellSize);
+
+                    }
+                    gr.DrawString(map[i, j].ToString(), new Font("Verdana", 6), Brushes.Red, i * CellSize, j * CellSize);
+                }
+            }
+            return debugBmp;
+        }
         public void SimplifyMarks()
         {
 
@@ -83,7 +111,7 @@ namespace pdf2eink
             foreach (var item in pre)
             {
                 TileInfo ti = new TileInfo();
-               
+
                 var maxx = item.Value.Max(z => z.X);
                 var maxy = item.Value.Max(z => z.Y);
                 var minx = item.Value.Min(z => z.X);
@@ -91,8 +119,8 @@ namespace pdf2eink
                 ti.X = minx;
                 ti.Y = miny;
                 Tile t = new Tile(item.Value.Select(z => new TilePoint() { X = z.X - minx, Y = z.Y - miny, Group = z.Group }).ToArray());
-                
-              
+
+
                 ti.Tile = t;
                 tiles.Add(t);
                 ret.Add(ti);
@@ -107,37 +135,61 @@ namespace pdf2eink
         }
 
         public Tile[] DistinctTiles(Tile[] tiles)
-        {                       
-           return tiles.GroupBy(z => z.ImageHash).Select(z => z.First()).ToArray();            
+        {
+            return tiles.GroupBy(z => z.ImageHash).Select(z => z.First()).ToArray();
         }
 
+        void CombineMarks(int m1, int m2)
+        {
+            if (m1 == m2 || m1 == 0 || m2 == 0)
+                return;
+
+            var merge = groups.Where(z => z.Contains(m1) || z.Contains(m2)).ToArray();
+            for (int k = 1; k < merge.Length; k++)
+            {
+                foreach (var item in merge[k])
+                {
+                    merge[0].Add(item);
+                }
+                groups.Remove(merge[k]);
+            }
+            if (!groups.Any(z => z.Contains(m1) && z.Contains(m2)))
+            {
+                var gr1 = groups.FirstOrDefault(z => z.Contains(m1) || z.Contains(m2));
+                if (gr1 == null)
+                {
+                    groups.Add(new HashSet<int>());
+                    groups.Last().Add(m1);
+                    groups.Last().Add(m2);
+                }
+                else
+                {
+                    gr1.Add(m1);
+                    gr1.Add(m2);
+                }
+            }
+        }
         public void MakeGroups()
         {
             for (int j = 0; j < bmp.Height; j++)
             {
                 for (int i = 1; i < bmp.Width; i++)
                 {
-
                     var m1 = map[i - 1, j];
                     var m2 = map[i, j];
-                    if (m1 != m2 && m1 != 0 && m2 != 0)
-                    {
-                        if (!groups.Any(z => z.Contains(m1) && z.Contains(m2)))
-                        {
-                            var gr1 = groups.FirstOrDefault(z => z.Contains(m1) || z.Contains(m2));
-                            if (gr1 == null)
-                            {
-                                groups.Add(new HashSet<int>());
-                                groups.Last().Add(m1);
-                                groups.Last().Add(m2);
-                            }
-                            else
-                            {
-                                gr1.Add(m1);
-                                gr1.Add(m2);
-                            }
-                        }
-                    }
+                    CombineMarks(m1, m2);
+                }
+            }
+
+            for (int j = 1; j < bmp.Height - 1; j++)
+            {
+                for (int i = 1; i < bmp.Width; i++)
+                {
+                    var m1 = map[i - 1, j - 1];
+                    var m2 = map[i, j];
+                    var m3 = map[i - 1, j + 1];
+                    CombineMarks(m1, m2);
+                    CombineMarks(m3, m2);
                 }
             }
         }

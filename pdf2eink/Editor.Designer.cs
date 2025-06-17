@@ -68,6 +68,7 @@
             toolStripProgressBar1 = new ToolStripProgressBar();
             contextMenuStrip1 = new ContextMenuStrip(components);
             showImageToolStripMenuItem = new ToolStripMenuItem();
+            extractTilesToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
@@ -226,7 +227,7 @@
             // toolStripDropDownButton3
             // 
             toolStripDropDownButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { flyReadToolStripMenuItem, mirrorReadToolStripMenuItem, inverseColorsToolStripMenuItem });
+            toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { flyReadToolStripMenuItem, mirrorReadToolStripMenuItem, inverseColorsToolStripMenuItem, extractTilesToolStripMenuItem });
             toolStripDropDownButton3.Image = (Image)resources.GetObject("toolStripDropDownButton3.Image");
             toolStripDropDownButton3.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton3.Name = "toolStripDropDownButton3";
@@ -258,14 +259,14 @@
             // thisPageToolStripMenuItem
             // 
             thisPageToolStripMenuItem.Name = "thisPageToolStripMenuItem";
-            thisPageToolStripMenuItem.Size = new Size(180, 22);
+            thisPageToolStripMenuItem.Size = new Size(122, 22);
             thisPageToolStripMenuItem.Text = "this page";
             thisPageToolStripMenuItem.Click += thisPageToolStripMenuItem_Click;
             // 
             // allPagesToolStripMenuItem1
             // 
             allPagesToolStripMenuItem1.Name = "allPagesToolStripMenuItem1";
-            allPagesToolStripMenuItem1.Size = new Size(180, 22);
+            allPagesToolStripMenuItem1.Size = new Size(122, 22);
             allPagesToolStripMenuItem1.Text = "all pages";
             allPagesToolStripMenuItem1.Click += allPagesToolStripMenuItem1_Click;
             // 
@@ -325,14 +326,14 @@
             // singlePageToolStripMenuItem
             // 
             singlePageToolStripMenuItem.Name = "singlePageToolStripMenuItem";
-            singlePageToolStripMenuItem.Size = new Size(134, 22);
+            singlePageToolStripMenuItem.Size = new Size(180, 22);
             singlePageToolStripMenuItem.Text = "single page";
             singlePageToolStripMenuItem.Click += singlePageToolStripMenuItem_Click;
             // 
             // allPagesToolStripMenuItem
             // 
             allPagesToolStripMenuItem.Name = "allPagesToolStripMenuItem";
-            allPagesToolStripMenuItem.Size = new Size(134, 22);
+            allPagesToolStripMenuItem.Size = new Size(180, 22);
             allPagesToolStripMenuItem.Text = "all pages";
             allPagesToolStripMenuItem.Click += allPagesToolStripMenuItem_Click;
             // 
@@ -382,6 +383,13 @@
             showImageToolStripMenuItem.Size = new Size(138, 22);
             showImageToolStripMenuItem.Text = "show image";
             showImageToolStripMenuItem.Click += showImageToolStripMenuItem_Click;
+            // 
+            // extractTilesToolStripMenuItem
+            // 
+            extractTilesToolStripMenuItem.Name = "extractTilesToolStripMenuItem";
+            extractTilesToolStripMenuItem.Size = new Size(180, 22);
+            extractTilesToolStripMenuItem.Text = "extract tiles";
+            extractTilesToolStripMenuItem.Click += extractTilesToolStripMenuItem_Click;
             // 
             // Editor
             // 
@@ -447,5 +455,6 @@
         private ToolStripMenuItem inverseColorsToolStripMenuItem;
         private ToolStripMenuItem thisPageToolStripMenuItem;
         private ToolStripMenuItem allPagesToolStripMenuItem1;
+        private ToolStripMenuItem extractTilesToolStripMenuItem;
     }
 }
