@@ -474,24 +474,72 @@ namespace pdf2eink
             {
                 TilesViewer tvv = new TilesViewer();
                 tvv.MdiParent = MdiParent;
-                tvv.Init(new TiledPageInfo() { Infos = new TileInfo[0] });
+                tvv.Init([new TiledPageInfo() { Infos = Array.Empty<TileInfo>() }]);
                 tvv.Show();
                 return;
             }
-            var bmp = book.GetPage(pageNo);
-            TileProcessor tp = new TileProcessor();
-            tp.Init(bmp);
-            //tp.GetDebugBitmap().Save("debug1.jpg");
-            tp.MakeGroups();
-            //  tp.GetDebugBitmap().Save("debug2.jpg");
-            tp.SimplifyMarks();
-            // tp.GetDebugBitmap().Save("debug3.jpg");
 
-            var tiles = tp.ExtractTiles();
-            TilesViewer tv = new TilesViewer();
-            tv.MdiParent = MdiParent;
-            tv.Init(new TiledPageInfo() { Width = bmp.Width, Heigth = bmp.Height, Infos = tiles });
-            tv.Show();
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            d.AddIntegerNumericField("startPage", "Start page", pageNo);
+            d.AddIntegerNumericField("endPage", "End page", pageNo);
+
+            if (!d.ShowDialog())
+                return;
+            var startPage = d.GetIntegerNumericField("startPage");
+            var endPage = d.GetIntegerNumericField("endPage");
+            Thread th = new Thread(() =>
+            {
+                statusStrip1.Invoke(() =>
+                {
+                    toolStripProgressBar1.Visible = true;
+                    toolStripProgressBar1.Value = 0;
+                    toolStripProgressBar1.Maximum = endPage - startPage + 1;
+                });
+                List<TiledPageInfo> pages = new List<TiledPageInfo>();
+                for (int i = startPage; i <= endPage; i++)
+                {
+                    var bmp = book.GetPage(i);
+                    TileProcessor tp = new TileProcessor();
+                    tp.Init(bmp);
+                    //tp.GetDebugBitmap().Save("debug1.jpg");
+                    tp.MakeGroups();
+                    //  tp.GetDebugBitmap().Save("debug2.jpg");
+                    tp.SimplifyMarks();
+                    // tp.GetDebugBitmap().Save("debug3.jpg");
+
+                    pages.Add(tp.ExtractTiles());
+                    statusStrip1.Invoke(() =>
+                    {
+                        toolStripProgressBar1.Value = i - startPage;
+                        toolStripStatusLabel3.Text = (int)(100f * toolStripProgressBar1.Value / (float)toolStripProgressBar1.Maximum) + "%";
+                    });
+                }
+
+
+                var allTilesInfos = pages.SelectMany(z => z.Infos).ToArray();
+                var allTiles = pages.SelectMany(z => z.Infos.Select(u => u.Tile)).ToArray();
+                var tiles = TileProcessor.DistinctTiles(allTiles.ToArray()).ToList();
+
+                foreach (var item in allTilesInfos)
+                {
+                    item.Tile = tiles.First(z => z.ImageHash == item.Tile.ImageHash);
+                }
+
+                Invoke(() =>
+                {
+                    toolStripProgressBar1.Visible = false;
+
+                    TilesViewer tv = new TilesViewer();
+                    tv.MdiParent = MdiParent;
+                    tv.Init(pages.ToArray());
+                    tv.Show();
+                });
+
+
+            });
+            th.IsBackground = true;
+            th.Start();
+
         }
     }
 }

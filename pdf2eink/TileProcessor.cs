@@ -88,7 +88,7 @@ namespace pdf2eink
             }
         }
 
-        public TileInfo[] ExtractTiles()
+        public TiledPageInfo ExtractTiles()
         {
             List<TilePoint> points = new List<TilePoint>();
             for (int i = 0; i < bmp.Width; i++)
@@ -108,9 +108,10 @@ namespace pdf2eink
             Dictionary<int, TilePoint[]> pre = points.GroupBy(z => z.Group).ToDictionary(z => z.Key, y => y.ToArray());
             List<TileInfo> ret = new List<TileInfo>();
             List<Tile> tiles = new List<Tile>();
+            TiledPageInfo page = new TiledPageInfo() { Width = bmp.Width, Heigth = bmp.Height };
             foreach (var item in pre)
             {
-                TileInfo ti = new TileInfo();
+                TileInfo ti = new TileInfo(page);
 
                 var maxx = item.Value.Max(z => z.X);
                 var maxy = item.Value.Max(z => z.Y);
@@ -125,16 +126,18 @@ namespace pdf2eink
                 tiles.Add(t);
                 ret.Add(ti);
             }
+           
             tiles = DistinctTiles(tiles.ToArray()).ToList();
 
             foreach (var item in ret)
             {
                 item.Tile = tiles.First(z => z.ImageHash == item.Tile.ImageHash);
             }
-            return ret.ToArray();
+            page.Infos = ret.ToArray();
+            return page;
         }
 
-        public Tile[] DistinctTiles(Tile[] tiles)
+        public static Tile[] DistinctTiles(Tile[] tiles)
         {
             return tiles.GroupBy(z => z.ImageHash).Select(z => z.First()).ToArray();
         }

@@ -14,7 +14,8 @@ namespace pdf2eink
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "CB files (*.cb)|*.cb";
+            ofd.Filter = "CB files (*.cb)|*.cb|Tiled book (*.tcb)|*.tcb";
+
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
 
@@ -25,9 +26,12 @@ namespace pdf2eink
         public void Init(string path)
         {
             Text = $"Viewer: {path}";
-            book = new CbBook(path);
-            currentPath = path;
+            if (path.EndsWith(".tcb"))            
+                book = new TiledCBook(path);            
+            else
+                book = new CbBook(path);
 
+            currentPath = path;
             Init();
         }
 
@@ -45,6 +49,12 @@ namespace pdf2eink
         {
             Text = $"Viewer: {name}";
             book = new CbBook(stream);
+            Init();
+        }
+        public void Init(ICBook book)
+        {
+            Text = $"Viewer: {book.Name}";
+            this.book = book;
             Init();
         }
         public int Pages => book.pages;
@@ -113,7 +123,7 @@ namespace pdf2eink
 
             Process.Start(startInfo);
         }
-        CbBook book;
+        ICBook book;
         private void showToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             TOCViewer t = new TOCViewer();

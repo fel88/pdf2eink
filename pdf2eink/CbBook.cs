@@ -3,7 +3,7 @@ using System.Text;
 
 namespace pdf2eink
 {
-    public class CbBook
+    public class CbBook : ICBook
     {
         public CbBook()
         {
@@ -302,10 +302,12 @@ namespace pdf2eink
             File.WriteAllBytes(fileName, ms.ToArray());
         }
 
-        public int pages;
+        public int pages { get; set; }
 
         public TOC Toc { get; private set; }
 
         public bool HasTOC => Toc != null && Toc.Items.Any();
+
+        public string Name { get; set; }
     }
 }
