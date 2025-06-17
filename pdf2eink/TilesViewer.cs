@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -30,15 +32,16 @@ namespace pdf2eink
             toolStripStatusLabel1.Text = $"{pages.Length} pages, {pages.Sum(z => z.Infos.Length)} tiles, {baseTiles.Length} base tiles";
         }
 
+        int currentPage = 0;
         public void UpdateList()
         {
             listView1.Items.Clear();
-            for (int i = 0; i < Pages.Length; i++)
+            //for (int i = 0; i < Pages.Length; i++)
             {
-                TiledPageInfo? page = Pages[i];
+                TiledPageInfo? page = Pages[currentPage];
                 foreach (var tile in page.Infos)
                 {
-                    listView1.Items.Add(new ListViewItem(new string[] { "page " + i + "_" + "tile", tile.Key }) { Tag = tile });
+                    listView1.Items.Add(new ListViewItem(new string[] { "page " + currentPage + "_" + "tile", tile.Key }) { Tag = tile });
                 }
             }
         }
@@ -69,10 +72,20 @@ namespace pdf2eink
             ms.Write(BitConverter.GetBytes(baseTiles.Length));
             foreach (var item in baseTiles)
             {
-                ms.Write(BitConverter.GetBytes((int)item.Bmp.Width));
-                ms.Write(BitConverter.GetBytes((int)item.Bmp.Height));
-
+                var bits1 = new BitArray(BitConverter.GetBytes((ushort)item.Bmp.Width));
+                var bits2 = new BitArray(BitConverter.GetBytes((ushort)item.Bmp.Height));
+                
                 List<byte> bits = new List<byte>();
+                for (int i = 0; i < 10; i++)
+                {
+                    bits.Add((byte)(bits1[i] ? 1 : 0));
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    bits.Add((byte)(bits2[i] ? 1 : 0));
+                }
+                
+
                 for (int i = 0; i < item.Bmp.Width; i++)
                 {
                     for (int j = 0; j < item.Bmp.Height; j++)
@@ -101,8 +114,9 @@ namespace pdf2eink
                 ms.WriteByte(0);
 
             var pagesSectionOffset = (int)(ms.Length/1024);
-
+            var list = baseTiles.ToList();
             ms.Write(BitConverter.GetBytes(Pages.Length));
+            var bitsOfpattern=(int)Math.Ceiling(Math.Log2(list.Count));
             foreach (var item in Pages)
             {
                 ms.Write(BitConverter.GetBytes(item.Width));
@@ -111,9 +125,35 @@ namespace pdf2eink
                 ms.Write(BitConverter.GetBytes(item.Infos.Length));
                 foreach (var pitem in item.Infos)
                 {
-                    ms.Write(BitConverter.GetBytes((int)pitem.X));
-                    ms.Write(BitConverter.GetBytes((int)pitem.Y));
-                    ms.Write(BitConverter.GetBytes((int)baseTiles.ToList().IndexOf(pitem.Tile)));
+                    var bits = new BitArray(BitConverter.GetBytes((ushort)pitem.X));
+                    var bits2 = new BitArray(BitConverter.GetBytes((ushort)pitem.Y));
+                    var bits3 = new BitArray(BitConverter.GetBytes((uint)list.IndexOf(pitem.Tile)));
+                    List<byte> ar = new List<byte>();
+                    for (int i = 0; i < 10; i++)
+                    {
+                        ar.Add((byte)(bits[i] ? 1 : 0));
+                    }
+                    for (int i = 0; i < 10; i++)
+                    {
+                        ar.Add((byte)(bits2[i] ? 1 : 0));
+                    }
+                    for (int i = 0; i < bitsOfpattern; i++)
+                    {
+                        ar.Add((byte)(bits3[i] ? 1 : 0));
+                    }
+                    while (ar.Count % 8 != 0)
+                    {
+                        ar.Add(0);
+                    }
+                    for (int j = 0; j < ar.Count; j+=8)
+                    {
+                        byte b = 0;
+                        for (int k = 0; k < 8; k++)
+                        {
+                            b |= (byte)(ar[j + k] << k);
+                        }
+                        ms.WriteByte(b);
+                    }                    
                 }
             }
             ms.Seek(0, SeekOrigin.Begin);

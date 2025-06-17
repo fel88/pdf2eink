@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Text;
 
 namespace pdf2eink
@@ -12,10 +13,23 @@ namespace pdf2eink
 
         public Tile(Stream stream)
         {
-            var tileW = stream.ReadInt();
-            var tileH = stream.ReadInt();
+            byte[] temp = new byte[3];
+            stream.Read(temp, 0, temp.Length);
+            BitArray bb = new BitArray(temp);
+            ushort tileW = 0;
+            ushort tileH = 0;
+
+            for (int j = 0; j < 10; j++)
+            {
+                tileW |= (ushort)((bb[j] ? 1 : 0) << j);
+            }
+            for (int j = 0; j < 10; j++)
+            {
+                tileH |= (ushort)((bb[j + 10] ? 1 : 0) << j);
+            }
+
             List<TilePoint> tpoints = new List<TilePoint>();
-            var sz = tileW * tileH;
+            var sz = tileW * tileH - 4;
             while (sz % 8 != 0)
                 sz++;
 
@@ -24,6 +38,10 @@ namespace pdf2eink
             byte[] buffer = new byte[bytes];
             stream.Read(buffer, 0, bytes);
             List<byte> bits = new List<byte>();
+            bits.Insert(0, (byte)(bb[23] ? 1 : 0));
+            bits.Insert(0, (byte)(bb[22] ? 1 : 0));
+            bits.Insert(0, (byte)(bb[21] ? 1 : 0));
+            bits.Insert(0, (byte)(bb[20] ? 1 : 0));
 
             foreach (var item in buffer)
             {
@@ -68,12 +86,12 @@ namespace pdf2eink
             }
             CalcImageHash();
         }
-        private void MakeBmp(int w,int h)
+        private void MakeBmp(int w, int h)
         {
             if (Bmp != null)
                 return;
 
-            
+
             Bmp = new Bitmap(w, h);
             var gr = Graphics.FromImage(Bmp);
             gr.Clear(Color.White);

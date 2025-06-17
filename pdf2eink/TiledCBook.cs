@@ -1,4 +1,6 @@
-﻿namespace pdf2eink
+﻿using System.Collections;
+
+namespace pdf2eink
 {
     public class TiledCBook : ICBook
     {
@@ -16,7 +18,7 @@
 
         private void CreateFromStream(Stream ms)
         {
-
+            var pagesSectionOffset = ms.ReadInt();
             var tilesQty = ms.ReadInt();
 
             List<Tile> tiles = new List<Tile>();
@@ -26,8 +28,9 @@
                 tiles.Add(tile);
             }
 
+            ms.Seek(pagesSectionOffset * 1024, SeekOrigin.Begin);
             var pagesQty = ms.ReadInt();
-
+            var bitsOfTileIdx = (int)Math.Ceiling(Math.Log2(tiles.Count));
             for (int k = 0; k < pagesQty; k++)
             {
                 var pageWidth = ms.ReadInt();
@@ -39,9 +42,29 @@
                 for (int i = 0; i < tileInfosQty; i++)
                 {
                     TileInfo t = new TileInfo(page);
-                    t.X = ms.ReadInt();
-                    t.Y = ms.ReadInt();
-                    var tileIdx = ms.ReadInt();
+                    int bitsToRead = 20 + bitsOfTileIdx;
+                    while (bitsToRead % 8 != 0)
+                        bitsToRead++;
+
+                    byte[] read = new byte[bitsToRead / 8];
+                    ms.Read(read, 0, read.Length);
+                    BitArray ba = new BitArray(read);
+                    t.X = 0;
+                    t.Y = 0;
+                    for (int j = 0; j < 10; j++)
+                    {
+                        t.X |= (ushort)((ba[j] ? 1 : 0) << j);
+                    }
+                    for (int j = 0; j < 10; j++)
+                    {
+                        t.Y |= (ushort)((ba[j + 10] ? 1 : 0) << j);
+                    }
+                    int tileIdx = 0;
+                    for (int j = 0; j < bitsOfTileIdx; j++)
+                    {
+                        tileIdx |= (ushort)((ba[j + 20] ? 1 : 0) << j);
+                    }
+                                        
                     t.Tile = tiles[tileIdx];
                     tileInfos.Add(t);
                 }

@@ -1,3 +1,5 @@
+using System.Net.Http.Headers;
+
 namespace pdf2eink
 {
     public class TileProcessor
@@ -161,7 +163,7 @@ namespace pdf2eink
                 var gr1 = groups.FirstOrDefault(z => z.Contains(m1) || z.Contains(m2));
                 if (gr1 == null)
                 {
-                    groups.Add(new HashSet<int>());
+                    groups.Add(new HashSet<int>());                    
                     groups.Last().Add(m1);
                     groups.Last().Add(m2);
                 }
