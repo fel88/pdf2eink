@@ -33,13 +33,19 @@
             listView1 = new ListView();
             columnHeader1 = new ColumnHeader();
             columnHeader2 = new ColumnHeader();
-            pictureBox1 = new PictureBox();
+            columnHeader3 = new ColumnHeader();
+            pictureBox1 = new PictureBoxWithInterpolationMode();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolStrip1 = new ToolStrip();
             toolStripButton1 = new ToolStripButton();
             toolStripButton2 = new ToolStripButton();
             toolStripButton3 = new ToolStripButton();
+            toolStripButton4 = new ToolStripButton();
+            toolStripDropDownButton1 = new ToolStripDropDownButton();
+            infosToolStripMenuItem = new ToolStripMenuItem();
+            baseTilesToolStripMenuItem = new ToolStripMenuItem();
+            toolStripStatusLabel2 = new ToolStripStatusLabel();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             statusStrip1.SuspendLayout();
@@ -63,7 +69,7 @@
             // 
             // listView1
             // 
-            listView1.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2 });
+            listView1.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3 });
             listView1.Dock = DockStyle.Fill;
             listView1.FullRowSelect = true;
             listView1.GridLines = true;
@@ -79,6 +85,7 @@
             // pictureBox1
             // 
             pictureBox1.Dock = DockStyle.Fill;
+            pictureBox1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
             pictureBox1.Location = new Point(403, 3);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(394, 397);
@@ -87,7 +94,7 @@
             // 
             // statusStrip1
             // 
-            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripStatusLabel2 });
             statusStrip1.Location = new Point(0, 428);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(800, 22);
@@ -102,7 +109,7 @@
             // 
             // toolStrip1
             // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3 });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3, toolStripButton4, toolStripDropDownButton1 });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(800, 25);
@@ -139,6 +146,46 @@
             toolStripButton3.Text = "merge keys";
             toolStripButton3.Click += toolStripButton3_Click;
             // 
+            // toolStripButton4
+            // 
+            toolStripButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
+            toolStripButton4.ImageTransparentColor = Color.Magenta;
+            toolStripButton4.Name = "toolStripButton4";
+            toolStripButton4.Size = new Size(39, 22);
+            toolStripButton4.Text = "order";
+            toolStripButton4.Click += toolStripButton4_Click;
+            // 
+            // toolStripDropDownButton1
+            // 
+            toolStripDropDownButton1.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { infosToolStripMenuItem, baseTilesToolStripMenuItem });
+            toolStripDropDownButton1.Image = (Image)resources.GetObject("toolStripDropDownButton1.Image");
+            toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
+            toolStripDropDownButton1.Name = "toolStripDropDownButton1";
+            toolStripDropDownButton1.Size = new Size(29, 22);
+            toolStripDropDownButton1.Text = "toolStripDropDownButton1";
+            // 
+            // infosToolStripMenuItem
+            // 
+            infosToolStripMenuItem.Name = "infosToolStripMenuItem";
+            infosToolStripMenuItem.Size = new Size(122, 22);
+            infosToolStripMenuItem.Text = "infos";
+            infosToolStripMenuItem.Click += infosToolStripMenuItem_Click;
+            // 
+            // baseTilesToolStripMenuItem
+            // 
+            baseTilesToolStripMenuItem.Name = "baseTilesToolStripMenuItem";
+            baseTilesToolStripMenuItem.Size = new Size(122, 22);
+            baseTilesToolStripMenuItem.Text = "base tiles";
+            baseTilesToolStripMenuItem.Click += baseTilesToolStripMenuItem_Click;
+            // 
+            // toolStripStatusLabel2
+            // 
+            toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            toolStripStatusLabel2.Size = new Size(13, 17);
+            toolStripStatusLabel2.Text = "..";
+            // 
             // TilesViewer
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -165,12 +212,18 @@
         private ListView listView1;
         private ColumnHeader columnHeader1;
         private ColumnHeader columnHeader2;
-        private PictureBox pictureBox1;
+        private PictureBoxWithInterpolationMode pictureBox1;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
         private ToolStrip toolStrip1;
         private ToolStripButton toolStripButton1;
         private ToolStripButton toolStripButton2;
         private ToolStripButton toolStripButton3;
+        private ToolStripButton toolStripButton4;
+        private ToolStripDropDownButton toolStripDropDownButton1;
+        private ToolStripMenuItem infosToolStripMenuItem;
+        private ToolStripMenuItem baseTilesToolStripMenuItem;
+        private ColumnHeader columnHeader3;
+        private ToolStripStatusLabel toolStripStatusLabel2;
     }
 }

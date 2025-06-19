@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.IO.MemoryMappedFiles;
 
 namespace pdf2eink
 {
@@ -22,10 +23,20 @@ namespace pdf2eink
             var tilesQty = ms.ReadInt();
 
             List<Tile> tiles = new List<Tile>();
+            var bs = new BitStream(ms);
             for (int i = 0; i < tilesQty; i++)
             {
-                Tile tile = new Tile(ms);
-                tiles.Add(tile);
+                var type = bs.ReadUIn16(1);
+                if (type == 0)
+                {
+                    Tile tile = new Tile(bs);
+                    tiles.Add(tile);
+                }
+                else if (type == 1)
+                {
+                    DiffTile tile = new DiffTile(tiles, bs);
+                    tiles.Add(tile.ToFullTile());
+                }
             }
 
             ms.Seek(pagesSectionOffset * 1024, SeekOrigin.Begin);

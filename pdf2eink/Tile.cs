@@ -3,7 +3,7 @@ using System.Text;
 
 namespace pdf2eink
 {
-    public class Tile
+    public class Tile : ITile
     {
         public Tile(TilePoint[] points)
         {
@@ -11,52 +11,23 @@ namespace pdf2eink
             MakeBmp();
         }
 
-        public Tile(Stream stream)
-        {
-            byte[] temp = new byte[3];
-            stream.Read(temp, 0, temp.Length);
-            BitArray bb = new BitArray(temp);
-            ushort tileW = 0;
-            ushort tileH = 0;
-
-            for (int j = 0; j < 10; j++)
-            {
-                tileW |= (ushort)((bb[j] ? 1 : 0) << j);
-            }
-            for (int j = 0; j < 10; j++)
-            {
-                tileH |= (ushort)((bb[j + 10] ? 1 : 0) << j);
-            }
+        public Tile(BitStream stream)
+        {            
+            
+            ushort tileW = stream.ReadUIn16(10); 
+            ushort tileH = stream.ReadUIn16(10); 
+                    
 
             List<TilePoint> tpoints = new List<TilePoint>();
-            var sz = tileW * tileH - 4;
-            while (sz % 8 != 0)
-                sz++;
-
-            var bytes = sz / 8;
-
-            byte[] buffer = new byte[bytes];
-            stream.Read(buffer, 0, bytes);
-            List<byte> bits = new List<byte>();
-            bits.Insert(0, (byte)(bb[23] ? 1 : 0));
-            bits.Insert(0, (byte)(bb[22] ? 1 : 0));
-            bits.Insert(0, (byte)(bb[21] ? 1 : 0));
-            bits.Insert(0, (byte)(bb[20] ? 1 : 0));
-
-            foreach (var item in buffer)
-            {
-                for (int i = 0; i < 8; i++)
-                {
-                    bits.Add((byte)((item & (1 << i)) != 0 ? 1 : 0));
-                }
-            }
+            var sz = tileW * tileH ;
+            bool[] bits = stream.ReadBits(sz);
 
             var index = 0;
             for (int i = 0; i < tileW; i++)
             {
                 for (int j = 0; j < tileH; j++)
                 {
-                    if (bits[index++] == 0)
+                    if (bits[index++] )
                         tpoints.Add(new TilePoint() { X = i, Y = j });
                 }
             }
@@ -64,11 +35,13 @@ namespace pdf2eink
             Points = tpoints.ToArray();
 
             MakeBmp(tileW, tileH);
+            stream.Align8();
         }
 
         public string Name { get; set; }
 
-        public Bitmap Bmp;
+        public Bitmap Bmp { get; private set; }
+
         public TilePoint[] Points;
         private void MakeBmp()
         {
@@ -118,6 +91,53 @@ namespace pdf2eink
             }
             ImageHash = sb.ToString();
 
+        }
+
+        internal void WriteTo(MemoryStream ms)
+        {
+            var bits1 = new BitArray(BitConverter.GetBytes((ushort)Bmp.Width));
+            var bits2 = new BitArray(BitConverter.GetBytes((ushort)Bmp.Height));
+
+            List<byte> bits = new List<byte>();
+            bits.Add(0);//full tile type
+            for (int i = 0; i < 10; i++)
+            {
+                bits.Add((byte)(bits1[i] ? 1 : 0));
+            }
+            for (int i = 0; i < 10; i++)
+            {
+                bits.Add((byte)(bits2[i] ? 1 : 0));
+            }
+
+            for (int i = 0; i < Bmp.Width; i++)
+            {
+                for (int j = 0; j < Bmp.Height; j++)
+                {
+                    var px = Bmp.GetPixel(i, j);
+                    bits.Add((byte)(px.R == 0 ? 0 : 1));
+                }
+            }
+
+            while (bits.Count % 8 != 0)
+                bits.Add(0);
+
+            for (int i = 0; i < bits.Count; i += 8)
+            {
+                byte b = 0;
+                for (int j = 0; j < 8; j++)
+                {
+                    b ^= (byte)(bits[i + j] << j);
+                }
+
+                ms.WriteByte(b);
+            }
+        }
+
+        public ITile Clone()
+        {
+            Tile ret = new Tile(Points.ToArray());
+            ret.Name = Name + "_cloned";
+            return ret;
         }
     }
 }
