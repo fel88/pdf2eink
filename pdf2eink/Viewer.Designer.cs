@@ -30,7 +30,7 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Viewer));
-            pictureBox1 = new PictureBox();
+            pictureBox1 = new PictureBoxWithInterpolationMode();
             contextMenuStrip1 = new ContextMenuStrip(components);
             showToolStripMenuItem = new ToolStripMenuItem();
             tableLayoutPanel1 = new TableLayoutPanel();
@@ -41,11 +41,14 @@
             toolStripButton3 = new ToolStripButton();
             toolStripDropDownButton1 = new ToolStripDropDownButton();
             showToolStripMenuItem1 = new ToolStripMenuItem();
+            toolStripButton4 = new ToolStripButton();
+            toolStripDropDownButton2 = new ToolStripDropDownButton();
+            nearestToolStripMenuItem = new ToolStripMenuItem();
+            smoothToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolStripStatusLabel2 = new ToolStripStatusLabel();
             toolStripStatusLabel3 = new ToolStripStatusLabel();
-            toolStripButton4 = new ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             contextMenuStrip1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
@@ -59,6 +62,7 @@
             pictureBox1.BorderStyle = BorderStyle.FixedSingle;
             pictureBox1.ContextMenuStrip = contextMenuStrip1;
             pictureBox1.Dock = DockStyle.Fill;
+            pictureBox1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
             pictureBox1.Location = new Point(3, 2);
             pictureBox1.Margin = new Padding(3, 2, 3, 2);
             pictureBox1.Name = "pictureBox1";
@@ -113,7 +117,7 @@
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new Size(20, 20);
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3, toolStripDropDownButton1, toolStripButton4 });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3, toolStripDropDownButton1, toolStripButton4, toolStripDropDownButton2 });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(700, 25);
@@ -168,6 +172,40 @@
             showToolStripMenuItem1.Text = "show";
             showToolStripMenuItem1.Click += showToolStripMenuItem1_Click;
             // 
+            // toolStripButton4
+            // 
+            toolStripButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
+            toolStripButton4.ImageTransparentColor = Color.Magenta;
+            toolStripButton4.Name = "toolStripButton4";
+            toolStripButton4.Size = new Size(85, 22);
+            toolStripButton4.Text = "open in editor";
+            toolStripButton4.Click += toolStripButton4_Click;
+            // 
+            // toolStripDropDownButton2
+            // 
+            toolStripDropDownButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripDropDownButton2.DropDownItems.AddRange(new ToolStripItem[] { nearestToolStripMenuItem, smoothToolStripMenuItem });
+            toolStripDropDownButton2.Image = (Image)resources.GetObject("toolStripDropDownButton2.Image");
+            toolStripDropDownButton2.ImageTransparentColor = Color.Magenta;
+            toolStripDropDownButton2.Name = "toolStripDropDownButton2";
+            toolStripDropDownButton2.Size = new Size(122, 22);
+            toolStripDropDownButton2.Text = "interpolation mode";
+            // 
+            // nearestToolStripMenuItem
+            // 
+            nearestToolStripMenuItem.Name = "nearestToolStripMenuItem";
+            nearestToolStripMenuItem.Size = new Size(180, 22);
+            nearestToolStripMenuItem.Text = "nearest";
+            nearestToolStripMenuItem.Click += nearestToolStripMenuItem_Click;
+            // 
+            // smoothToolStripMenuItem
+            // 
+            smoothToolStripMenuItem.Name = "smoothToolStripMenuItem";
+            smoothToolStripMenuItem.Size = new Size(180, 22);
+            smoothToolStripMenuItem.Text = "smooth";
+            smoothToolStripMenuItem.Click += smoothToolStripMenuItem_Click;
+            // 
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
@@ -196,16 +234,6 @@
             toolStripStatusLabel3.Size = new Size(42, 17);
             toolStripStatusLabel3.Text = "1 / 100";
             // 
-            // toolStripButton4
-            // 
-            toolStripButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
-            toolStripButton4.ImageTransparentColor = Color.Magenta;
-            toolStripButton4.Name = "toolStripButton4";
-            toolStripButton4.Size = new Size(85, 22);
-            toolStripButton4.Text = "open in editor";
-            toolStripButton4.Click += toolStripButton4_Click;
-            // 
             // Viewer
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -233,7 +261,7 @@
 
         #endregion
 
-        private PictureBox pictureBox1;
+        private PictureBoxWithInterpolationMode pictureBox1;
         private TableLayoutPanel tableLayoutPanel1;
         private ToolStrip toolStrip1;
         private ToolStripButton toolStripButton1;
@@ -249,5 +277,8 @@
         private ToolStripDropDownButton toolStripDropDownButton1;
         private ToolStripMenuItem showToolStripMenuItem1;
         private ToolStripButton toolStripButton4;
+        private ToolStripDropDownButton toolStripDropDownButton2;
+        private ToolStripMenuItem nearestToolStripMenuItem;
+        private ToolStripMenuItem smoothToolStripMenuItem;
     }
 }

@@ -12,6 +12,7 @@ namespace pdf2eink
         public Form1()
         {
             InitializeComponent();
+            comboBox1.SelectedIndex = 1;
         }
 
 
@@ -294,9 +295,9 @@ namespace pdf2eink
                     List<IPagesProvider> combo = new List<IPagesProvider>();
                     foreach (var item in ofd.FileNames)
                     {
-                        if (item.ToLower().EndsWith("pdf"))                        
-                            combo.Add(new PdfPagesProvider(item));                        
-                        else if (item.ToLower().EndsWith("djvu") || item.ToLower().EndsWith("djv"))                        
+                        if (item.ToLower().EndsWith("pdf"))
+                            combo.Add(new PdfPagesProvider(item));
+                        else if (item.ToLower().EndsWith("djvu") || item.ToLower().EndsWith("djv"))
                             combo.Add(new DjvuPagesProvider(item));
                     }
                     p1 = new CombinedPagesProvider(combo.ToArray());
@@ -396,6 +397,17 @@ namespace pdf2eink
             TOCViewer tocv = new TOCViewer();
             tocv.Init(eparams.TOC);
             tocv.ShowDialog();
+        }
+
+        private void checkBox9_CheckedChanged(object sender, EventArgs e)
+        {
+            eparams.TiledMode = checkBox9.Checked;
+        }
+
+        private void checkBox10_CheckedChanged(object sender, EventArgs e)
+        {
+            eparams.RectifyLetters = checkBox10.Checked;
+
         }
     }
 }

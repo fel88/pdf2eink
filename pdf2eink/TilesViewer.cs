@@ -95,6 +95,7 @@ namespace pdf2eink
             ms.Write(BitConverter.GetBytes(0));//stub for the start offset to pages section
 
             ms.Write(BitConverter.GetBytes(baseTiles.Length));
+            //pre order all tiles to make diffs
             foreach (var item in baseTiles)
             {
                 item.WriteTo(ms);                
@@ -263,16 +264,6 @@ namespace pdf2eink
         private void infosToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
-        }
-    }
-    public class PictureBoxWithInterpolationMode : PictureBox
-    {
-        public InterpolationMode InterpolationMode { get; set; }
-
-        protected override void OnPaint(PaintEventArgs paintEventArgs)
-        {
-            paintEventArgs.Graphics.InterpolationMode = InterpolationMode;
-            base.OnPaint(paintEventArgs);
         }
     }
 }

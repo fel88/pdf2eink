@@ -19,5 +19,7 @@
         public bool RenderPageInfo = true;
         public int PageInfoHeight = 8;
         public TOC TOC;
+        public bool TiledMode = false;
+        public bool RectifyLetters = true;
     }
 }

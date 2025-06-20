@@ -83,7 +83,7 @@ namespace pdf2eink
 
             p1.Dpi = 300;
             SourceBookViewer s = new SourceBookViewer();
-            p1.SourcePath = ofd.FileName;
+            
             s.Open(p1);
             s.MdiParent = this;
             s.Show();
@@ -122,6 +122,11 @@ namespace pdf2eink
             ofd.Filter = "CB files (*.cb)|*.cb";
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
+
+        }
+
+        private void toolStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
 
         }
     }

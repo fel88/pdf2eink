@@ -50,37 +50,35 @@
             toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3, toolStripButton4, toolStripButton5, toolStripButton6, toolStripDropDownButton1, toolStripButton7 });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(776, 25);
+            toolStrip1.Size = new Size(776, 27);
             toolStrip1.TabIndex = 1;
             toolStrip1.Text = "toolStrip1";
+            toolStrip1.ItemClicked += toolStrip1_ItemClicked;
             // 
             // toolStripButton1
             // 
-            toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
+            toolStripButton1.Image = Properties.Resources.book;
             toolStripButton1.ImageTransparentColor = Color.Magenta;
             toolStripButton1.Name = "toolStripButton1";
-            toolStripButton1.Size = new Size(43, 22);
+            toolStripButton1.Size = new Size(63, 24);
             toolStripButton1.Text = " -> cb";
             toolStripButton1.Click += toolStripButton1_Click;
             // 
             // toolStripButton2
             // 
-            toolStripButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton2.Image = (Image)resources.GetObject("toolStripButton2.Image");
+            toolStripButton2.Image = Properties.Resources.eye;
             toolStripButton2.ImageTransparentColor = Color.Magenta;
             toolStripButton2.Name = "toolStripButton2";
-            toolStripButton2.Size = new Size(45, 22);
+            toolStripButton2.Size = new Size(65, 24);
             toolStripButton2.Text = "viewer";
             toolStripButton2.Click += toolStripButton2_Click;
             // 
             // toolStripButton3
             // 
-            toolStripButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton3.Image = (Image)resources.GetObject("toolStripButton3.Image");
+            toolStripButton3.Image = Properties.Resources.pencil;
             toolStripButton3.ImageTransparentColor = Color.Magenta;
             toolStripButton3.Name = "toolStripButton3";
-            toolStripButton3.Size = new Size(38, 22);
+            toolStripButton3.Size = new Size(58, 24);
             toolStripButton3.Text = "editor";
             toolStripButton3.Click += toolStripButton3_Click;
             // 
@@ -91,17 +89,16 @@
             toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
             toolStripButton4.ImageTransparentColor = Color.Magenta;
             toolStripButton4.Name = "toolStripButton4";
-            toolStripButton4.Size = new Size(52, 22);
+            toolStripButton4.Size = new Size(52, 24);
             toolStripButton4.Text = "settings";
             toolStripButton4.Click += toolStripButton4_Click_1;
             // 
             // toolStripButton5
             // 
-            toolStripButton5.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton5.Image = (Image)resources.GetObject("toolStripButton5.Image");
+            toolStripButton5.Image = Properties.Resources.book_open1;
             toolStripButton5.ImageTransparentColor = Color.Magenta;
             toolStripButton5.Name = "toolStripButton5";
-            toolStripButton5.Size = new Size(38, 22);
+            toolStripButton5.Size = new Size(58, 24);
             toolStripButton5.Text = "open";
             toolStripButton5.Click += toolStripButton5_Click;
             // 
@@ -111,7 +108,7 @@
             toolStripButton6.Image = (Image)resources.GetObject("toolStripButton6.Image");
             toolStripButton6.ImageTransparentColor = Color.Magenta;
             toolStripButton6.Name = "toolStripButton6";
-            toolStripButton6.Size = new Size(65, 22);
+            toolStripButton6.Size = new Size(65, 24);
             toolStripButton6.Text = "img->1bit";
             toolStripButton6.Click += toolStripButton6_Click;
             // 
@@ -123,7 +120,7 @@
             toolStripDropDownButton1.Image = (Image)resources.GetObject("toolStripDropDownButton1.Image");
             toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
-            toolStripDropDownButton1.Size = new Size(67, 22);
+            toolStripDropDownButton1.Size = new Size(67, 24);
             toolStripDropDownButton1.Text = "windows";
             // 
             // tileHorizontalToolStripMenuItem
@@ -153,7 +150,7 @@
             toolStripButton7.Image = (Image)resources.GetObject("toolStripButton7.Image");
             toolStripButton7.ImageTransparentColor = Color.Magenta;
             toolStripButton7.Name = "toolStripButton7";
-            toolStripButton7.Size = new Size(90, 22);
+            toolStripButton7.Size = new Size(90, 24);
             toolStripButton7.Text = "convert format";
             toolStripButton7.Click += toolStripButton7_Click;
             // 

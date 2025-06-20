@@ -20,6 +20,7 @@
     <PackageReference Include="OpenCvSharp4.Windows" Version="4.7.0.20230115" />
     <PackageReference Include="PdfiumViewer" Version="2.13.0" />
     <PackageReference Include="PdfiumViewer.Native.x86_64.v8-xfa" Version="2018.4.8.256" />
+    <PackageReference Include="PdfPig" Version="0.1.10" />
   </ItemGroup>
 
   <ItemGroup>

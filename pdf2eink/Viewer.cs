@@ -26,8 +26,8 @@ namespace pdf2eink
         public void Init(string path)
         {
             Text = $"Viewer: {path}";
-            if (path.EndsWith(".tcb"))            
-                book = new TiledCBook(path);            
+            if (path.EndsWith(".tcb"))
+                book = new TiledCBook(path);
             else
                 book = new CbBook(path);
 
@@ -137,6 +137,19 @@ namespace pdf2eink
             v.Init(currentPath);
             v.MdiParent = MdiParent;
             v.Show();
+        }
+
+        private void nearestToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            pictureBox1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            pictureBox1.Invalidate();
+
+        }
+
+        private void smoothToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            pictureBox1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
+            pictureBox1.Invalidate();
         }
     }
 }
