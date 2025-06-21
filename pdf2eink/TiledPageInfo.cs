@@ -5,5 +5,6 @@ namespace pdf2eink
         public TileInfo[] Infos;
         public int Width;
         public int Heigth;
+        public Bitmap Bmp;
     }
 }

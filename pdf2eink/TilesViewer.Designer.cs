@@ -35,8 +35,12 @@
             columnHeader2 = new ColumnHeader();
             columnHeader3 = new ColumnHeader();
             pictureBox1 = new PictureBoxWithInterpolationMode();
+            pictureBoxWithInterpolationMode1 = new PictureBoxWithInterpolationMode();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            toolStripStatusLabel2 = new ToolStripStatusLabel();
+            toolStripStatusLabel3 = new ToolStripStatusLabel();
+            toolStripStatusLabel4 = new ToolStripStatusLabel();
             toolStrip1 = new ToolStrip();
             toolStripButton1 = new ToolStripButton();
             toolStripButton2 = new ToolStripButton();
@@ -45,9 +49,11 @@
             toolStripDropDownButton1 = new ToolStripDropDownButton();
             infosToolStripMenuItem = new ToolStripMenuItem();
             baseTilesToolStripMenuItem = new ToolStripMenuItem();
-            toolStripStatusLabel2 = new ToolStripStatusLabel();
+            pageToolStripMenuItem = new ToolStripMenuItem();
+            columnHeader4 = new ColumnHeader();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxWithInterpolationMode1).BeginInit();
             statusStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -59,22 +65,25 @@
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.Controls.Add(listView1, 0, 0);
             tableLayoutPanel1.Controls.Add(pictureBox1, 1, 0);
+            tableLayoutPanel1.Controls.Add(pictureBoxWithInterpolationMode1, 1, 1);
             tableLayoutPanel1.Dock = DockStyle.Fill;
             tableLayoutPanel1.Location = new Point(0, 25);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 1;
+            tableLayoutPanel1.RowCount = 2;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.Size = new Size(800, 403);
             tableLayoutPanel1.TabIndex = 0;
             // 
             // listView1
             // 
-            listView1.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3 });
+            listView1.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3, columnHeader4 });
             listView1.Dock = DockStyle.Fill;
             listView1.FullRowSelect = true;
             listView1.GridLines = true;
             listView1.Location = new Point(3, 3);
             listView1.Name = "listView1";
+            tableLayoutPanel1.SetRowSpan(listView1, 2);
             listView1.Size = new Size(394, 397);
             listView1.TabIndex = 0;
             listView1.UseCompatibleStateImageBehavior = false;
@@ -88,13 +97,24 @@
             pictureBox1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
             pictureBox1.Location = new Point(403, 3);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(394, 397);
+            pictureBox1.Size = new Size(394, 195);
             pictureBox1.TabIndex = 1;
             pictureBox1.TabStop = false;
             // 
+            // pictureBoxWithInterpolationMode1
+            // 
+            pictureBoxWithInterpolationMode1.Dock = DockStyle.Fill;
+            pictureBoxWithInterpolationMode1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
+            pictureBoxWithInterpolationMode1.Location = new Point(403, 204);
+            pictureBoxWithInterpolationMode1.Name = "pictureBoxWithInterpolationMode1";
+            pictureBoxWithInterpolationMode1.Size = new Size(394, 196);
+            pictureBoxWithInterpolationMode1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxWithInterpolationMode1.TabIndex = 2;
+            pictureBoxWithInterpolationMode1.TabStop = false;
+            // 
             // statusStrip1
             // 
-            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripStatusLabel2 });
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripStatusLabel2, toolStripStatusLabel3, toolStripStatusLabel4 });
             statusStrip1.Location = new Point(0, 428);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(800, 22);
@@ -106,6 +126,24 @@
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             toolStripStatusLabel1.Size = new Size(13, 17);
             toolStripStatusLabel1.Text = "..";
+            // 
+            // toolStripStatusLabel2
+            // 
+            toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            toolStripStatusLabel2.Size = new Size(13, 17);
+            toolStripStatusLabel2.Text = "..";
+            // 
+            // toolStripStatusLabel3
+            // 
+            toolStripStatusLabel3.Name = "toolStripStatusLabel3";
+            toolStripStatusLabel3.Size = new Size(746, 17);
+            toolStripStatusLabel3.Spring = true;
+            // 
+            // toolStripStatusLabel4
+            // 
+            toolStripStatusLabel4.Name = "toolStripStatusLabel4";
+            toolStripStatusLabel4.Size = new Size(13, 17);
+            toolStripStatusLabel4.Text = "..";
             // 
             // toolStrip1
             // 
@@ -158,19 +196,19 @@
             // 
             // toolStripDropDownButton1
             // 
-            toolStripDropDownButton1.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { infosToolStripMenuItem, baseTilesToolStripMenuItem });
+            toolStripDropDownButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { infosToolStripMenuItem, baseTilesToolStripMenuItem, pageToolStripMenuItem });
             toolStripDropDownButton1.Image = (Image)resources.GetObject("toolStripDropDownButton1.Image");
             toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
-            toolStripDropDownButton1.Size = new Size(29, 22);
-            toolStripDropDownButton1.Text = "toolStripDropDownButton1";
+            toolStripDropDownButton1.Size = new Size(51, 22);
+            toolStripDropDownButton1.Text = "mode";
             // 
             // infosToolStripMenuItem
             // 
             infosToolStripMenuItem.Name = "infosToolStripMenuItem";
             infosToolStripMenuItem.Size = new Size(122, 22);
-            infosToolStripMenuItem.Text = "infos";
+            infosToolStripMenuItem.Text = "letters";
             infosToolStripMenuItem.Click += infosToolStripMenuItem_Click;
             // 
             // baseTilesToolStripMenuItem
@@ -180,11 +218,11 @@
             baseTilesToolStripMenuItem.Text = "base tiles";
             baseTilesToolStripMenuItem.Click += baseTilesToolStripMenuItem_Click;
             // 
-            // toolStripStatusLabel2
+            // pageToolStripMenuItem
             // 
-            toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            toolStripStatusLabel2.Size = new Size(13, 17);
-            toolStripStatusLabel2.Text = "..";
+            pageToolStripMenuItem.Name = "pageToolStripMenuItem";
+            pageToolStripMenuItem.Size = new Size(122, 22);
+            pageToolStripMenuItem.Text = "page";
             // 
             // TilesViewer
             // 
@@ -198,6 +236,7 @@
             Text = "TilesViewer";
             tableLayoutPanel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxWithInterpolationMode1).EndInit();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             toolStrip1.ResumeLayout(false);
@@ -225,5 +264,10 @@
         private ToolStripMenuItem baseTilesToolStripMenuItem;
         private ColumnHeader columnHeader3;
         private ToolStripStatusLabel toolStripStatusLabel2;
+        private PictureBoxWithInterpolationMode pictureBoxWithInterpolationMode1;
+        private ToolStripMenuItem pageToolStripMenuItem;
+        private ToolStripStatusLabel toolStripStatusLabel3;
+        private ToolStripStatusLabel toolStripStatusLabel4;
+        private ColumnHeader columnHeader4;
     }
 }

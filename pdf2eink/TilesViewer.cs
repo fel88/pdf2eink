@@ -45,7 +45,7 @@ namespace pdf2eink
                 TiledPageInfo? page = Pages[currentPage];
                 foreach (var tile in page.Infos)
                 {
-                    listView1.Items.Add(new ListViewItem(new string[] { "page " + currentPage + "_" + "tile", tile.Key }) { Tag = tile });
+                    listView1.Items.Add(new ListViewItem(new string[] { "page " + currentPage + "_" + "tile", tile.Key, $"{tile.Tile.Bmp.Width}x{tile.Tile.Bmp.Height}" }) { Tag = tile });
                 }
             }
         }
@@ -56,7 +56,10 @@ namespace pdf2eink
 
             foreach (var tile in Tiles)
             {
-                listView1.Items.Add(new ListViewItem(new string[] { "tile", tile.Tile.Name,tile.Qty.ToString() }) { Tag = tile });
+                listView1.Items.Add(new ListViewItem(["tile", tile.Tile.Name,
+                    $"{tile.Tile.Bmp.Width}x{tile.Tile.Bmp.Height}",
+                    tile.Qty.ToString()])
+                { Tag = tile });
             }
 
         }
@@ -69,6 +72,12 @@ namespace pdf2eink
             if (listView1.SelectedItems[0].Tag is TileInfo t)
             {
                 pictureBox1.Image = t.Tile.Bmp;
+                Bitmap test = new Bitmap(t.Page.Bmp.Width, t.Page.Bmp.Height);
+                var gr = Graphics.FromImage(test);
+                gr.DrawImage(t.Page.Bmp, 0, 0);
+                gr.DrawRectangle(Pens.Red, t.X, t.Y, t.Tile.Bmp.Width, t.Tile.Bmp.Height);
+                pictureBoxWithInterpolationMode1.Image = test;
+                toolStripStatusLabel4.Text = $"{t.Tile.Bmp.Width}x{t.Tile.Bmp.Height}";
             }
             if (listView1.SelectedItems[0].Tag is Tile tt)
             {
@@ -98,7 +107,7 @@ namespace pdf2eink
             //pre order all tiles to make diffs
             foreach (var item in baseTiles)
             {
-                item.WriteTo(ms);                
+                item.WriteTo(ms);
             }
 
             while (ms.Length % 1024 != 0)
@@ -250,7 +259,7 @@ namespace pdf2eink
                 var bb = ww.Select(z => (z.DistTo(deq), z)).ToArray();
                 var b = bb.OrderBy(z => z.Item1).First().z;
                 ordered.Add(b);
-                left.Remove(b); 
+                left.Remove(b);
             }
             Tiles = ordered.ToArray();
             UpdateBaseList();

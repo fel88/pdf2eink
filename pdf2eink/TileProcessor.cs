@@ -99,6 +99,7 @@ namespace pdf2eink
                 {
                     if (map[i, j] == 0)
                         continue;
+
                     points.Add(new TilePoint()
                     {
                         X = i,
@@ -107,13 +108,20 @@ namespace pdf2eink
                     });
                 }
             }
+
             Dictionary<int, TilePoint[]> pre = points.GroupBy(z => z.Group).ToDictionary(z => z.Key, y => y.ToArray());
             List<TileInfo> ret = new List<TileInfo>();
             List<Tile> tiles = new List<Tile>();
-            TiledPageInfo page = new TiledPageInfo() { Width = bmp.Width, Heigth = bmp.Height };
+            TiledPageInfo page = new TiledPageInfo()
+            {
+                Bmp = bmp,
+                Width = bmp.Width,
+                Heigth = bmp.Height
+            };
+
             foreach (var item in pre)
             {
-                TileInfo ti = new TileInfo(page);
+                var ti = new TileInfo(page);
 
                 var maxx = item.Value.Max(z => z.X);
                 var maxy = item.Value.Max(z => z.Y);
@@ -121,14 +129,19 @@ namespace pdf2eink
                 var miny = item.Value.Min(z => z.Y);
                 ti.X = minx;
                 ti.Y = miny;
-                Tile t = new Tile(item.Value.Select(z => new TilePoint() { X = z.X - minx, Y = z.Y - miny, Group = z.Group }).ToArray());
 
+                var t = new Tile(item.Value.Select(z => new TilePoint()
+                {
+                    X = z.X - minx,
+                    Y = z.Y - miny,
+                    Group = z.Group
+                }).ToArray());
 
                 ti.Tile = t;
                 tiles.Add(t);
                 ret.Add(ti);
             }
-           
+
             tiles = DistinctTiles(tiles.ToArray()).ToList();
 
             foreach (var item in ret)
@@ -163,7 +176,7 @@ namespace pdf2eink
                 var gr1 = groups.FirstOrDefault(z => z.Contains(m1) || z.Contains(m2));
                 if (gr1 == null)
                 {
-                    groups.Add(new HashSet<int>());                    
+                    groups.Add(new HashSet<int>());
                     groups.Last().Add(m1);
                     groups.Last().Add(m2);
                 }

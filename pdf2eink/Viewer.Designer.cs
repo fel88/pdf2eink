@@ -49,6 +49,7 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolStripStatusLabel2 = new ToolStripStatusLabel();
             toolStripStatusLabel3 = new ToolStripStatusLabel();
+            toolStripButton5 = new ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             contextMenuStrip1.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
@@ -66,7 +67,7 @@
             pictureBox1.Location = new Point(3, 2);
             pictureBox1.Margin = new Padding(3, 2, 3, 2);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(694, 247);
+            pictureBox1.Size = new Size(694, 245);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 0;
             pictureBox1.TabStop = false;
@@ -93,19 +94,19 @@
             tableLayoutPanel1.Controls.Add(pictureBox1, 0, 0);
             tableLayoutPanel1.Controls.Add(trackBar1, 0, 1);
             tableLayoutPanel1.Dock = DockStyle.Fill;
-            tableLayoutPanel1.Location = new Point(0, 25);
+            tableLayoutPanel1.Location = new Point(0, 27);
             tableLayoutPanel1.Margin = new Padding(3, 2, 3, 2);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-            tableLayoutPanel1.Size = new Size(700, 291);
+            tableLayoutPanel1.Size = new Size(700, 289);
             tableLayoutPanel1.TabIndex = 1;
             // 
             // trackBar1
             // 
             trackBar1.Dock = DockStyle.Fill;
-            trackBar1.Location = new Point(3, 253);
+            trackBar1.Location = new Point(3, 251);
             trackBar1.Margin = new Padding(3, 2, 3, 2);
             trackBar1.Name = "trackBar1";
             trackBar1.Size = new Size(694, 36);
@@ -117,40 +118,37 @@
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new Size(20, 20);
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3, toolStripDropDownButton1, toolStripButton4, toolStripDropDownButton2 });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3, toolStripDropDownButton1, toolStripButton4, toolStripDropDownButton2, toolStripButton5 });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(700, 25);
+            toolStrip1.Size = new Size(700, 27);
             toolStrip1.TabIndex = 2;
             toolStrip1.Text = "toolStrip1";
             // 
             // toolStripButton1
             // 
-            toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
+            toolStripButton1.Image = Properties.Resources.book_open;
             toolStripButton1.ImageTransparentColor = Color.Magenta;
             toolStripButton1.Name = "toolStripButton1";
-            toolStripButton1.Size = new Size(38, 22);
+            toolStripButton1.Size = new Size(58, 24);
             toolStripButton1.Text = "open";
             toolStripButton1.Click += toolStripButton1_Click;
             // 
             // toolStripButton2
             // 
-            toolStripButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton2.Image = (Image)resources.GetObject("toolStripButton2.Image");
+            toolStripButton2.Image = Properties.Resources.arrow;
             toolStripButton2.ImageTransparentColor = Color.Magenta;
             toolStripButton2.Name = "toolStripButton2";
-            toolStripButton2.Size = new Size(65, 22);
+            toolStripButton2.Size = new Size(85, 24);
             toolStripButton2.Text = "goto page";
             toolStripButton2.Click += toolStripButton2_Click;
             // 
             // toolStripButton3
             // 
-            toolStripButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton3.Image = (Image)resources.GetObject("toolStripButton3.Image");
+            toolStripButton3.Image = Properties.Resources.arrow_turn_180_left;
             toolStripButton3.ImageTransparentColor = Color.Magenta;
             toolStripButton3.Name = "toolStripButton3";
-            toolStripButton3.Size = new Size(65, 22);
+            toolStripButton3.Size = new Size(85, 24);
             toolStripButton3.Text = "back page";
             toolStripButton3.Click += toolStripButton3_Click;
             // 
@@ -162,7 +160,7 @@
             toolStripDropDownButton1.Image = (Image)resources.GetObject("toolStripDropDownButton1.Image");
             toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
-            toolStripDropDownButton1.Size = new Size(42, 22);
+            toolStripDropDownButton1.Size = new Size(42, 24);
             toolStripDropDownButton1.Text = "TOC";
             // 
             // showToolStripMenuItem1
@@ -178,7 +176,7 @@
             toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
             toolStripButton4.ImageTransparentColor = Color.Magenta;
             toolStripButton4.Name = "toolStripButton4";
-            toolStripButton4.Size = new Size(85, 22);
+            toolStripButton4.Size = new Size(85, 24);
             toolStripButton4.Text = "open in editor";
             toolStripButton4.Click += toolStripButton4_Click;
             // 
@@ -189,20 +187,20 @@
             toolStripDropDownButton2.Image = (Image)resources.GetObject("toolStripDropDownButton2.Image");
             toolStripDropDownButton2.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton2.Name = "toolStripDropDownButton2";
-            toolStripDropDownButton2.Size = new Size(122, 22);
+            toolStripDropDownButton2.Size = new Size(122, 24);
             toolStripDropDownButton2.Text = "interpolation mode";
             // 
             // nearestToolStripMenuItem
             // 
             nearestToolStripMenuItem.Name = "nearestToolStripMenuItem";
-            nearestToolStripMenuItem.Size = new Size(180, 22);
+            nearestToolStripMenuItem.Size = new Size(115, 22);
             nearestToolStripMenuItem.Text = "nearest";
             nearestToolStripMenuItem.Click += nearestToolStripMenuItem_Click;
             // 
             // smoothToolStripMenuItem
             // 
             smoothToolStripMenuItem.Name = "smoothToolStripMenuItem";
-            smoothToolStripMenuItem.Size = new Size(180, 22);
+            smoothToolStripMenuItem.Size = new Size(115, 22);
             smoothToolStripMenuItem.Text = "smooth";
             smoothToolStripMenuItem.Click += smoothToolStripMenuItem_Click;
             // 
@@ -233,6 +231,16 @@
             toolStripStatusLabel3.Name = "toolStripStatusLabel3";
             toolStripStatusLabel3.Size = new Size(42, 17);
             toolStripStatusLabel3.Text = "1 / 100";
+            // 
+            // toolStripButton5
+            // 
+            toolStripButton5.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton5.Image = (Image)resources.GetObject("toolStripButton5.Image");
+            toolStripButton5.ImageTransparentColor = Color.Magenta;
+            toolStripButton5.Name = "toolStripButton5";
+            toolStripButton5.Size = new Size(71, 24);
+            toolStripButton5.Text = "extract tiles";
+            toolStripButton5.Click += toolStripButton5_Click;
             // 
             // Viewer
             // 
@@ -280,5 +288,6 @@
         private ToolStripDropDownButton toolStripDropDownButton2;
         private ToolStripMenuItem nearestToolStripMenuItem;
         private ToolStripMenuItem smoothToolStripMenuItem;
+        private ToolStripButton toolStripButton5;
     }
 }

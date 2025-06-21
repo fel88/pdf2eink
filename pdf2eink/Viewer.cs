@@ -104,14 +104,17 @@ namespace pdf2eink
 
         private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
-            {
-                if (pageNo == book.pages - 1)
-                    return;
+            if (e.Button != MouseButtons.Left)            
+               return;
 
-                pageNo++;
-                showPage();
-            }
+            if (book == null)
+                return;
+
+            if (pageNo == book.pages - 1)
+                return;
+
+            pageNo++;
+            showPage();
         }
 
         private void showToolStripMenuItem_Click(object sender, EventArgs e)
@@ -150,6 +153,22 @@ namespace pdf2eink
         {
             pictureBox1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
             pictureBox1.Invalidate();
+        }
+
+        private void toolStripButton5_Click(object sender, EventArgs e)
+        {
+            var bmp = book.GetPage(pageNo);
+            TileProcessor tp = new TileProcessor();
+            tp.Init(bmp);            
+            tp.MakeGroups();            
+            tp.SimplifyMarks();
+            
+
+            TilesViewer tv = new TilesViewer(); 
+            var tiles = tp.ExtractTiles();
+            tv.Init([tiles]);
+            tv.MdiParent = MdiParent;
+            tv.Show();
         }
     }
 }
