@@ -34,6 +34,7 @@
             columnHeader1 = new ColumnHeader();
             columnHeader2 = new ColumnHeader();
             columnHeader3 = new ColumnHeader();
+            columnHeader4 = new ColumnHeader();
             pictureBox1 = new PictureBoxWithInterpolationMode();
             pictureBoxWithInterpolationMode1 = new PictureBoxWithInterpolationMode();
             statusStrip1 = new StatusStrip();
@@ -50,7 +51,7 @@
             infosToolStripMenuItem = new ToolStripMenuItem();
             baseTilesToolStripMenuItem = new ToolStripMenuItem();
             pageToolStripMenuItem = new ToolStripMenuItem();
-            columnHeader4 = new ColumnHeader();
+            toolStripButton5 = new ToolStripButton();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxWithInterpolationMode1).BeginInit();
@@ -147,7 +148,7 @@
             // 
             // toolStrip1
             // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3, toolStripButton4, toolStripDropDownButton1 });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3, toolStripButton4, toolStripDropDownButton1, toolStripButton5 });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(800, 25);
@@ -224,6 +225,16 @@
             pageToolStripMenuItem.Size = new Size(122, 22);
             pageToolStripMenuItem.Text = "page";
             // 
+            // toolStripButton5
+            // 
+            toolStripButton5.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            toolStripButton5.Image = (Image)resources.GetObject("toolStripButton5.Image");
+            toolStripButton5.ImageTransparentColor = Color.Magenta;
+            toolStripButton5.Name = "toolStripButton5";
+            toolStripButton5.Size = new Size(23, 22);
+            toolStripButton5.Text = "toolStripButton5";
+            toolStripButton5.Click += toolStripButton5_Click;
+            // 
             // TilesViewer
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -269,5 +280,6 @@
         private ToolStripStatusLabel toolStripStatusLabel3;
         private ToolStripStatusLabel toolStripStatusLabel4;
         private ColumnHeader columnHeader4;
+        private ToolStripButton toolStripButton5;
     }
 }

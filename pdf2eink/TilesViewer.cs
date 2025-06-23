@@ -97,9 +97,16 @@ namespace pdf2eink
             if (sfd.ShowDialog() != DialogResult.OK)
                 return;
 
+            var bytes = ExportToBinary(Pages);
+
+            File.WriteAllBytes(sfd.FileName, bytes);
+        }
+
+        public static byte[] ExportToBinary(TiledPageInfo[] pages)
+        {
             MemoryStream ms = new MemoryStream();
 
-            var baseTiles = Pages.SelectMany(z => z.Infos.Select(u => u.Tile)).Distinct().ToArray();
+            var baseTiles = pages.SelectMany(z => z.Infos.Select(u => u.Tile)).Distinct().ToArray();
 
             ms.Write(BitConverter.GetBytes(0));//stub for the start offset to pages section
 
@@ -115,9 +122,9 @@ namespace pdf2eink
 
             var pagesSectionOffset = (int)(ms.Length / 1024);
             var list = baseTiles.ToList();
-            ms.Write(BitConverter.GetBytes(Pages.Length));
+            ms.Write(BitConverter.GetBytes(pages.Length));
             var bitsOfpattern = (int)Math.Ceiling(Math.Log2(list.Count));
-            foreach (var item in Pages)
+            foreach (var item in pages)
             {
                 ms.Write(BitConverter.GetBytes(item.Width));
                 ms.Write(BitConverter.GetBytes(item.Heigth));
@@ -159,10 +166,8 @@ namespace pdf2eink
             ms.Seek(0, SeekOrigin.Begin);
             ms.Write(BitConverter.GetBytes(pagesSectionOffset));
             ms.Seek(0, SeekOrigin.Begin);
-
-            File.WriteAllBytes(sfd.FileName, ms.ToArray());
+            return ms.ToArray();
         }
-
 
         private void toolStripButton2_Click(object sender, EventArgs e)
         {
@@ -204,8 +209,19 @@ namespace pdf2eink
 
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
-            var grp = Pages.SelectMany(z => z.Infos).GroupBy(z => z.Key).ToArray();
+            //find replaceable candidates
+            var grp = Pages.SelectMany(z => z.Infos).Where(z => !string.IsNullOrEmpty(z.Key)).GroupBy(z => $"{z.Key}_{z.Tile.Bmp.Width}_{z.Tile.Bmp.Height}").ToArray();
 
+            foreach (var item in grp)
+            {
+                var fr = item.First();
+                foreach (var sitem in item.Skip(1))
+                {
+                    sitem.Tile = fr.Tile;
+                }
+            }
+
+            var bin = ExportToBinary(Pages);
 
             for (int i = 0; i < Pages.Length; i++)
             {
@@ -215,23 +231,11 @@ namespace pdf2eink
                     //tile.k
                 }
             }
-        }
 
-        public class TileStatisticInfo
-        {
-            public Tile Tile;
-            public int Qty;
-
-            internal int DistTo(TileStatisticInfo deq)
-            {
-                int diff = 0;
-                for (int i = 0; i < Tile.ImageHash.Length; i++)
-                {
-                    if (Tile.ImageHash[i] != deq.Tile.ImageHash[i])
-                        diff++;
-                }
-                return diff;
-            }
+            using MemoryStream ms = new MemoryStream(bin);
+            TiledCBook book = new TiledCBook(ms);
+            var _page = book.GetPage(0);
+            pictureBox1.Image = _page;
         }
 
         private void toolStripButton4_Click(object sender, EventArgs e)
@@ -272,6 +276,25 @@ namespace pdf2eink
 
         private void infosToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
+        }
+        LetterInfo[] Letters;
+        internal void InitAdditionalInfo(LetterInfo[] letters)
+        {
+            Letters = letters;
+        }
+
+        private void toolStripButton5_Click(object sender, EventArgs e)
+        {
+            var img = pictureBoxWithInterpolationMode1.Image;
+            Bitmap bmp = new Bitmap(img.Width, img.Height);
+            var gr = Graphics.FromImage(bmp);
+            gr.DrawImage(img, 0, 0);
+            foreach (var item in Letters)
+            {
+                gr.DrawRectangle(Pens.Red, item.Bound);
+            }
+            bmp.Save("zztop.png");
 
         }
     }

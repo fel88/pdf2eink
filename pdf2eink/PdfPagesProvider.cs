@@ -104,11 +104,13 @@ namespace pdf2eink
                     var rect = new RectangleF(kx * (float)g.Left,
                         bmp.Height - ky * (float)g.Top, kx * (float)g.Width,
                          ky * (float)g.Height);
+
+                    var color = litem.FillColor.ToRGBValues();
                     ret.Add(new LetterInfo()
                     {
                         Bound = rect,
                         Letter = litem.Value,
-                        Font = $"{litem.FontName}_{litem.FontSize}_{litem.Font.Weight}_{litem.Font.IsItalic}_{litem.Font.IsBold}"
+                        Font = $"{litem.FontName}_{litem.FontSize}_{litem.Font.Weight}_{litem.Font.IsItalic}_{litem.Font.IsBold}_{color.r}_{color.g}_{color.b}"
                     });
                 }
 

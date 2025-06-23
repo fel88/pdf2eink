@@ -1,10 +1,11 @@
-﻿using OpenCvSharp.Extensions;
+﻿using DitheringLib;
 using OpenCvSharp;
-using System.Drawing.Imaging;
-using System.Text;
-using DitheringLib;
-using System.Runtime.Intrinsics.X86;
+using OpenCvSharp.Extensions;
 using System;
+using System.Drawing.Imaging;
+using System.Runtime.Intrinsics.X86;
+using System.Text;
+using System.Windows.Forms;
 
 namespace pdf2eink
 {
@@ -229,10 +230,10 @@ namespace pdf2eink
             fs.Write(Encoding.UTF8.GetBytes("CB"));
             //if (eparams.TiledMode)
             {
-              //  fs.WriteByte(0x2); //version CB format v2 : rectified and tiled
+                //  fs.WriteByte(0x2); //version CB format v2 : rectified and tiled
 
             }
-          //  else
+            //  else
             {
                 fs.WriteByte(0x1); //version CB format: raw pages only
             }
@@ -405,9 +406,63 @@ namespace pdf2eink
             if (bound.Width == 0 || bound.Height == 0)
                 return;
 
+
+
+
             using var mat3 = mat2.Clone(bound);
+            LetterInfo[] letters = null;
+            if (eparams.RectifyLetters && pp is IPagesProviderWithLetters ppwl3)
+            {
+                letters = ppwl3.GetPageLetters(pageNo);
+
+                foreach (var item in letters)
+                {
+                    item.Bound = new RectangleF(item.Bound.Left - bound.X,
+                        item.Bound.Top - bound.Y, item.Bound.Width, item.Bound.Height);
+
+                }
+            }
 
             using var rmat = mat3.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height * 2));
+
+            if (eparams.RectifyLetters && pp is IPagesProviderWithLetters ppwl)
+            {
+                //rmat.SaveImage("before1.png");
+                var kx = rmat.Width / (float)mat3.Width;
+                var ky = rmat.Height / (float)mat3.Height;
+                foreach (var item in letters)
+                {
+                    item.Bound = new RectangleF(item.Bound.Left * kx,
+                        item.Bound.Top * ky, item.Bound.Width * kx, item.Bound.Height * ky);
+
+                }
+                //var groups = letters.GroupBy(z => z.Letter + "_" + z.Font).ToArray();
+
+                //foreach (var item in groups)
+                //{
+                //    var bnd = item.First().Bound;
+                //    Mat letter = rmat.Clone(new Rect((int)(bnd.X * kx), (int)(bnd.Y * ky),
+                //        (int)(bnd.Width * kx), (int)(bnd.Height * ky)));
+
+                //    foreach (var gg in item.Skip(1))
+                //    {
+                //        var bnd2 = gg.Bound;
+                //        var roi = new Rect((int)(bnd2.X * kx),
+                //            (int)(bnd2.Y * ky),
+                //            (int)(bnd2.Width * kx),
+                //            (int)(bnd2.Height * ky)
+                //            );
+
+                //        // Create a sub-Mat representing the ROI in the destination image
+                //        Mat destination_roi = rmat.SubMat(roi);
+
+                //        // Copy the source image to the destination ROI
+                //        letter.CopyTo(destination_roi);
+                //    }
+                //}
+                //rmat.SaveImage("after1.png");
+
+            }
             //search safe cut line
             var safeY = GetSafeY(rmat, eparams);
             //todo: use smart Y cut. don't resize if no needed just move futher if there is some free space
@@ -420,7 +475,7 @@ namespace pdf2eink
 
             foreach (var rect in rects)
             {
-                bool? flowControl = ProcessPageItem(ctx, eparams, pp, action, rmat, rect);
+                bool? flowControl = ProcessPageItem(ctx, eparams, pp, action, rmat, rect, letters);
                 switch (flowControl)
                 {
                     case false: continue;
@@ -430,55 +485,145 @@ namespace pdf2eink
             //using (var bottom = new Mat(rmat, new Rect(0, safeY, rmat.Width, rmat.Height - safeY)))
         }
 
-        private bool? ProcessPageItem(BookExportContext ctx, BookExportParams eparams, IPagesProvider pp, Func<PageInfo, ExportResult> action, Mat rmat, Rect item)
+        private bool? ProcessPageItem(BookExportContext ctx,
+            BookExportParams eparams,
+            IPagesProvider pp,
+            Func<PageInfo,
+            ExportResult> action,
+            Mat rmat,
+            Rect sourceRect,
+            LetterInfo[] letters)
         {
-            var top = new Mat(rmat, item);
+            var top = new Mat(rmat, sourceRect);
             if (eparams.RenderPageInfo)
             {
                 using var topResized = top.Resize(new OpenCvSharp.Size(eparams.Width, eparams.Height - eparams.PageInfoHeight));
+                var ky = (float)topResized.Height / eparams.Height;
+
                 using var total = new Mat(new OpenCvSharp.Size(eparams.Width, eparams.Height), MatType.CV_8UC1);
                 topResized.CopyTo(total.RowRange(0, eparams.Height - eparams.PageInfoHeight).ColRange(0, eparams.Width));
                 total.Rectangle(new Rect(0, eparams.Height - eparams.PageInfoHeight, eparams.Width, eparams.PageInfoHeight), Scalar.White, -1);
 
                 var rtotal = total;
                 if (eparams.FlyRead)
-                {
                     rtotal = FlyRead(total);
-                }
 
                 // total.Line(590, 0, 590, 448, Scalar.Black);
                 //total.PutText((pages + 1) + " / " + pdoc.PageCount * 2,new OpenCvSharp.Point(591,5),HersheyFonts.HersheySimplex,1,Scalar.Black)
                 using var temp1 = rtotal.CvtColor(ColorConversionCodes.GRAY2BGR);
                 using var bmp1 = temp1.ToBitmap();
+
                 if (rtotal != total)
-                {
                     rtotal.Dispose();
-                }
+
 
                 BookExportContext.PrintFooter(ctx.Pages, pp.Pages * 2, bmp1, eparams.PageInfoHeight);
 
-                var matTotal = bmp1.ToMat();
-                using (var top1 = Threshold(matTotal, eparams))
+                using var matTotal = bmp1.ToMat();
+                using var temp2 = matTotal.CvtColor(ColorConversionCodes.BGR2GRAY);
+                using var top1 = Threshold(temp2, eparams);
+                if (top1.Width <= 0 || top1.Height <= 0)
+                    return false;
+
+                //top1.SaveImage(i + "_page_0.bmp");
+
+                using var bmp = top1.ToBitmap();
+                if (action != null)
                 {
-                    if (top1.Width <= 0 || top1.Height <= 0)
-                        return false;
-
-                    //top1.SaveImage(i + "_page_0.bmp");
-
-                    using var bmp = top1.ToBitmap();
-                    if (action != null)
+                    var res = action(new PageInfo()
                     {
-                        var res = action(new PageInfo()
-                        {
-                            Page = ctx.Pages,
-                            Bmp = bmp.Clone() as Bitmap
-                        });
-                        if (res.Terminate)
-                            return true;
-                    }
-                    using var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed);
-                    ctx.AppendPage(clone);
+                        Page = ctx.Pages,
+                        Bmp = bmp.Clone() as Bitmap
+                    });
+                    if (res.Terminate)
+                        return true;
                 }
+                using var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed);
+
+                if (eparams.RectifyLetters && letters != null)
+                {
+                    TileProcessor tp = new TileProcessor();
+                    tp.Init(clone);
+                    tp.MakeGroups();
+                    tp.SimplifyMarks();
+
+                    var tiles = tp.ExtractTiles();
+                    foreach (var titem in tiles.Infos)
+                    {
+                        var cx = titem.X + titem.Tile.Bmp.Width / 2;
+                        var cy = titem.Y + titem.Tile.Bmp.Height / 2;
+                        var ord = letters.OrderBy(z => Math.Abs((z.Bound.X + z.Bound.Width / 2) - cx)
+                        + Math.Abs(((z.Bound.Y - sourceRect.Y) * ky  + z.Bound.Height * ky / 2) - cy)).ToArray();
+                        if (ord.Count() == 0)
+                            continue;
+
+                        var fr = ord.First();
+                        var dist = Math.Abs(fr.Bound.X + fr.Bound.Width / 2 - cx) +
+                            Math.Abs((fr.Bound.Y - sourceRect.Y) * ky  + fr.Bound.Height * ky / 2 - cy);
+                        if (dist > 3)
+                            continue;
+
+                        var dist2 = Math.Abs(titem.Tile.Bmp.Height - fr.Bound.Height * ky);
+                        if (dist2 > 3)
+                            continue;
+
+                        var dist3 = Math.Abs(titem.Tile.Bmp.Width - fr.Bound.Width);
+                        if (dist3 > 4)
+                            continue;
+
+
+                        titem.Key = $"{fr.Letter}_{fr.Font}";
+                    }
+
+                  //  TilesViewer tv = new TilesViewer();
+                  //  tv.Init([tiles]);
+                    var lettersModified = letters.Select(z => z.Clone()).ToArray();
+                    foreach (var item in lettersModified)
+                    {
+                        item.Bound = new RectangleF(item.Bound.Left,
+                            item.Bound.Top - sourceRect.Y,
+                            item.Bound.Width,
+                            item.Bound.Height
+                            );
+                    }
+                   // tv.InitAdditionalInfo(lettersModified);
+                  //  tv.ShowDialog();
+                   // var groups = letters.GroupBy(z => z.Letter + "_" + z.Font).ToArray();
+                    //top1.SaveImage("before1.png");
+                    using var merged = MergeKeys([tiles]);
+                    using var clone2 = merged.Clone(new Rectangle(0, 0, merged.Width, merged.Height), PixelFormat.Format1bppIndexed);
+
+                    ctx.AppendPage(clone2);
+
+                    //foreach (var gitem in groups)
+                    //{
+                    //    var bnd = gitem.First().Bound;
+                    //    if ((bnd.Y + bnd.Height) > top1.Height)
+                    //        continue;
+
+                    //    Mat letter = top1.Clone(new Rect((int)(bnd.X), (int)(bnd.Y),
+                    //    (int)(bnd.Width), (int)(bnd.Height)));
+
+                    //    foreach (var gg in gitem.Skip(1))
+                    //    {
+                    //        var bnd2 = gg.Bound;
+                    //        var roi = new Rect((int)(bnd2.X),
+                    //            (int)(bnd2.Y),
+                    //            (int)(bnd2.Width),
+                    //            (int)(bnd2.Height)
+                    //            );
+
+                    //        // Create a sub-Mat representing the ROI in the destination image
+                    //        Mat destination_roi = top1.SubMat(roi);
+
+                    //        // Copy the source image to the destination ROI
+                    //        letter.CopyTo(destination_roi);
+                    //    }
+                    //}
+                    //top1.SaveImage("after1.png");
+                }
+                else
+                    ctx.AppendPage(clone);
             }
             else
             {
@@ -494,6 +639,48 @@ namespace pdf2eink
             }
 
             return null;
+        }
+
+        public Dictionary<string, Tile> tilesHash = new Dictionary<string, Tile>();
+
+        private Bitmap MergeKeys(TiledPageInfo[] pages)
+        {
+            //find replaceable candidates
+            var grp = pages.SelectMany(z => z.Infos)
+                .Where(z => !tilesHash.ContainsKey($"{z.Key}_{z.Tile.Bmp.Width}_{z.Tile.Bmp.Height}"))
+                .Where(z => !string.IsNullOrEmpty(z.Key)).GroupBy(z => $"{z.Key}_{z.Tile.Bmp.Width}_{z.Tile.Bmp.Height}").ToArray();
+
+            foreach (var item in grp)
+            {
+                var fr = item.First();
+                var hashKey = $"{fr.Key}_{fr.Tile.Bmp.Width}_{fr.Tile.Bmp.Height}";
+                tilesHash.Add(hashKey, fr.Tile);
+
+                foreach (var sitem in item.Skip(1))
+                {
+                    sitem.Tile = fr.Tile;
+                }
+            }
+
+            var grp2 = pages.SelectMany(z => z.Infos)
+               .Where(z => !string.IsNullOrEmpty(z.Key)).GroupBy(z => $"{z.Key}_{z.Tile.Bmp.Width}_{z.Tile.Bmp.Height}").ToArray();
+
+            foreach (var item in grp2)
+            {
+                var fr = item.First();
+                var hashKey = $"{fr.Key}_{fr.Tile.Bmp.Width}_{fr.Tile.Bmp.Height}";
+
+                foreach (var sitem in item)
+                {
+                    sitem.Tile = tilesHash[hashKey];
+                }
+            }
+
+            var bin = TilesViewer.ExportToBinary(pages);
+            using MemoryStream ms = new MemoryStream(bin);
+            TiledCBook book = new TiledCBook(ms);
+            var _page = book.GetPage(0);
+            return _page;
         }
 
         public static void AppendTOC(TOC toc, Stream fs)
