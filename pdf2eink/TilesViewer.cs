@@ -45,11 +45,21 @@ namespace pdf2eink
                 TiledPageInfo? page = Pages[currentPage];
                 foreach (var tile in page.Infos)
                 {
-                    listView1.Items.Add(new ListViewItem(new string[] { "page " + currentPage + "_" + "tile", tile.Key, $"{tile.Tile.Bmp.Width}x{tile.Tile.Bmp.Height}" }) { Tag = tile });
+                    var strs = new string[]{
+                        $"page {currentPage}_tile",
+                        tile.Key,
+                        $"{tile.Tile.Bmp.Width}x{tile.Tile.Bmp.Height}" };
+
+                    if (!string.IsNullOrEmpty(Filter) && !strs.Any(z => z != null && z.Contains(Filter)))
+                        continue;
+
+                    listView1.Items.Add(new ListViewItem(strs) { Tag = tile });
                 }
             }
         }
+
         TileStatisticInfo[] Tiles;
+
         public void UpdateBaseList()
         {
             listView1.Items.Clear();
@@ -61,7 +71,6 @@ namespace pdf2eink
                     tile.Qty.ToString()])
                 { Tag = tile });
             }
-
         }
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
@@ -296,6 +305,11 @@ namespace pdf2eink
             }
             bmp.Save("zztop.png");
 
+        }
+        string Filter => textBox1.Text;
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            UpdateList();
         }
     }
 }

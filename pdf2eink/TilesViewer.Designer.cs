@@ -37,6 +37,7 @@
             columnHeader4 = new ColumnHeader();
             pictureBox1 = new PictureBoxWithInterpolationMode();
             pictureBoxWithInterpolationMode1 = new PictureBoxWithInterpolationMode();
+            textBox1 = new TextBox();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolStripStatusLabel2 = new ToolStripStatusLabel();
@@ -64,13 +65,15 @@
             tableLayoutPanel1.ColumnCount = 2;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Controls.Add(listView1, 0, 0);
-            tableLayoutPanel1.Controls.Add(pictureBox1, 1, 0);
-            tableLayoutPanel1.Controls.Add(pictureBoxWithInterpolationMode1, 1, 1);
+            tableLayoutPanel1.Controls.Add(listView1, 0, 1);
+            tableLayoutPanel1.Controls.Add(pictureBox1, 1, 1);
+            tableLayoutPanel1.Controls.Add(pictureBoxWithInterpolationMode1, 1, 2);
+            tableLayoutPanel1.Controls.Add(textBox1, 0, 0);
             tableLayoutPanel1.Dock = DockStyle.Fill;
             tableLayoutPanel1.Location = new Point(0, 25);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 2;
+            tableLayoutPanel1.RowCount = 3;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.Size = new Size(800, 403);
@@ -82,10 +85,10 @@
             listView1.Dock = DockStyle.Fill;
             listView1.FullRowSelect = true;
             listView1.GridLines = true;
-            listView1.Location = new Point(3, 3);
+            listView1.Location = new Point(3, 33);
             listView1.Name = "listView1";
             tableLayoutPanel1.SetRowSpan(listView1, 2);
-            listView1.Size = new Size(394, 397);
+            listView1.Size = new Size(394, 367);
             listView1.TabIndex = 0;
             listView1.UseCompatibleStateImageBehavior = false;
             listView1.View = View.Details;
@@ -96,9 +99,9 @@
             // 
             pictureBox1.Dock = DockStyle.Fill;
             pictureBox1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
-            pictureBox1.Location = new Point(403, 3);
+            pictureBox1.Location = new Point(403, 33);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(394, 195);
+            pictureBox1.Size = new Size(394, 180);
             pictureBox1.TabIndex = 1;
             pictureBox1.TabStop = false;
             // 
@@ -106,12 +109,21 @@
             // 
             pictureBoxWithInterpolationMode1.Dock = DockStyle.Fill;
             pictureBoxWithInterpolationMode1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
-            pictureBoxWithInterpolationMode1.Location = new Point(403, 204);
+            pictureBoxWithInterpolationMode1.Location = new Point(403, 219);
             pictureBoxWithInterpolationMode1.Name = "pictureBoxWithInterpolationMode1";
-            pictureBoxWithInterpolationMode1.Size = new Size(394, 196);
+            pictureBoxWithInterpolationMode1.Size = new Size(394, 181);
             pictureBoxWithInterpolationMode1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxWithInterpolationMode1.TabIndex = 2;
             pictureBoxWithInterpolationMode1.TabStop = false;
+            // 
+            // textBox1
+            // 
+            textBox1.Dock = DockStyle.Fill;
+            textBox1.Location = new Point(3, 3);
+            textBox1.Name = "textBox1";
+            textBox1.Size = new Size(394, 23);
+            textBox1.TabIndex = 3;
+            textBox1.TextChanged += textBox1_TextChanged;
             // 
             // statusStrip1
             // 
@@ -246,6 +258,7 @@
             Name = "TilesViewer";
             Text = "TilesViewer";
             tableLayoutPanel1.ResumeLayout(false);
+            tableLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxWithInterpolationMode1).EndInit();
             statusStrip1.ResumeLayout(false);
@@ -281,5 +294,6 @@
         private ToolStripStatusLabel toolStripStatusLabel4;
         private ColumnHeader columnHeader4;
         private ToolStripButton toolStripButton5;
+        private TextBox textBox1;
     }
 }

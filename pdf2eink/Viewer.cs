@@ -14,7 +14,7 @@ namespace pdf2eink
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "CB files (*.cb)|*.cb|Tiled book (*.tcb)|*.tcb";
+            ofd.Filter = "CB/TCB files (*.cb, *.tcb)|*.cb;*.tcb|CB files (*.cb)|*.cb|Tiled book (*.tcb)|*.tcb";
 
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;

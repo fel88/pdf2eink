@@ -21,5 +21,6 @@
         public TOC TOC;
         public bool TiledMode = false;
         public bool RectifyLetters = true;
+        public bool DebugLetters = false;
     }
 }

@@ -24,12 +24,12 @@ namespace pdf2eink
         private void Mdi_Shown(object? sender, EventArgs e)
         {
             string[] args = Environment.GetCommandLineArgs();
-            if (!args.Any(z => z.ToLower().EndsWith(".cb")))
+            if (!args.Any(z => z.ToLower().EndsWith(".cb") || z.ToLower().EndsWith(".tcb")))
                 return;
 
             Viewer v = new Viewer();
             v.MdiParent = this;
-            v.Init(args.First(z => z.ToLower().EndsWith(".cb")));
+            v.Init(args.First(z => z.ToLower().EndsWith(".cb") || z.ToLower().EndsWith(".tcb")));
             v.Show();
         }
 

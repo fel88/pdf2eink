@@ -553,13 +553,13 @@ namespace pdf2eink
                         var cx = titem.X + titem.Tile.Bmp.Width / 2;
                         var cy = titem.Y + titem.Tile.Bmp.Height / 2;
                         var ord = letters.OrderBy(z => Math.Abs((z.Bound.X + z.Bound.Width / 2) - cx)
-                        + Math.Abs(((z.Bound.Y - sourceRect.Y) * ky  + z.Bound.Height * ky / 2) - cy)).ToArray();
+                        + Math.Abs(((z.Bound.Y - sourceRect.Y) * ky + z.Bound.Height * ky / 2) - cy)).ToArray();
                         if (ord.Count() == 0)
                             continue;
 
                         var fr = ord.First();
                         var dist = Math.Abs(fr.Bound.X + fr.Bound.Width / 2 - cx) +
-                            Math.Abs((fr.Bound.Y - sourceRect.Y) * ky  + fr.Bound.Height * ky / 2 - cy);
+                            Math.Abs((fr.Bound.Y - sourceRect.Y) * ky + fr.Bound.Height * ky / 2 - cy);
                         if (dist > 3)
                             continue;
 
@@ -575,8 +575,8 @@ namespace pdf2eink
                         titem.Key = $"{fr.Letter}_{fr.Font}";
                     }
 
-                  //  TilesViewer tv = new TilesViewer();
-                  //  tv.Init([tiles]);
+                    TilesViewer tv = new TilesViewer();
+                    tv.Init([tiles]);
                     var lettersModified = letters.Select(z => z.Clone()).ToArray();
                     foreach (var item in lettersModified)
                     {
@@ -586,9 +586,12 @@ namespace pdf2eink
                             item.Bound.Height
                             );
                     }
-                   // tv.InitAdditionalInfo(lettersModified);
-                  //  tv.ShowDialog();
-                   // var groups = letters.GroupBy(z => z.Letter + "_" + z.Font).ToArray();
+                    tv.InitAdditionalInfo(lettersModified);
+
+                    if (eparams.DebugLetters)
+                        tv.ShowDialog();
+
+                    // var groups = letters.GroupBy(z => z.Letter + "_" + z.Font).ToArray();
                     //top1.SaveImage("before1.png");
                     using var merged = MergeKeys([tiles]);
                     using var clone2 = merged.Clone(new Rectangle(0, 0, merged.Width, merged.Height), PixelFormat.Format1bppIndexed);

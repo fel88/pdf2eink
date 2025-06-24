@@ -66,6 +66,7 @@
             toolStripButton2 = new ToolStripDropDownButton();
             fromClipboardToolStripMenuItem = new ToolStripMenuItem();
             newToolStripMenuItem = new ToolStripMenuItem();
+            checkBox11 = new CheckBox();
             tableLayoutPanel1.SuspendLayout();
             panel1.SuspendLayout();
             groupBox1.SuspendLayout();
@@ -104,11 +105,12 @@
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 220F));
-            tableLayoutPanel1.Size = new Size(344, 323);
+            tableLayoutPanel1.Size = new Size(344, 341);
             tableLayoutPanel1.TabIndex = 6;
             // 
             // panel1
             // 
+            panel1.Controls.Add(checkBox11);
             panel1.Controls.Add(checkBox10);
             panel1.Controls.Add(checkBox9);
             panel1.Controls.Add(checkBox8);
@@ -132,8 +134,9 @@
             panel1.Dock = DockStyle.Fill;
             panel1.Location = new Point(3, 3);
             panel1.Name = "panel1";
-            panel1.Size = new Size(338, 317);
+            panel1.Size = new Size(338, 335);
             panel1.TabIndex = 7;
+            panel1.Paint += panel1_Paint;
             // 
             // checkBox10
             // 
@@ -191,7 +194,7 @@
             groupBox1.Controls.Add(label4);
             groupBox1.Controls.Add(numericUpDown7);
             groupBox1.Controls.Add(label3);
-            groupBox1.Location = new Point(7, 125);
+            groupBox1.Location = new Point(7, 151);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(322, 79);
             groupBox1.TabIndex = 22;
@@ -272,7 +275,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(5, 277);
+            label2.Location = new Point(5, 303);
             label2.Name = "label2";
             label2.Size = new Size(24, 15);
             label2.TabIndex = 18;
@@ -280,7 +283,7 @@
             // 
             // numericUpDown6
             // 
-            numericUpDown6.Location = new Point(68, 275);
+            numericUpDown6.Location = new Point(68, 301);
             numericUpDown6.Maximum = new decimal(new int[] { 600, 0, 0, 0 });
             numericUpDown6.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
             numericUpDown6.Name = "numericUpDown6";
@@ -292,7 +295,7 @@
             // numericUpDown5
             // 
             numericUpDown5.Enabled = false;
-            numericUpDown5.Location = new Point(252, 239);
+            numericUpDown5.Location = new Point(252, 265);
             numericUpDown5.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
             numericUpDown5.Name = "numericUpDown5";
             numericUpDown5.Size = new Size(76, 23);
@@ -303,7 +306,7 @@
             // checkBox5
             // 
             checkBox5.AutoSize = true;
-            checkBox5.Location = new Point(7, 243);
+            checkBox5.Location = new Point(7, 269);
             checkBox5.Name = "checkBox5";
             checkBox5.Size = new Size(178, 19);
             checkBox5.TabIndex = 15;
@@ -314,7 +317,7 @@
             // numericUpDown4
             // 
             numericUpDown4.Enabled = false;
-            numericUpDown4.Location = new Point(252, 210);
+            numericUpDown4.Location = new Point(252, 236);
             numericUpDown4.Maximum = new decimal(new int[] { 5000, 0, 0, 0 });
             numericUpDown4.Name = "numericUpDown4";
             numericUpDown4.Size = new Size(76, 23);
@@ -325,7 +328,7 @@
             // numericUpDown3
             // 
             numericUpDown3.Enabled = false;
-            numericUpDown3.Location = new Point(161, 210);
+            numericUpDown3.Location = new Point(161, 236);
             numericUpDown3.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
             numericUpDown3.Name = "numericUpDown3";
             numericUpDown3.Size = new Size(76, 23);
@@ -335,7 +338,7 @@
             // checkBox4
             // 
             checkBox4.AutoSize = true;
-            checkBox4.Location = new Point(7, 216);
+            checkBox4.Location = new Point(7, 242);
             checkBox4.Name = "checkBox4";
             checkBox4.Size = new Size(84, 19);
             checkBox4.TabIndex = 12;
@@ -346,7 +349,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(190, 277);
+            label1.Location = new Point(190, 303);
             label1.Name = "label1";
             label1.Size = new Size(57, 15);
             label1.TabIndex = 11;
@@ -354,7 +357,7 @@
             // 
             // numericUpDown2
             // 
-            numericUpDown2.Location = new Point(253, 275);
+            numericUpDown2.Location = new Point(253, 301);
             numericUpDown2.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
             numericUpDown2.Name = "numericUpDown2";
             numericUpDown2.Size = new Size(76, 23);
@@ -415,7 +418,7 @@
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripStatusLabel2, toolStripProgressBar1 });
-            statusStrip1.Location = new Point(0, 348);
+            statusStrip1.Location = new Point(0, 366);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(344, 22);
             statusStrip1.TabIndex = 7;
@@ -482,11 +485,23 @@
             newToolStripMenuItem.Text = "new";
             newToolStripMenuItem.Click += newToolStripMenuItem_Click;
             // 
+            // checkBox11
+            // 
+            checkBox11.AutoSize = true;
+            checkBox11.Location = new Point(7, 127);
+            checkBox11.Margin = new Padding(3, 2, 3, 2);
+            checkBox11.Name = "checkBox11";
+            checkBox11.Size = new Size(95, 19);
+            checkBox11.TabIndex = 27;
+            checkBox11.Text = "debug letters";
+            checkBox11.UseVisualStyleBackColor = true;
+            checkBox11.CheckedChanged += checkBox11_CheckedChanged;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(344, 370);
+            ClientSize = new Size(344, 388);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(toolStrip1);
             Controls.Add(statusStrip1);
@@ -553,5 +568,6 @@
         private ToolStripMenuItem newToolStripMenuItem;
         private CheckBox checkBox9;
         private CheckBox checkBox10;
+        private CheckBox checkBox11;
     }
 }

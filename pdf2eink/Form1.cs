@@ -409,5 +409,15 @@ namespace pdf2eink
             eparams.RectifyLetters = checkBox10.Checked;
 
         }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void checkBox11_CheckedChanged(object sender, EventArgs e)
+        {
+            eparams.DebugLetters = checkBox11.Checked;
+        }
     }
 }
