@@ -32,6 +32,7 @@
             checkBox1 = new CheckBox();
             tableLayoutPanel1 = new TableLayoutPanel();
             panel1 = new Panel();
+            checkBox11 = new CheckBox();
             checkBox10 = new CheckBox();
             checkBox9 = new CheckBox();
             checkBox8 = new CheckBox();
@@ -66,7 +67,6 @@
             toolStripButton2 = new ToolStripDropDownButton();
             fromClipboardToolStripMenuItem = new ToolStripMenuItem();
             newToolStripMenuItem = new ToolStripMenuItem();
-            checkBox11 = new CheckBox();
             tableLayoutPanel1.SuspendLayout();
             panel1.SuspendLayout();
             groupBox1.SuspendLayout();
@@ -138,11 +138,21 @@
             panel1.TabIndex = 7;
             panel1.Paint += panel1_Paint;
             // 
+            // checkBox11
+            // 
+            checkBox11.AutoSize = true;
+            checkBox11.Location = new Point(7, 127);
+            checkBox11.Margin = new Padding(3, 2, 3, 2);
+            checkBox11.Name = "checkBox11";
+            checkBox11.Size = new Size(95, 19);
+            checkBox11.TabIndex = 27;
+            checkBox11.Text = "debug letters";
+            checkBox11.UseVisualStyleBackColor = true;
+            checkBox11.CheckedChanged += checkBox11_CheckedChanged;
+            // 
             // checkBox10
             // 
             checkBox10.AutoSize = true;
-            checkBox10.Checked = true;
-            checkBox10.CheckState = CheckState.Checked;
             checkBox10.Location = new Point(206, 77);
             checkBox10.Margin = new Padding(3, 2, 3, 2);
             checkBox10.Name = "checkBox10";
@@ -484,18 +494,6 @@
             newToolStripMenuItem.Size = new Size(153, 22);
             newToolStripMenuItem.Text = "new";
             newToolStripMenuItem.Click += newToolStripMenuItem_Click;
-            // 
-            // checkBox11
-            // 
-            checkBox11.AutoSize = true;
-            checkBox11.Location = new Point(7, 127);
-            checkBox11.Margin = new Padding(3, 2, 3, 2);
-            checkBox11.Name = "checkBox11";
-            checkBox11.Size = new Size(95, 19);
-            checkBox11.TabIndex = 27;
-            checkBox11.Text = "debug letters";
-            checkBox11.UseVisualStyleBackColor = true;
-            checkBox11.CheckedChanged += checkBox11_CheckedChanged;
             // 
             // Form1
             // 
