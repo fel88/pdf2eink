@@ -5,5 +5,4 @@
         LetterInfo[] GetPageLetters(int index);
 
     }
-
 }

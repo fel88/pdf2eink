@@ -419,9 +419,9 @@
             checkBox2.AutoSize = true;
             checkBox2.Location = new Point(7, 77);
             checkBox2.Name = "checkBox2";
-            checkBox2.Size = new Size(95, 19);
+            checkBox2.Size = new Size(115, 19);
             checkBox2.TabIndex = 6;
-            checkBox2.Text = "use dithering";
+            checkBox2.Text = "images dithering";
             checkBox2.UseVisualStyleBackColor = true;
             checkBox2.CheckedChanged += checkBox2_CheckedChanged;
             // 

@@ -20,7 +20,7 @@
         public int PageInfoHeight = 8;
         public TOC TOC;
         public bool TiledMode = false;
-        public bool RectifyLetters = false;
+        public bool RectifyLetters = false;        
         public bool DebugLetters = false;
     }
 }

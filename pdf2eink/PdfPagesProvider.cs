@@ -8,7 +8,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace pdf2eink
 {
-    public class PdfPagesProvider : IPagesProviderWithLetters, IDisposable
+    public class PdfPagesProvider : IPagesProviderWithLetters, IPagesProviderWithImages, IDisposable
     {
         public PdfPagesProvider(string fileName)
         {
@@ -86,6 +86,7 @@ namespace pdf2eink
             {
                 foreach (var page in document.GetPages().Skip(index).Take(1))
                 {
+                    var imgs = page.GetImages();
                     string pageText = page.Text;
                     ppage = page;
                     words = page.GetWords().ToList();
@@ -114,10 +115,46 @@ namespace pdf2eink
                     });
                 }
 
-                
+
             }
             return ret.ToArray();
 
+        }
+
+        public PageImageInfo[] GetPageImages(int index)
+        {
+            List<TiledPageInfo> pages = new List<TiledPageInfo>();
+            List<IPdfImage> images = new List<IPdfImage>();
+            UglyToad.PdfPig.Content.Page ppage = null;
+            using (var document = UglyToad.PdfPig.PdfDocument.Open(SourcePath))
+            {
+                foreach (var page in document.GetPages().Skip(index).Take(1))
+                {
+                    ppage = page;
+                    images = page.GetImages().ToList();
+                }
+            }
+            var bmp = GetPage(index);
+            var kx = bmp.Width / (float)ppage.Width;
+            var ky = bmp.Height / (float)ppage.Height;
+
+            List<PageImageInfo> ret = new List<PageImageInfo>();
+
+            foreach (var item in images)
+            {
+                var g = item.Bounds;
+                var rect = new RectangleF(kx * (float)g.Left,
+                    bmp.Height - ky * (float)g.Top, kx * (float)g.Width,
+                    ky * (float)g.Height);
+
+                ret.Add(new PageImageInfo()
+                {
+                    Bound = rect
+
+                });
+
+            }
+            return ret.ToArray();
         }
     }
 }
