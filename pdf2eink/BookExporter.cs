@@ -570,6 +570,7 @@ namespace pdf2eink
 
             using var matTotal = bmp1.ToMat();
             using var temp2 = matTotal.CvtColor(ColorConversionCodes.BGR2GRAY);
+           
             if (eparams.AutoDithering && images != null)
             {
                 Dithering d = new Dithering();
@@ -577,12 +578,23 @@ namespace pdf2eink
                 {
                     try
                     {
-                        item.Bound = new RectangleF(item.Bound.Left,
+                        var rebound = new RectangleF(item.Bound.Left,
                            (item.Bound.Top - sourceRect.Y) * ky,
                             item.Bound.Width,
                             item.Bound.Height * ky
                             );
-                        var bnd2 = item.Bound;
+                        var bnd2 = rebound;
+
+                        
+                        if (bnd2.Y < 0)
+                        {
+                            bnd2.Height += bnd2.Y;
+                            bnd2.Y = 0;
+                        }
+
+                        if (bnd2.Bottom > (eparams.Height - eparams.PageInfoHeight))
+                            bnd2.Height -= bnd2.Bottom - (eparams.Height - eparams.PageInfoHeight);
+
                         var roi = new Rect((int)(bnd2.X),
                                    (int)(bnd2.Y),
                                    (int)(bnd2.Width),
@@ -593,7 +605,7 @@ namespace pdf2eink
                         using var res = d.Process(sub.ToBitmap()).ToMat();
                         using var resgray = res.CvtColor(ColorConversionCodes.BGR2GRAY);
 
-                        resgray.CopyTo(sub);                        
+                        resgray.CopyTo(sub);
                     }
                     catch (Exception ex)
                     {
