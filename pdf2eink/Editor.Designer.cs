@@ -69,6 +69,7 @@
             toolStripProgressBar1 = new ToolStripProgressBar();
             contextMenuStrip1 = new ContextMenuStrip(components);
             showImageToolStripMenuItem = new ToolStripMenuItem();
+            compressToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
@@ -130,32 +131,32 @@
             // 
             // toolStripDropDownButton1
             // 
-            toolStripDropDownButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { loadToolStripMenuItem, saveAsToolStripMenuItem, attachSourceBookToolStripMenuItem });
-            toolStripDropDownButton1.Image = (Image)resources.GetObject("toolStripDropDownButton1.Image");
+            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { loadToolStripMenuItem, saveAsToolStripMenuItem, attachSourceBookToolStripMenuItem, compressToolStripMenuItem });
+            toolStripDropDownButton1.Image = Properties.Resources.book;
             toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
-            toolStripDropDownButton1.Size = new Size(38, 24);
+            toolStripDropDownButton1.Size = new Size(58, 24);
             toolStripDropDownButton1.Text = "File";
             // 
             // loadToolStripMenuItem
             // 
+            loadToolStripMenuItem.Image = Properties.Resources.book_open;
             loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            loadToolStripMenuItem.Size = new Size(175, 22);
+            loadToolStripMenuItem.Size = new Size(184, 26);
             loadToolStripMenuItem.Text = "load";
             loadToolStripMenuItem.Click += loadToolStripMenuItem_Click;
             // 
             // saveAsToolStripMenuItem
             // 
             saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            saveAsToolStripMenuItem.Size = new Size(175, 22);
+            saveAsToolStripMenuItem.Size = new Size(184, 26);
             saveAsToolStripMenuItem.Text = "save as";
             saveAsToolStripMenuItem.Click += saveAsToolStripMenuItem_Click;
             // 
             // attachSourceBookToolStripMenuItem
             // 
             attachSourceBookToolStripMenuItem.Name = "attachSourceBookToolStripMenuItem";
-            attachSourceBookToolStripMenuItem.Size = new Size(175, 22);
+            attachSourceBookToolStripMenuItem.Size = new Size(184, 26);
             attachSourceBookToolStripMenuItem.Text = "attach source book";
             attachSourceBookToolStripMenuItem.Click += attachSourceBookToolStripMenuItem_Click;
             // 
@@ -391,6 +392,14 @@
             showImageToolStripMenuItem.Text = "show image";
             showImageToolStripMenuItem.Click += showImageToolStripMenuItem_Click;
             // 
+            // compressToolStripMenuItem
+            // 
+            compressToolStripMenuItem.Image = Properties.Resources.box_zipper;
+            compressToolStripMenuItem.Name = "compressToolStripMenuItem";
+            compressToolStripMenuItem.Size = new Size(184, 26);
+            compressToolStripMenuItem.Text = "compress";
+            compressToolStripMenuItem.Click += compressToolStripMenuItem_Click;
+            // 
             // Editor
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -456,5 +465,6 @@
         private ToolStripMenuItem thisPageToolStripMenuItem;
         private ToolStripMenuItem allPagesToolStripMenuItem1;
         private ToolStripMenuItem extractTilesToolStripMenuItem;
+        private ToolStripMenuItem compressToolStripMenuItem;
     }
 }

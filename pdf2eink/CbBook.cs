@@ -292,6 +292,11 @@ namespace pdf2eink
 
         internal void SaveAs(string fileName)
         {
+            File.WriteAllBytes(fileName, GetBytes());
+        }
+
+        internal byte[] GetBytes()
+        {
             UpdateBodyAndHeader();
             MemoryStream ms = new MemoryStream();
             ms.Write(header, 0, header.Length);
@@ -299,7 +304,7 @@ namespace pdf2eink
             BookExporter.AppendTOC(Toc, ms);
             ms.Write(body, 0, body.Length);
 
-            File.WriteAllBytes(fileName, ms.ToArray());
+            return ms.ToArray();
         }
 
         public int pages { get; set; }

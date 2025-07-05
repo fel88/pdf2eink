@@ -68,17 +68,42 @@ namespace pdf2eink
         }
 
         CbBook book;
+        string lastPath;
+
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "CB/TCB/ZCB files (*.cb, *.tcb, *.zcb)|*.cb;*.tcb;*.zcb|CB files (*.cb)|*.cb|Tiled book (*.tcb)|*.tcb";
+
             if (ofd.ShowDialog() != DialogResult.OK)
                 return;
 
-            Init(ofd.FileName);
+            string pathToOpen = ofd.FileName;
+            if (ofd.FileName.EndsWith(".zcb"))
+            {
+                if (MessageBox.Show("Decompress book?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                    return;
+
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.Filter = "CB files (*.cb)|*.cb";
+                sfd.FileName = $"{pathToOpen.Replace(".zcb", string.Empty).Replace(".cb", string.Empty)}_decoded.cb";
+
+                if (sfd.ShowDialog() != DialogResult.OK)
+                    return;
+
+                ZCBProcessor zcb = new ZCBProcessor();
+                File.WriteAllBytes(sfd.FileName, zcb.Decompress(File.ReadAllBytes(pathToOpen)));
+
+                pathToOpen = sfd.FileName;
+            }
+
+            Init(pathToOpen);
         }
 
         public void Init(string path)
         {
+            Text = $"Editor: {path}";
+            lastPath = path;
             book = new CbBook(path);
             trackBar1.Maximum = book.pages - 1;
             showPage();
@@ -94,6 +119,8 @@ namespace pdf2eink
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "CB/TCB (*.cb, *.tcb)|*.cb;*.tcb|CB files (*.cb)|*.cb|Tiled book (*.tcb)|*.tcb";
+
             if (sfd.ShowDialog() != DialogResult.OK)
                 return;
 
@@ -540,6 +567,20 @@ namespace pdf2eink
             th.IsBackground = true;
             th.Start();
 
+        }
+
+        private void compressToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "ZCB files (*.zcb)|*.zcb";
+            sfd.FileName = $"{lastPath}.zcb";
+
+            if (sfd.ShowDialog() != DialogResult.OK)
+                return;
+
+            var bts = book.GetBytes();
+            ZCBProcessor zcb = new ZCBProcessor();
+            File.WriteAllBytes(sfd.FileName, zcb.Compress(bts));
         }
     }
 }
