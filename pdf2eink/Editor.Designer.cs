@@ -30,7 +30,7 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Editor));
-            pictureBox1 = new PictureBox();
+            pictureBox1 = new PictureBoxWithInterpolationMode();
             tableLayoutPanel1 = new TableLayoutPanel();
             trackBar1 = new TrackBar();
             toolStrip1 = new ToolStrip();
@@ -38,10 +38,13 @@
             loadToolStripMenuItem = new ToolStripMenuItem();
             saveAsToolStripMenuItem = new ToolStripMenuItem();
             attachSourceBookToolStripMenuItem = new ToolStripMenuItem();
+            compressToolStripMenuItem = new ToolStripMenuItem();
+            createFromTextToolStripMenuItem = new ToolStripMenuItem();
             toolStripButton2 = new ToolStripButton();
             toolStripButton1 = new ToolStripButton();
             toolStripButton3 = new ToolStripButton();
             toolStripButton4 = new ToolStripButton();
+            toolStripButton6 = new ToolStripButton();
             toolStripDropDownButton2 = new ToolStripDropDownButton();
             almostWhiteToolStripMenuItem = new ToolStripMenuItem();
             almostBlackToolStripMenuItem = new ToolStripMenuItem();
@@ -62,6 +65,12 @@
             toolStripDropDownButton5 = new ToolStripDropDownButton();
             singlePageToolStripMenuItem = new ToolStripMenuItem();
             allPagesToolStripMenuItem = new ToolStripMenuItem();
+            toolStripButton5 = new ToolStripDropDownButton();
+            renderTextToolStripMenuItem = new ToolStripMenuItem();
+            fillRectangleToolStripMenuItem = new ToolStripMenuItem();
+            toolStripDropDownButton6 = new ToolStripDropDownButton();
+            nearestToolStripMenuItem = new ToolStripMenuItem();
+            defaultToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolStripStatusLabel2 = new ToolStripStatusLabel();
@@ -69,7 +78,6 @@
             toolStripProgressBar1 = new ToolStripProgressBar();
             contextMenuStrip1 = new ContextMenuStrip(components);
             showImageToolStripMenuItem = new ToolStripMenuItem();
-            compressToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
@@ -82,10 +90,11 @@
             // 
             pictureBox1.BorderStyle = BorderStyle.FixedSingle;
             pictureBox1.Dock = DockStyle.Fill;
+            pictureBox1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
             pictureBox1.Location = new Point(3, 2);
             pictureBox1.Margin = new Padding(3, 2, 3, 2);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(694, 270);
+            pictureBox1.Size = new Size(939, 351);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 0;
             pictureBox1.TabStop = false;
@@ -105,16 +114,16 @@
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 15F));
-            tableLayoutPanel1.Size = new Size(700, 289);
+            tableLayoutPanel1.Size = new Size(945, 370);
             tableLayoutPanel1.TabIndex = 1;
             // 
             // trackBar1
             // 
             trackBar1.Dock = DockStyle.Fill;
-            trackBar1.Location = new Point(3, 276);
+            trackBar1.Location = new Point(3, 357);
             trackBar1.Margin = new Padding(3, 2, 3, 2);
             trackBar1.Name = "trackBar1";
-            trackBar1.Size = new Size(694, 11);
+            trackBar1.Size = new Size(939, 11);
             trackBar1.TabIndex = 1;
             trackBar1.TickStyle = TickStyle.None;
             trackBar1.Scroll += trackBar1_Scroll;
@@ -122,16 +131,16 @@
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new Size(20, 20);
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripDropDownButton1, toolStripButton2, toolStripButton1, toolStripButton3, toolStripButton4, toolStripDropDownButton2, toolStripDropDownButton3, toolStripDropDownButton4, toolStripDropDownButton5 });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripDropDownButton1, toolStripButton2, toolStripButton1, toolStripButton3, toolStripButton4, toolStripButton6, toolStripDropDownButton2, toolStripDropDownButton3, toolStripDropDownButton4, toolStripDropDownButton5, toolStripButton5, toolStripDropDownButton6 });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(700, 27);
+            toolStrip1.Size = new Size(945, 27);
             toolStrip1.TabIndex = 2;
             toolStrip1.Text = "toolStrip1";
             // 
             // toolStripDropDownButton1
             // 
-            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { loadToolStripMenuItem, saveAsToolStripMenuItem, attachSourceBookToolStripMenuItem, compressToolStripMenuItem });
+            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { loadToolStripMenuItem, saveAsToolStripMenuItem, attachSourceBookToolStripMenuItem, compressToolStripMenuItem, createFromTextToolStripMenuItem });
             toolStripDropDownButton1.Image = Properties.Resources.book;
             toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
@@ -159,6 +168,22 @@
             attachSourceBookToolStripMenuItem.Size = new Size(184, 26);
             attachSourceBookToolStripMenuItem.Text = "attach source book";
             attachSourceBookToolStripMenuItem.Click += attachSourceBookToolStripMenuItem_Click;
+            // 
+            // compressToolStripMenuItem
+            // 
+            compressToolStripMenuItem.Image = Properties.Resources.box_zipper;
+            compressToolStripMenuItem.Name = "compressToolStripMenuItem";
+            compressToolStripMenuItem.Size = new Size(184, 26);
+            compressToolStripMenuItem.Text = "compress";
+            compressToolStripMenuItem.Click += compressToolStripMenuItem_Click;
+            // 
+            // createFromTextToolStripMenuItem
+            // 
+            createFromTextToolStripMenuItem.Image = Properties.Resources.printer__arrow;
+            createFromTextToolStripMenuItem.Name = "createFromTextToolStripMenuItem";
+            createFromTextToolStripMenuItem.Size = new Size(184, 26);
+            createFromTextToolStripMenuItem.Text = "create from text";
+            createFromTextToolStripMenuItem.Click += createFromTextToolStripMenuItem_Click;
             // 
             // toolStripButton2
             // 
@@ -196,6 +221,15 @@
             toolStripButton4.Size = new Size(85, 24);
             toolStripButton4.Text = "back page";
             toolStripButton4.Click += toolStripButton4_Click;
+            // 
+            // toolStripButton6
+            // 
+            toolStripButton6.Image = Properties.Resources.arrow;
+            toolStripButton6.ImageTransparentColor = Color.Magenta;
+            toolStripButton6.Name = "toolStripButton6";
+            toolStripButton6.Size = new Size(83, 24);
+            toolStripButton6.Text = "next page";
+            toolStripButton6.Click += toolStripButton6_Click;
             // 
             // toolStripDropDownButton2
             // 
@@ -345,14 +379,61 @@
             allPagesToolStripMenuItem.Text = "all pages";
             allPagesToolStripMenuItem.Click += allPagesToolStripMenuItem_Click;
             // 
+            // toolStripButton5
+            // 
+            toolStripButton5.DropDownItems.AddRange(new ToolStripItem[] { renderTextToolStripMenuItem, fillRectangleToolStripMenuItem });
+            toolStripButton5.Image = Properties.Resources.pencil_button;
+            toolStripButton5.ImageTransparentColor = Color.Magenta;
+            toolStripButton5.Name = "toolStripButton5";
+            toolStripButton5.Size = new Size(66, 24);
+            toolStripButton5.Text = "draw";
+            // 
+            // renderTextToolStripMenuItem
+            // 
+            renderTextToolStripMenuItem.Name = "renderTextToolStripMenuItem";
+            renderTextToolStripMenuItem.Size = new Size(139, 22);
+            renderTextToolStripMenuItem.Text = "render text";
+            renderTextToolStripMenuItem.Click += renderTextToolStripMenuItem_Click;
+            // 
+            // fillRectangleToolStripMenuItem
+            // 
+            fillRectangleToolStripMenuItem.Name = "fillRectangleToolStripMenuItem";
+            fillRectangleToolStripMenuItem.Size = new Size(139, 22);
+            fillRectangleToolStripMenuItem.Text = "fill rectangle";
+            fillRectangleToolStripMenuItem.Click += fillRectangleToolStripMenuItem_Click;
+            // 
+            // toolStripDropDownButton6
+            // 
+            toolStripDropDownButton6.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripDropDownButton6.DropDownItems.AddRange(new ToolStripItem[] { nearestToolStripMenuItem, defaultToolStripMenuItem });
+            toolStripDropDownButton6.Image = (Image)resources.GetObject("toolStripDropDownButton6.Image");
+            toolStripDropDownButton6.ImageTransparentColor = Color.Magenta;
+            toolStripDropDownButton6.Name = "toolStripDropDownButton6";
+            toolStripDropDownButton6.Size = new Size(122, 24);
+            toolStripDropDownButton6.Text = "interpolation mode";
+            // 
+            // nearestToolStripMenuItem
+            // 
+            nearestToolStripMenuItem.Name = "nearestToolStripMenuItem";
+            nearestToolStripMenuItem.Size = new Size(115, 22);
+            nearestToolStripMenuItem.Text = "nearest";
+            nearestToolStripMenuItem.Click += nearestToolStripMenuItem_Click;
+            // 
+            // defaultToolStripMenuItem
+            // 
+            defaultToolStripMenuItem.Name = "defaultToolStripMenuItem";
+            defaultToolStripMenuItem.Size = new Size(115, 22);
+            defaultToolStripMenuItem.Text = "smooth";
+            defaultToolStripMenuItem.Click += defaultToolStripMenuItem_Click;
+            // 
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripStatusLabel2, toolStripStatusLabel3, toolStripProgressBar1 });
-            statusStrip1.Location = new Point(0, 316);
+            statusStrip1.Location = new Point(0, 397);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Padding = new Padding(1, 0, 12, 0);
-            statusStrip1.Size = new Size(700, 22);
+            statusStrip1.Size = new Size(945, 22);
             statusStrip1.TabIndex = 3;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -364,7 +445,7 @@
             // toolStripStatusLabel2
             // 
             toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            toolStripStatusLabel2.Size = new Size(645, 17);
+            toolStripStatusLabel2.Size = new Size(890, 17);
             toolStripStatusLabel2.Spring = true;
             // 
             // toolStripStatusLabel3
@@ -392,19 +473,11 @@
             showImageToolStripMenuItem.Text = "show image";
             showImageToolStripMenuItem.Click += showImageToolStripMenuItem_Click;
             // 
-            // compressToolStripMenuItem
-            // 
-            compressToolStripMenuItem.Image = Properties.Resources.box_zipper;
-            compressToolStripMenuItem.Name = "compressToolStripMenuItem";
-            compressToolStripMenuItem.Size = new Size(184, 26);
-            compressToolStripMenuItem.Text = "compress";
-            compressToolStripMenuItem.Click += compressToolStripMenuItem_Click;
-            // 
             // Editor
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(700, 338);
+            ClientSize = new Size(945, 419);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(toolStrip1);
             Controls.Add(statusStrip1);
@@ -426,7 +499,7 @@
 
         #endregion
 
-        private PictureBox pictureBox1;
+        private PictureBoxWithInterpolationMode pictureBox1;
         private TableLayoutPanel tableLayoutPanel1;
         private ToolStrip toolStrip1;
         private TrackBar trackBar1;
@@ -466,5 +539,13 @@
         private ToolStripMenuItem allPagesToolStripMenuItem1;
         private ToolStripMenuItem extractTilesToolStripMenuItem;
         private ToolStripMenuItem compressToolStripMenuItem;
+        private ToolStripDropDownButton toolStripButton5;
+        private ToolStripMenuItem renderTextToolStripMenuItem;
+        private ToolStripMenuItem fillRectangleToolStripMenuItem;
+        private ToolStripDropDownButton toolStripDropDownButton6;
+        private ToolStripMenuItem nearestToolStripMenuItem;
+        private ToolStripMenuItem defaultToolStripMenuItem;
+        private ToolStripButton toolStripButton6;
+        private ToolStripMenuItem createFromTextToolStripMenuItem;
     }
 }

@@ -21,10 +21,13 @@
                 gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
              Brushes.Black, 0, 5 + z * 10);
             }*/
-            var ms = gr.MeasureString("99999 / 99999", new Font("Consolas", 7));
+            string fontName = "Consolas";
+            fontName = "Courier New";
+            var ms = gr.MeasureString("99999 / 99999", new Font(fontName, 7));
 
             int xx = (page * 15) % (int)(bmp1.Width - ms.Width - 1);
-            gr.DrawString(str.ToString(), new Font("Consolas", 7), Brushes.Black, xx, hh - 1);
+            gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+            gr.DrawString(str.ToString(), new Font(fontName, 7), Brushes.Black, xx, hh - 1);
             
         }
 

@@ -5,8 +5,8 @@
         public bool AutoDithering = false;
         public bool AdaptiveThreshold = false;
         public int MinGray = 200;
-        public int Width = 600;
-        public int Height = 448;
+        public int Width = 648;
+        public int Height = 480;
         public int StartPage = 0;
         public int EndPage = 20;
         public bool Rotate90;

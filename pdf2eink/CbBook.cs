@@ -19,6 +19,12 @@ namespace pdf2eink
             Open(stream);
         }
 
+        public CbBook(int w, int h)
+        {
+            Width = w;
+            Height = h;
+        }
+
         int tocRawSize = 0;
         byte[] bts;
         byte[] header;

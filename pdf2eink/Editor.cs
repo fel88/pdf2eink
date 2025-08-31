@@ -1,11 +1,12 @@
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Drawing.Imaging;
-using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
+using System.IO;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
+
 
 namespace pdf2eink
 {
@@ -64,6 +65,9 @@ namespace pdf2eink
         private void toolStripButton4_Click(object sender, EventArgs e)
         {
             pageNo--;
+            if (pageNo < 0)
+                pageNo = 0;
+
             showPage();
         }
 
@@ -108,7 +112,14 @@ namespace pdf2eink
             trackBar1.Maximum = book.pages - 1;
             showPage();
         }
-
+        public void InitFromStream(Stream stream)
+        {
+            Text = $"Editor";
+            
+            book = new CbBook(stream);
+            trackBar1.Maximum = book.pages - 1;
+            
+        }
         public void ShowPage(int page)
         {
             pageNo = page;
@@ -333,6 +344,8 @@ namespace pdf2eink
 
         private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
         {
+            //todo make settings to choose
+            return;
             if (e.Button == MouseButtons.Left)
             {
                 if (pageNo == book.pages - 1)
@@ -411,6 +424,10 @@ namespace pdf2eink
             using (var clone = bmp1.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
             {
                 var buf = BookExportContext.GetBuffer(clone);
+                for (int i = 0; i < buf.Length; i++)
+                {
+                    buf[i] = (byte)~buf[i];
+                }
                 book.UpdatePage(buf, pageNo);
             }
         }
@@ -431,6 +448,100 @@ namespace pdf2eink
             }
         }
 
+        public void RenderText(int pageNo, string text, int x, int y)
+        {
+            //Bookerly  Webdings Bookerly, Literata, Lora, and PT Serif. For sans serif, I recommend Fira Sans, Noto Sans, Rambla, and Sen. 
+            //Linux Biolinum
+            // Bitter Pro at
+            //Avenir Next. 
+            /*
+
+    Bookerly
+
+    Amazon Ember
+
+    Literata
+
+    Alegreya
+
+    Atkinson Hyperlegible
+
+    Droid Sans
+
+    Bitter Pro
+
+    EBGaramond
+
+    IBM Plex Sans
+
+    Lora
+
+    Halant
+
+    Linux Libertine
+
+    Ubuntu
+
+    Sanchez
+
+    Vollkorn *Gentium Book Plus
+
+             */
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            d.AddStringField("text", "Text", text);
+            d.AddStringField("fontName", "Font name", "Verdana");
+            d.AddOptionsField("fontNameOpt", "Font name", ["Verdana", "Courier New", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
+            d.AddBoolField("fontFromList", "Use font list", true);
+            d.AddBoolField("fitSizeToLine", "fitSizeToLine", true);
+            d.AddNumericField("fontSize", "Font size", 16);
+            d.AddIntegerNumericField("x", "X", 0);
+            d.AddIntegerNumericField("y", "Y", 0);
+
+            if (!d.ShowDialog())
+                return;
+
+            var fontName = d.GetStringField("fontName");
+            if (d.GetBoolField("fontFromList"))
+                fontName = d.GetOptionsField("fontNameOpt");
+
+            var fontSize = (float)d.GetNumericField("fontSize");
+            x = d.GetIntegerNumericField("x");
+            y = d.GetIntegerNumericField("y");
+            text = d.GetStringField("text");
+
+            var bmp = book.GetPage(pageNo);
+            var gr = Graphics.FromImage(bmp);
+            gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+            //gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            //gr.PixelOffsetMode=System.Drawing.Drawing2D.PixelOffsetMode.
+            var font = new Font(fontName, fontSize);
+            float fontStep = 0.5f;
+            if (d.GetBoolField("fitSizeToLine"))
+            {
+                var ms = gr.MeasureString(text, font);
+                //binary search here
+                while (ms.Width < bmp.Width)
+                {
+                    fontSize += fontStep;
+                    var font2 = new Font(fontName, fontSize);
+                    ms = gr.MeasureString(text, font2);
+                }
+                fontSize -= fontStep;
+                font = new Font(fontName, fontSize);
+            }
+            gr.DrawString(text, font, Brushes.Black, x, y);
+
+
+            using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+            {
+                var buf = BookExportContext.GetBuffer(clone);
+                for (int i = 0; i < buf.Length; i++)
+                {
+                    buf[i] = (byte)~buf[i];
+                }
+                book.UpdatePage(buf, pageNo);
+            }
+        }
         private void singlePageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             UpdateFooter(pageNo);
@@ -581,6 +692,233 @@ namespace pdf2eink
             var bts = book.GetBytes();
             ZCBProcessor zcb = new ZCBProcessor();
             File.WriteAllBytes(sfd.FileName, zcb.Compress(bts));
+        }
+
+        private void renderTextToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RenderText(pageNo, "Hello world", 10, 10);
+            showPage();
+        }
+        void fillRectangle(int x, int y, int width, int height)
+        {
+            var bmp = book.GetPage(pageNo);
+            var gr = Graphics.FromImage(bmp);
+
+            gr.FillRectangle(Brushes.White, x, y, width, height);
+
+            using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+            {
+                var buf = BookExportContext.GetBuffer(clone);
+                for (int i = 0; i < buf.Length; i++)
+                {
+                    buf[i] = (byte)~buf[i];
+                }
+                book.UpdatePage(buf, pageNo);
+            }
+        }
+        private void fillRectangleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+            fillRectangle(0,0, book.Width, book.Height/3);
+            showPage();
+        }
+
+        private void defaultToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            pictureBox1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
+            pictureBox1.Invalidate();
+        }
+
+        private void nearestToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            pictureBox1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            pictureBox1.Invalidate();
+        }
+
+        private void toolStripButton6_Click(object sender, EventArgs e)
+        {
+            if (pageNo == book.pages - 1)
+                return;
+
+            pageNo++;
+            showPage();
+        }
+
+        public void DrawTextInRectangle(CbBook book, string text, Font font, int? maxPages)
+        {
+            toolStripProgressBar1.Maximum = text.Length ;
+            toolStripProgressBar1.Visible = true;
+            Task.Run(() =>
+            {
+                int charactersLeft = text.Length;
+                int originalLength = text.Length;
+                while (charactersLeft > 0)
+                {
+                    if (maxPages!=null && book.pages > maxPages)
+                        break;
+                    statusStrip1.Invoke(() =>
+                    {
+                        toolStripProgressBar1.Value = originalLength- charactersLeft;
+                    });
+                    BookExportParams bep = new BookExportParams();
+                    RectangleF layoutRectangle = new RectangleF(0, 0, book.Width, book.Height - bep.PageInfoHeight);
+                    book.InsertPage(book.pages);
+                    var bmp = book.GetPage(pageNo);
+
+                    var gr = Graphics.FromImage(bmp);
+                    //gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+                    //fillRectangle(0, 0, book.Width, book.Height);
+                    gr.FillRectangle(Brushes.White, 0, 0, book.Width, book.Height);
+
+                    // Option 1: To get the size of the entire string if it were drawn within the layout area
+                    SizeF textSize = gr.MeasureString(text, font, layoutRectangle.Size);
+
+                    // Option 2: To get the number of characters and lines that actually fit
+                    int charactersFitted;
+                    int linesFilled;
+                    StringFormat sf = new StringFormat(StringFormatFlags.LineLimit); // Prevent wrapping
+
+                    SizeF fittedSize = gr.MeasureString(text, font, layoutRectangle.Size,sf,  out charactersFitted, out linesFilled);
+
+                    // 'charactersFitted' will contain the count of characters that fit within the layoutRectangle.
+                    // 'linesFilled' will contain the count of lines that fit within the layoutRectangle.
+                    if (linesFilled > 19)
+                    {
+
+                    }
+                    // You can then use these values to decide how to draw the text,
+                    // e.g., truncate the string or adjust the font size.
+                    //StringFormat sf = new StringFormat();
+              //      sf.Trimming = StringTrimming.EllipsisWord;
+                    if (charactersFitted < text.Length)
+                    {
+                        // Text does not fully fit, you might want to truncate it or add "..."
+                        string truncatedText = text.Substring(0, charactersFitted);// + "...";
+                        text = text.Substring(charactersFitted);
+                        charactersLeft -= charactersFitted;
+                        //gr.Clip = new Region(layoutRectangle);
+                        gr.DrawString(truncatedText, font, Brushes.Black, new RectangleF(0,0,book.Width,fittedSize.Height), sf);
+                    }
+                    else
+                    {
+                        // Text fits, draw it normally
+                        gr.DrawString(text, font, Brushes.Black, layoutRectangle, sf);
+                        charactersLeft = 0;
+
+                    }
+                    //gr.Clip = new Region(new RectangleF (0,0,book.Width,book.Height));
+                    //footer
+                    var hh = book.Height - bep.PageInfoHeight - 1;
+
+                    gr.FillRectangle(Brushes.White, 0, hh, book.Width, bep.PageInfoHeight + 1);
+
+                    gr.DrawLine(Pens.Black, 0, hh, book.Width, hh);
+
+                    var str = $"{pageNo} / {book.pages}";
+                    /*for (int z = 0; z < str.Length; z++)
+                    {
+                        gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
+                     Brushes.Black, 0, 5 + z * 10);
+                    }*/
+                    string fontName = "Consolas";
+                    fontName = "Courier New";
+                    var ms = gr.MeasureString("99999 / 99999", new Font(fontName, 7));
+
+                    int xx = (pageNo * 15) % (int)(book.Width - ms.Width - 1);
+                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+                    gr.DrawString(str.ToString(), new Font(fontName, 7), Brushes.Black, xx, hh - 1);
+                    using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+                    {
+                        var buf = BookExportContext.GetBuffer(clone);
+                        for (int i = 0; i < buf.Length; i++)
+                        {
+                            buf[i] = (byte)~buf[i];
+                        }
+                        book.UpdatePage(buf, pageNo);
+                    }
+
+                    pageNo++;
+                }
+              
+                statusStrip1.Invoke(() =>
+                {
+                    toolStripProgressBar1.Visible = false;
+                });
+            });
+
+           
+        }
+        private void createFromTextToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.ShowDialog();
+            var text = File.ReadAllText(ofd.FileName);
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            MemoryStream ms = new MemoryStream();
+            CreateEmptyBook(ms);
+            InitFromStream(ms);
+            
+            
+            
+            d.AddStringField("fontName", "Font name", "Verdana");
+            d.AddOptionsField("fontNameOpt", "Font name", ["Verdana", "Courier New", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
+            d.AddBoolField("fontFromList", "Use font list", true);
+            d.AddBoolField("pagesLimit", "pagesLimit", true);
+            
+            d.AddNumericField("fontSize", "Font size", 16);
+            d.AddIntegerNumericField("maxPages", "Max pages", 20);
+            
+            
+
+            if (!d.ShowDialog())
+                return;
+
+            var fontName = d.GetStringField("fontName");
+            if (d.GetBoolField("fontFromList"))
+                fontName = d.GetOptionsField("fontNameOpt");
+
+            var fontSize = (float)d.GetNumericField("fontSize");
+
+            int? pagesLimit = null;
+            if (d.GetBoolField("pagesLimit"))
+            {
+                pagesLimit = d.GetIntegerNumericField("maxPages");
+            }
+        
+            DrawTextInRectangle(book, text, new Font(fontName, fontSize),pagesLimit);
+        }
+
+        private void CreateEmptyBook(MemoryStream ms)
+        {
+            var fs = ms;
+            BookExportContext ctx = new BookExportContext();
+            ctx.Stream = ms;
+            BookExportParams eparams = new BookExportParams();
+
+            //fs.Write(Encoding.UTF8.GetBytes("CB" + '\0'));
+            fs.Write(Encoding.UTF8.GetBytes("CB"));
+            //if (eparams.TiledMode)
+            {
+                //  fs.WriteByte(0x2); //version CB format v2 : rectified and tiled
+
+            }
+            //  else
+            {
+                fs.WriteByte(0x1); //version CB format: raw pages only
+            }
+            if (eparams.TOC != null && eparams.TOC.Items.Count > 0)
+                fs.WriteByte(0x1);//format . 1 -with TOC
+                                  //wite TOC here                  
+            else
+                fs.WriteByte(0x0);//format . 0 -simple without meta info
+
+            fs.Write(BitConverter.GetBytes(0));
+            fs.Write(BitConverter.GetBytes((ushort)eparams.Width));//width
+            fs.Write(BitConverter.GetBytes((ushort)eparams.Height));//heigth
+
+            fs.Seek(0, SeekOrigin.Begin);
+
         }
     }
 }
