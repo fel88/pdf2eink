@@ -1,11 +1,14 @@
-using OpenCvSharp;
+﻿using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 
 namespace pdf2eink
@@ -112,14 +115,16 @@ namespace pdf2eink
             trackBar1.Maximum = book.pages - 1;
             showPage();
         }
+
         public void InitFromStream(Stream stream)
         {
             Text = $"Editor";
-            
+
             book = new CbBook(stream);
             trackBar1.Maximum = book.pages - 1;
-            
+
         }
+
         public void ShowPage(int page)
         {
             pageNo = page;
@@ -718,8 +723,8 @@ namespace pdf2eink
         }
         private void fillRectangleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
-            fillRectangle(0,0, book.Width, book.Height/3);
+
+            fillRectangle(0, 0, book.Width, book.Height / 3);
             showPage();
         }
 
@@ -746,7 +751,7 @@ namespace pdf2eink
 
         public void DrawTextInRectangle(CbBook book, string text, Font font, int? maxPages)
         {
-            toolStripProgressBar1.Maximum = text.Length ;
+            toolStripProgressBar1.Maximum = text.Length;
             toolStripProgressBar1.Visible = true;
             Task.Run(() =>
             {
@@ -754,11 +759,11 @@ namespace pdf2eink
                 int originalLength = text.Length;
                 while (charactersLeft > 0)
                 {
-                    if (maxPages!=null && book.pages > maxPages)
+                    if (maxPages != null && book.pages > maxPages)
                         break;
                     statusStrip1.Invoke(() =>
                     {
-                        toolStripProgressBar1.Value = originalLength- charactersLeft;
+                        toolStripProgressBar1.Value = originalLength - charactersLeft;
                     });
                     BookExportParams bep = new BookExportParams();
                     RectangleF layoutRectangle = new RectangleF(0, 0, book.Width, book.Height - bep.PageInfoHeight);
@@ -779,7 +784,7 @@ namespace pdf2eink
                     int linesFilled;
                     StringFormat sf = new StringFormat(StringFormatFlags.LineLimit); // Prevent wrapping
 
-                    SizeF fittedSize = gr.MeasureString(text, font, layoutRectangle.Size,sf,  out charactersFitted, out linesFilled);
+                    SizeF fittedSize = gr.MeasureString(text, font, layoutRectangle.Size, sf, out charactersFitted, out linesFilled);
 
                     // 'charactersFitted' will contain the count of characters that fit within the layoutRectangle.
                     // 'linesFilled' will contain the count of lines that fit within the layoutRectangle.
@@ -790,7 +795,7 @@ namespace pdf2eink
                     // You can then use these values to decide how to draw the text,
                     // e.g., truncate the string or adjust the font size.
                     //StringFormat sf = new StringFormat();
-              //      sf.Trimming = StringTrimming.EllipsisWord;
+                    //      sf.Trimming = StringTrimming.EllipsisWord;
                     if (charactersFitted < text.Length)
                     {
                         // Text does not fully fit, you might want to truncate it or add "..."
@@ -798,7 +803,7 @@ namespace pdf2eink
                         text = text.Substring(charactersFitted);
                         charactersLeft -= charactersFitted;
                         //gr.Clip = new Region(layoutRectangle);
-                        gr.DrawString(truncatedText, font, Brushes.Black, new RectangleF(0,0,book.Width,fittedSize.Height), sf);
+                        gr.DrawString(truncatedText, font, Brushes.Black, new RectangleF(0, 0, book.Width, fittedSize.Height), sf);
                     }
                     else
                     {
@@ -840,14 +845,14 @@ namespace pdf2eink
 
                     pageNo++;
                 }
-              
+
                 statusStrip1.Invoke(() =>
                 {
                     toolStripProgressBar1.Visible = false;
                 });
             });
 
-           
+
         }
         private void createFromTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -858,18 +863,18 @@ namespace pdf2eink
             MemoryStream ms = new MemoryStream();
             CreateEmptyBook(ms);
             InitFromStream(ms);
-            
-            
-            
+
+
+
             d.AddStringField("fontName", "Font name", "Verdana");
             d.AddOptionsField("fontNameOpt", "Font name", ["Verdana", "Courier New", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
             d.AddBoolField("fontFromList", "Use font list", true);
             d.AddBoolField("pagesLimit", "pagesLimit", true);
-            
+
             d.AddNumericField("fontSize", "Font size", 16);
             d.AddIntegerNumericField("maxPages", "Max pages", 20);
-            
-            
+
+
 
             if (!d.ShowDialog())
                 return;
@@ -885,8 +890,8 @@ namespace pdf2eink
             {
                 pagesLimit = d.GetIntegerNumericField("maxPages");
             }
-        
-            DrawTextInRectangle(book, text, new Font(fontName, fontSize),pagesLimit);
+
+            DrawTextInRectangle(book, text, new Font(fontName, fontSize), pagesLimit);
         }
 
         private void CreateEmptyBook(MemoryStream ms)
@@ -920,5 +925,156 @@ namespace pdf2eink
             fs.Seek(0, SeekOrigin.Begin);
 
         }
+      
+
+        public static string[] SplitByCapitalLetters(string input)
+        {
+            // Splits the string at every point where a lowercase letter is followed by an uppercase letter
+            // or where an uppercase letter is followed by another uppercase letter and then a lowercase letter
+            // (to handle acronyms like "USA Today").
+            return Regex.Split(input, @"(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])");
+        }
+        private void createFromLettersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.ShowDialog();
+            var text = File.ReadAllText(ofd.FileName);
+            //var d = AutoDialog.DialogHelpers.StartDialog();
+            MemoryStream ms = new MemoryStream();
+            CreateEmptyBook(ms);
+            InitFromStream(ms);
+
+            Dictionary<int, Font> _fonts = new Dictionary<int, Font>();
+            var doc = XDocument.Load(ofd.FileName);
+            foreach (var font in doc.Descendants("font"))
+            {
+                var fontId = int.Parse(font.Attribute("id").Value);
+                var bold = bool.Parse(font.Attribute("bold").Value);
+                var italic = bool.Parse(font.Attribute("italic").Value);
+                var family = font.Attribute("family").Value;
+                var size = font.Attribute("size").Value.ToFloat();
+
+                var split = family.Split(['+', '-']);
+                var ss = split[1];
+                var cap = SplitByCapitalLetters(ss);
+                var cands = FontFamily.Families.Where(z => cap.All(u => z.ToString().Contains(u))).ToArray();
+
+                var font1 = new Font(cands[0], size, bold ? FontStyle.Bold : FontStyle.Regular);
+                _fonts.Add(fontId, font1);
+
+            }
+
+            foreach (var pageItem in doc.Descendants("page"))
+            {
+                if (book.pages > 3)
+                    break;
+                book.InsertPage(book.pages);
+                var pageW = pageItem.Attribute("w").Value.ToFloat();
+                var pageH = pageItem.Attribute("h").Value.ToFloat();
+
+
+                statusStrip1.Invoke(() =>
+                {
+                    //toolStripProgressBar1.Value = originalLength - charactersLeft;
+                });
+                BookExportParams bep = new BookExportParams();
+                RectangleF layoutRectangle = new RectangleF(0, 0, book.Width, book.Height - bep.PageInfoHeight);
+                var bmp = book.GetPage(pageNo);
+
+                var gr = Graphics.FromImage(bmp);
+                //gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+                //fillRectangle(0, 0, book.Width, book.Height);
+                gr.FillRectangle(Brushes.White, 0, 0, book.Width, book.Height);
+                var minX = (double)pageW;
+                var minY = (double)pageH;
+
+                var maxX = 0.0;
+                var maxY = 0.0;
+                foreach (var letterInfo in pageItem.Elements("letter"))
+                {
+                    var x = letterInfo.Attribute("x").Value.ToDouble();
+                    var y = letterInfo.Attribute("y").Value.ToDouble();
+                    var w = letterInfo.Attribute("w").Value.ToDouble();
+                    var h = letterInfo.Attribute("h").Value.ToDouble();
+                    var locX = letterInfo.Attribute("locationX").Value.ToDouble();
+                    var locY = letterInfo.Attribute("locationY").Value.ToDouble();
+                    x = locX;
+                    y = locY;
+
+                    minX = Math.Min(minX, x);
+                    maxX = Math.Max(maxX, x + w);
+                    minY = Math.Min(minY, y);
+                    maxY = Math.Max(maxY, y + h);
+                }
+
+                var realPageW = maxX - minX + 1;
+                var realPageH = maxY - minY;
+
+                foreach (var letterInfo in pageItem.Elements("letter"))
+                {
+                    var x = letterInfo.Attribute("x").Value.ToDouble();
+                    var y = letterInfo.Attribute("y").Value.ToDouble();
+                    var w = letterInfo.Attribute("w").Value.ToDouble();
+                    var h = letterInfo.Attribute("h").Value.ToDouble();
+                    var locX = letterInfo.Attribute("locationX").Value.ToDouble();
+                    var locY = letterInfo.Attribute("locationY").Value.ToDouble();
+                    var fontId = int.Parse(letterInfo.Attribute("fontId").Value);
+
+                    x = locX;
+                    y = locY;
+
+                    var font = _fonts[fontId];
+                    // Text fits, draw it normally
+                    var kx = book.Width / realPageW;
+                    var ky = (book.Height - bep.PageInfoHeight) / realPageH;
+                    x -= minX;
+                    y -= minY;
+                    x *= kx;
+                    y *= ky;
+                    gr.DrawString(letterInfo.Attribute("letter").Value, font, Brushes.Black, (float)x, (float)y);
+                }
+
+                var hh = book.Height - bep.PageInfoHeight - 1;
+
+                gr.FillRectangle(Brushes.White, 0, hh, book.Width, bep.PageInfoHeight + 1);
+
+                gr.DrawLine(Pens.Black, 0, hh, book.Width, hh);
+
+                var str = $"{pageNo} / {book.pages}";
+                /*for (int z = 0; z < str.Length; z++)
+                {
+                    gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
+                 Brushes.Black, 0, 5 + z * 10);
+                }*/
+                string fontName = "Consolas";
+                fontName = "Courier New";
+                var mss = gr.MeasureString("99999 / 99999", new Font(fontName, 7));
+
+                int xx = (pageNo * 15) % (int)(book.Width - mss.Width - 1);
+                gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+                gr.DrawString(str.ToString(), new Font(fontName, 7), Brushes.Black, xx, hh - 1);
+                using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+                {
+                    var buf = BookExportContext.GetBuffer(clone);
+                    for (int i = 0; i < buf.Length; i++)
+                    {
+                        buf[i] = (byte)~buf[i];
+                    }
+                    book.UpdatePage(buf, pageNo);
+                }
+
+
+
+                statusStrip1.Invoke(() =>
+                {
+                    toolStripProgressBar1.Visible = false;
+                });
+                pageNo++;
+            }
+
+        }
     }
+
+
 }

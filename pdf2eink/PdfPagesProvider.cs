@@ -1,10 +1,9 @@
 ﻿using OpenCvSharp.Extensions;
 using PdfiumViewer;
-using System.Drawing;
-using System.Drawing.Printing;
-using System.Security.Cryptography.Pkcs;
+using System.Text;
 using UglyToad.PdfPig.Content;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using UglyToad.PdfPig.DocumentLayoutAnalysis;
+using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
 
 namespace pdf2eink
 {
@@ -77,6 +76,68 @@ namespace pdf2eink
 
         //}
 
+        public SizeF GetPageSize(int index)
+        {
+            List<TiledPageInfo> pages = new List<TiledPageInfo>();
+            List<Word> words = new List<Word>();
+            UglyToad.PdfPig.Content.Page ppage = null;
+            using (var document = UglyToad.PdfPig.PdfDocument.Open(SourcePath))
+            {
+                foreach (var page in document.GetPages().Skip(index).Take(1))
+                {
+
+                    var imgs = page.GetImages();
+                    string pageText = page.Text;
+                    ppage = page;
+                    words = page.GetWords().ToList();
+                }
+            }
+
+            var bmp = GetPage(index);
+
+            //return new SizeF((float)ppage.Width, (float)ppage.Height);
+            return new SizeF((float)bmp.Width, (float)bmp.Height);
+
+        }
+        public string GetPageText(int index)
+        {
+            List<TiledPageInfo> pages = new List<TiledPageInfo>();
+            List<Word> words = new List<Word>();
+            UglyToad.PdfPig.Content.Page ppage = null;
+            StringBuilder sb = new StringBuilder();
+            using (var document = UglyToad.PdfPig.PdfDocument.Open(SourcePath))
+            {
+                foreach (var page in document.GetPages().Skip(index).Take(1))
+                {
+                    var words1 = page.GetWords();
+
+                    // Use default parameters
+                    // - mode of letters' height and width used as gap size
+                    // - no minimum block width 
+                    var blocks = DocstrumBoundingBoxes.Instance.GetBlocks(words1);
+
+                    foreach (var block in blocks)
+                    {
+                        sb.AppendLine(block.Text);
+                        // Do something
+                        // E.g. Output the blocks
+                        foreach (TextLine line in block.TextLines)
+                        {
+                            foreach (Word word in line.Words)
+                            {
+                                //Console.Write(word.Text + " ");
+                            }
+                        }
+
+                    }
+
+                    //return page.Text;
+                }
+            }
+
+            return sb.ToString();
+        }
+
         public LetterInfo[] GetPageLetters(int index)
         {
             List<TiledPageInfo> pages = new List<TiledPageInfo>();
@@ -86,6 +147,7 @@ namespace pdf2eink
             {
                 foreach (var page in document.GetPages().Skip(index).Take(1))
                 {
+
                     var imgs = page.GetImages();
                     string pageText = page.Text;
                     ppage = page;
@@ -93,6 +155,7 @@ namespace pdf2eink
                 }
             }
             var bmp = GetPage(index);
+
             var kx = bmp.Width / (float)ppage.Width;
             var ky = bmp.Height / (float)ppage.Height;
             List<LetterInfo> ret = new List<LetterInfo>();
@@ -100,18 +163,31 @@ namespace pdf2eink
             {
                 foreach (var litem in item.Letters)
                 {
+
                     var g = litem.GlyphRectangle;
 
                     var rect = new RectangleF(kx * (float)g.Left,
                         bmp.Height - ky * (float)g.Top, kx * (float)g.Width,
                          ky * (float)g.Height);
 
+                    var location = new PointF(
+                        kx * (float)litem.Location.X,
+                      bmp.Height - ky * (float)litem.Location.Y);
+
                     var color = litem.FillColor.ToRGBValues();
                     ret.Add(new LetterInfo()
                     {
+                        Location = new PointF((float)location.X, (float)location.Y),
                         Bound = rect,
                         Letter = litem.Value,
-                        Font = $"{litem.FontName}_{litem.FontSize}_{litem.Font.Weight}_{litem.Font.IsItalic}_{litem.Font.IsBold}_{color.r}_{color.g}_{color.b}"
+                        Font = $"{litem.FontName}_{litem.FontSize}_{litem.Font.Weight}_{litem.Font.IsItalic}_{litem.Font.IsBold}_{color.r}_{color.g}_{color.b}",
+                        FontInfo = new FontInfo()
+                        {
+                            Family = litem.FontName,
+                            Size = litem.FontSize,
+                            IsBold = litem.Font.IsBold,
+                            IsItalic = litem.Font.IsItalic
+                        }
                     });
                 }
 

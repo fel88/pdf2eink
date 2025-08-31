@@ -6,11 +6,13 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 
@@ -41,7 +43,10 @@ namespace pdf2eink
             {
                 page++;
                 pictureBox1.Image = book.GetPage(page);
-                //richTextBox1.Text = book.GetPageText(page);
+                if (book is IPagesProviderWithLetters l)
+                {
+                    richTextBox1.Text = l.GetPageText(page);
+                }
 
             }
         }
@@ -95,16 +100,16 @@ namespace pdf2eink
                 }
             }
 
-              var bmp =  book.GetPage(page).ToMat();
-              var bw = BookExporter.Threshold(bmp, new BookExportParams());
-              TileProcessor tp = new TileProcessor();
-              tp.Init(bw.ToBitmap());
-              //tp.GetDebugBitmap().Save("debug1.jpg");
-              tp.MakeGroups();
-              //  tp.GetDebugBitmap().Save("debug2.jpg");
-              tp.SimplifyMarks();
-              // tp.GetDebugBitmap().Save("debug3.jpg");
-             
+            var bmp = book.GetPage(page).ToMat();
+            var bw = BookExporter.Threshold(bmp, new BookExportParams());
+            TileProcessor tp = new TileProcessor();
+            tp.Init(bw.ToBitmap());
+            //tp.GetDebugBitmap().Save("debug1.jpg");
+            tp.MakeGroups();
+            //  tp.GetDebugBitmap().Save("debug2.jpg");
+            tp.SimplifyMarks();
+            // tp.GetDebugBitmap().Save("debug3.jpg");
+
             pages.Add(tp.ExtractTiles());
             var letters = words.SelectMany(z => z.Letters).ToArray();
             /*var bmp = book.GetPage(page);
@@ -132,7 +137,7 @@ namespace pdf2eink
                     var cx = pitem.X + pitem.Tile.Bmp.Width / 2;
                     var cy = pitem.Y + pitem.Tile.Bmp.Height / 2;
                     var fr = letters.OrderBy(z => Math.Abs((z.Location.X + z.GlyphRectangle.Width / 2) - cx) + Math.Abs((z.Location.Y + z.GlyphRectangle.Height / 2))).First();
-                    
+
                     pitem.Key = fr.Value;
 
                 }
@@ -150,6 +155,65 @@ namespace pdf2eink
             tv.MdiParent = MdiParent;
             tv.Init(pages.ToArray());
             tv.Show();
+        }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            if (sfd.ShowDialog() != DialogResult.OK)
+                return;
+
+            XElement elem = new XElement("root");
+            var l = book as IPagesProviderWithLetters;
+            Dictionary<string, FontInfo> fonts = new();
+            XElement fontsElem = new XElement("fonts");
+            XElement pages = new XElement("pages");
+            elem.Add(fontsElem);
+            elem.Add(pages);
+            for (int i = 0; i < l.Pages; i++)
+            {
+                XElement page = new XElement("page");
+                
+                var pageInfo = l.GetPageSize(i);
+                page.Add(new XAttribute("w", pageInfo.Width));
+                page.Add(new XAttribute("h", pageInfo.Height));
+                var letters = l.GetPageLetters(i);
+                foreach (var item in letters)
+                {
+                    XElement letter = new XElement("letter");
+                    letter.Add(new XAttribute("letter", item.Letter));
+                    letter.Add(new XAttribute("x", item.Bound.X));
+                    letter.Add(new XAttribute("y", item.Bound.Y));
+                    letter.Add(new XAttribute("w", item.Bound.Width));
+                    letter.Add(new XAttribute("h", item.Bound.Height));
+                    letter.Add(new XAttribute("locationX", item.Location.X));
+                    letter.Add(new XAttribute("locationY", item.Location.Y));
+                    
+                    fonts.TryAdd(item.Font, item.FontInfo);
+                    letter.Add(new XAttribute("fontId", fonts.Keys.ToList().IndexOf(item.Font)));
+                    page.Add(letter);
+                }
+                pages.Add(page);
+            }
+
+            int fontIndex = 0;
+            foreach (var item in fonts)
+            {
+                fontsElem.Add(new XElement("font", [new XAttribute("id", fontIndex++),  
+                    new XAttribute("bold", item.Value.IsBold),
+                    new XAttribute("italic", item.Value.IsItalic),
+                    new XAttribute("family", item.Value.Family),
+                    new XAttribute("size", item.Value.Size)]));
+            }
+
+
+            File.WriteAllText(sfd.FileName, elem.ToString());
+
+        }
+
+        private void SourceBookViewer_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

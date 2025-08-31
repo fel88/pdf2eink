@@ -35,13 +35,14 @@
             openToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripButton1 = new ToolStripButton();
+            toolStripButton2 = new ToolStripButton();
             tableLayoutPanel1 = new TableLayoutPanel();
             trackBar1 = new TrackBar();
             tableLayoutPanel2 = new TableLayoutPanel();
             richTextBox1 = new RichTextBox();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            toolStripButton2 = new ToolStripButton();
+            toolStripButton3 = new ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             contextMenuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
@@ -79,7 +80,7 @@
             // 
             // toolStrip1
             // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2 });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3 });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(800, 25);
@@ -95,6 +96,16 @@
             toolStripButton1.Size = new Size(65, 22);
             toolStripButton1.Text = "goto page";
             toolStripButton1.Click += toolStripButton1_Click;
+            // 
+            // toolStripButton2
+            // 
+            toolStripButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton2.Image = (Image)resources.GetObject("toolStripButton2.Image");
+            toolStripButton2.ImageTransparentColor = Color.Magenta;
+            toolStripButton2.Name = "toolStripButton2";
+            toolStripButton2.Size = new Size(52, 22);
+            toolStripButton2.Text = "get tiles";
+            toolStripButton2.Click += toolStripButton2_Click;
             // 
             // tableLayoutPanel1
             // 
@@ -160,15 +171,14 @@
             toolStripStatusLabel1.Size = new Size(13, 17);
             toolStripStatusLabel1.Text = "..";
             // 
-            // toolStripButton2
+            // toolStripButton3
             // 
-            toolStripButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton2.Image = (Image)resources.GetObject("toolStripButton2.Image");
-            toolStripButton2.ImageTransparentColor = Color.Magenta;
-            toolStripButton2.Name = "toolStripButton2";
-            toolStripButton2.Size = new Size(52, 22);
-            toolStripButton2.Text = "get tiles";
-            toolStripButton2.Click += toolStripButton2_Click;
+            toolStripButton3.Image = (Image)resources.GetObject("toolStripButton3.Image");
+            toolStripButton3.ImageTransparentColor = Color.Magenta;
+            toolStripButton3.Name = "toolStripButton3";
+            toolStripButton3.Size = new Size(98, 22);
+            toolStripButton3.Text = "export as xml";
+            toolStripButton3.Click += toolStripButton3_Click;
             // 
             // SourceBookViewer
             // 
@@ -180,6 +190,7 @@
             Controls.Add(statusStrip1);
             Name = "SourceBookViewer";
             Text = "SourceBookViewer";
+            Load += SourceBookViewer_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             contextMenuStrip1.ResumeLayout(false);
             toolStrip1.ResumeLayout(false);
@@ -209,5 +220,6 @@
         private TableLayoutPanel tableLayoutPanel2;
         private RichTextBox richTextBox1;
         private ToolStripButton toolStripButton2;
+        private ToolStripButton toolStripButton3;
     }
 }

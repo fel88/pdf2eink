@@ -40,6 +40,7 @@
             attachSourceBookToolStripMenuItem = new ToolStripMenuItem();
             compressToolStripMenuItem = new ToolStripMenuItem();
             createFromTextToolStripMenuItem = new ToolStripMenuItem();
+            createFromLettersToolStripMenuItem = new ToolStripMenuItem();
             toolStripButton2 = new ToolStripButton();
             toolStripButton1 = new ToolStripButton();
             toolStripButton3 = new ToolStripButton();
@@ -140,7 +141,7 @@
             // 
             // toolStripDropDownButton1
             // 
-            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { loadToolStripMenuItem, saveAsToolStripMenuItem, attachSourceBookToolStripMenuItem, compressToolStripMenuItem, createFromTextToolStripMenuItem });
+            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { loadToolStripMenuItem, saveAsToolStripMenuItem, attachSourceBookToolStripMenuItem, compressToolStripMenuItem, createFromTextToolStripMenuItem, createFromLettersToolStripMenuItem });
             toolStripDropDownButton1.Image = Properties.Resources.book;
             toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
@@ -184,6 +185,14 @@
             createFromTextToolStripMenuItem.Size = new Size(184, 26);
             createFromTextToolStripMenuItem.Text = "create from text";
             createFromTextToolStripMenuItem.Click += createFromTextToolStripMenuItem_Click;
+            // 
+            // createFromLettersToolStripMenuItem
+            // 
+            createFromLettersToolStripMenuItem.Image = Properties.Resources.edit_writing_mode;
+            createFromLettersToolStripMenuItem.Name = "createFromLettersToolStripMenuItem";
+            createFromLettersToolStripMenuItem.Size = new Size(184, 26);
+            createFromLettersToolStripMenuItem.Text = "create from letters";
+            createFromLettersToolStripMenuItem.Click += createFromLettersToolStripMenuItem_Click;
             // 
             // toolStripButton2
             // 
@@ -547,5 +556,6 @@
         private ToolStripMenuItem defaultToolStripMenuItem;
         private ToolStripButton toolStripButton6;
         private ToolStripMenuItem createFromTextToolStripMenuItem;
+        private ToolStripMenuItem createFromLettersToolStripMenuItem;
     }
 }
