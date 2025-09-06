@@ -2,6 +2,7 @@
 using OpenCvSharp.Extensions;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -9,6 +10,7 @@ using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using UglyToad.PdfPig.Content;
 
 
 namespace pdf2eink
@@ -749,7 +751,39 @@ namespace pdf2eink
             showPage();
         }
 
-        public void DrawTextInRectangle(CbBook book, string text, Font font, int? maxPages)
+        public static int GetCharactersThatFitLine(Graphics g, string text, Font font, float maxWidth)
+        {
+            int charactersFitted = 0;
+            for (int i = 1; i <= text.Length; i++)
+            {
+                string subString = text.Substring(0, i);
+                SizeF size = g.MeasureString(subString, font);
+
+                if (size.Width > maxWidth)
+                {
+                    // The current substring is too wide, so the previous one was the longest that fit.
+                    charactersFitted = i - 1;
+                    break;
+                }
+                else
+                {
+                    charactersFitted = i;
+                }
+            }
+            return charactersFitted;
+        }
+
+        public static string ReverseString(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            char[] charArray = input.ToCharArray();
+            Array.Reverse(charArray);
+            return new string(charArray);
+        }
+
+        public void DrawTextInRectangle(CbBook book, string text, Font font, int? maxPages, bool bustrophedon)
         {
             toolStripProgressBar1.Maximum = text.Length;
             toolStripProgressBar1.Visible = true;
@@ -797,13 +831,70 @@ namespace pdf2eink
                     //StringFormat sf = new StringFormat();
                     //      sf.Trimming = StringTrimming.EllipsisWord;
                     if (charactersFitted < text.Length)
-                    {
-                        // Text does not fully fit, you might want to truncate it or add "..."
+                    { // Text does not fully fit, you might want to truncate it or add "..."
                         string truncatedText = text.Substring(0, charactersFitted);// + "...";
                         text = text.Substring(charactersFitted);
                         charactersLeft -= charactersFitted;
                         //gr.Clip = new Region(layoutRectangle);
-                        gr.DrawString(truncatedText, font, Brushes.Black, new RectangleF(0, 0, book.Width, fittedSize.Height), sf);
+                        if (bustrophedon)
+                        {
+                            StringFormat stringFormat = new StringFormat(StringFormatFlags.LineLimit);
+                            stringFormat.FormatFlags = StringFormatFlags.DirectionRightToLeft;
+                            var splits = truncatedText.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).ToArray();
+                            string currentSplit = splits[0];
+                            var yGap = fittedSize.Height / linesFilled;
+
+                            int lineIndex = 0;
+                            foreach (var split in splits)
+                            {
+                                currentSplit = split;
+                                while (true)
+                                {
+                                    var maxChars = GetCharactersThatFitLine(gr, currentSplit, font, book.Width);
+                                    var textToDraw = currentSplit.Substring(0, maxChars);
+                                    SizeF fittedSize2 = gr.MeasureString(textToDraw, font);
+
+                                    if (lineIndex % 2 == 0)
+                                        gr.DrawString(textToDraw, font, Brushes.Black, 0, yGap * lineIndex, sf);
+                                    else
+                                    {
+                                        // Save the current graphics state
+                                        GraphicsState state = gr.Save();
+                                        var normalLocation = new PointF(0, yGap * lineIndex);
+                                        // Measure the string to calculate translation
+                                        SizeF textSize2 = gr.MeasureString(textToDraw, font);
+
+                                        // Apply a horizontal flip (ScaleTransform with -1f for X)
+                                        // Then translate the origin to compensate for the flip
+                                        gr.TranslateTransform(normalLocation.X + textSize2.Width, normalLocation.Y);
+                                        gr.ScaleTransform(-1f, 1f);
+                                        gr.TranslateTransform(-normalLocation.X, -normalLocation.Y); // Translate back to the original Y position
+
+                                        // Draw the mirrored string
+                                        gr.DrawString(textToDraw, font, Brushes.Black, normalLocation, sf);
+
+                                        // Restore the original graphics state
+                                        gr.Restore(state);
+
+                                        //gr.DrawString(ReverseString(textToDraw), font, Brushes.Black, /*book.Width - fittedSize2.Width*/book.Width, yGap * lineIndex, stringFormat);
+
+                                    }
+
+                                    currentSplit = currentSplit.Substring(maxChars);
+
+                                    lineIndex++;
+
+                                    if (string.IsNullOrEmpty(currentSplit))
+                                        break;
+                                }
+
+                            }
+                        }
+                        else
+                        {
+
+                            gr.DrawString(truncatedText, font, Brushes.Black, new RectangleF(0, 0, book.Width, fittedSize.Height), sf);
+                        }
                     }
                     else
                     {
@@ -870,6 +961,7 @@ namespace pdf2eink
             d.AddOptionsField("fontNameOpt", "Font name", ["Verdana", "Courier New", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
             d.AddBoolField("fontFromList", "Use font list", true);
             d.AddBoolField("pagesLimit", "pagesLimit", true);
+            d.AddBoolField("useBPHD", "Bustrophedon", false);
 
             d.AddNumericField("fontSize", "Font size", 16);
             d.AddIntegerNumericField("maxPages", "Max pages", 20);
@@ -880,6 +972,8 @@ namespace pdf2eink
                 return;
 
             var fontName = d.GetStringField("fontName");
+            var bphd = d.GetBoolField("useBPHD");
+
             if (d.GetBoolField("fontFromList"))
                 fontName = d.GetOptionsField("fontNameOpt");
 
@@ -891,7 +985,7 @@ namespace pdf2eink
                 pagesLimit = d.GetIntegerNumericField("maxPages");
             }
 
-            DrawTextInRectangle(book, text, new Font(fontName, fontSize), pagesLimit);
+            DrawTextInRectangle(book, text, new Font(fontName, fontSize), pagesLimit, bphd);
         }
 
         private void CreateEmptyBook(MemoryStream ms)
@@ -925,7 +1019,7 @@ namespace pdf2eink
             fs.Seek(0, SeekOrigin.Begin);
 
         }
-      
+
 
         public static string[] SplitByCapitalLetters(string input)
         {
@@ -934,6 +1028,7 @@ namespace pdf2eink
             // (to handle acronyms like "USA Today").
             return Regex.Split(input, @"(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])");
         }
+
         private void createFromLettersToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -944,7 +1039,7 @@ namespace pdf2eink
             CreateEmptyBook(ms);
             InitFromStream(ms);
 
-            Dictionary<int, Font> _fonts = new Dictionary<int, Font>();
+            Dictionary<int, (FontInfo, Font)> _fonts = new Dictionary<int, (FontInfo, Font)>();
             var doc = XDocument.Load(ofd.FileName);
             foreach (var font in doc.Descendants("font"))
             {
@@ -953,21 +1048,34 @@ namespace pdf2eink
                 var italic = bool.Parse(font.Attribute("italic").Value);
                 var family = font.Attribute("family").Value;
                 var size = font.Attribute("size").Value.ToFloat();
+                Font font1 = null;
+                try
+                {
+                    var split = family.Split(['+', '-']);
+                    var ss = split[1];
+                    var cap = SplitByCapitalLetters(ss);
+                    var cands = FontFamily.Families.Where(z => cap.All(u => z.ToString().Contains(u))).ToArray();
 
-                var split = family.Split(['+', '-']);
-                var ss = split[1];
-                var cap = SplitByCapitalLetters(ss);
-                var cands = FontFamily.Families.Where(z => cap.All(u => z.ToString().Contains(u))).ToArray();
+                    font1 = new Font(cands[0], size, bold ? FontStyle.Bold : FontStyle.Regular);
 
-                var font1 = new Font(cands[0], size, bold ? FontStyle.Bold : FontStyle.Regular);
-                _fonts.Add(fontId, font1);
+                }
+                catch (Exception ex)
+                {
 
+                }
+
+                _fonts.Add(fontId, (new FontInfo()
+                {
+                    Family = family,
+                    IsBold = bold,
+                    IsItalic = italic,
+                    Size = size
+                }, font1));
             }
 
             foreach (var pageItem in doc.Descendants("page"))
             {
-                if (book.pages > 3)
-                    break;
+
                 book.InsertPage(book.pages);
                 var pageW = pageItem.Attribute("w").Value.ToFloat();
                 var pageH = pageItem.Attribute("h").Value.ToFloat();
@@ -1024,7 +1132,12 @@ namespace pdf2eink
                     x = locX;
                     y = locY;
 
-                    var font = _fonts[fontId];
+                    Font font = null;
+                    if (_fonts[fontId].Item2 != null)
+                        font = _fonts[fontId].Item2;
+                    else
+                        font = new Font("Courier New", (float)h / 2);
+
                     // Text fits, draw it normally
                     var kx = book.Width / realPageW;
                     var ky = (book.Height - bep.PageInfoHeight) / realPageH;
@@ -1032,7 +1145,13 @@ namespace pdf2eink
                     y -= minY;
                     x *= kx;
                     y *= ky;
+                    // Define the text format flags for centering
+                    TextFormatFlags flags = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine;
+                    // Draw the letter within the rectangle, centered
+                    //TextRenderer.DrawText(gr, letterInfo.Attribute("letter").Value, font, new Rectangle((int)x, (int)y, (int)w, (int)h), Color.Blue, flags);
+
                     gr.DrawString(letterInfo.Attribute("letter").Value, font, Brushes.Black, (float)x, (float)y);
+                    //gr.DrawRectangle(Pens.Black, (float)x, (float)y, (float)w, (float)h);
                 }
 
                 var hh = book.Height - bep.PageInfoHeight - 1;

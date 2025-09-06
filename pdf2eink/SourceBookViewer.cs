@@ -159,9 +159,18 @@ namespace pdf2eink
 
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            d.AddNumericField("startPage", "Start page", 0, book.Pages, decimalPlaces: 0);
+            d.AddNumericField("endPage", "End page", 0, book.Pages, decimalPlaces: 0);
+            if (!d.ShowDialog())
+                return;
+
+            var startPage = d.GetIntegerNumericField("startPage");
+            var endPage = d.GetIntegerNumericField("endPage");
+
             SaveFileDialog sfd = new SaveFileDialog();
             if (sfd.ShowDialog() != DialogResult.OK)
-                return;
+                return;       
 
             XElement elem = new XElement("root");
             var l = book as IPagesProviderWithLetters;
@@ -170,7 +179,7 @@ namespace pdf2eink
             XElement pages = new XElement("pages");
             elem.Add(fontsElem);
             elem.Add(pages);
-            for (int i = 0; i < l.Pages; i++)
+            for (int i = startPage; i < endPage; i++)
             {
                 XElement page = new XElement("page");
                 
