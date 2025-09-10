@@ -79,6 +79,7 @@
             toolStripProgressBar1 = new ToolStripProgressBar();
             contextMenuStrip1 = new ContextMenuStrip(components);
             showImageToolStripMenuItem = new ToolStripMenuItem();
+            createFromFB2ToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
@@ -141,7 +142,7 @@
             // 
             // toolStripDropDownButton1
             // 
-            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { loadToolStripMenuItem, saveAsToolStripMenuItem, attachSourceBookToolStripMenuItem, compressToolStripMenuItem, createFromTextToolStripMenuItem, createFromLettersToolStripMenuItem });
+            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { loadToolStripMenuItem, saveAsToolStripMenuItem, attachSourceBookToolStripMenuItem, compressToolStripMenuItem, createFromTextToolStripMenuItem, createFromLettersToolStripMenuItem, createFromFB2ToolStripMenuItem });
             toolStripDropDownButton1.Image = Properties.Resources.book;
             toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
@@ -482,6 +483,13 @@
             showImageToolStripMenuItem.Text = "show image";
             showImageToolStripMenuItem.Click += showImageToolStripMenuItem_Click;
             // 
+            // createFromFB2ToolStripMenuItem
+            // 
+            createFromFB2ToolStripMenuItem.Name = "createFromFB2ToolStripMenuItem";
+            createFromFB2ToolStripMenuItem.Size = new Size(184, 26);
+            createFromFB2ToolStripMenuItem.Text = "create from FB2";
+            createFromFB2ToolStripMenuItem.Click += createFromFB2ToolStripMenuItem_Click;
+            // 
             // Editor
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -557,5 +565,6 @@
         private ToolStripButton toolStripButton6;
         private ToolStripMenuItem createFromTextToolStripMenuItem;
         private ToolStripMenuItem createFromLettersToolStripMenuItem;
+        private ToolStripMenuItem createFromFB2ToolStripMenuItem;
     }
 }

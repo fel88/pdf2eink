@@ -20,6 +20,8 @@ namespace pdf2eink
         public Editor()
         {
             InitializeComponent();
+            // In your application's startup or a relevant initialization point
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
         int pageNo;
@@ -497,7 +499,7 @@ namespace pdf2eink
             var d = AutoDialog.DialogHelpers.StartDialog();
             d.AddStringField("text", "Text", text);
             d.AddStringField("fontName", "Font name", "Verdana");
-            d.AddOptionsField("fontNameOpt", "Font name", ["Verdana", "Courier New", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
+            d.AddOptionsField("fontNameOpt", "Font name", ["Courier New", "Verdana", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
             d.AddBoolField("fontFromList", "Use font list", true);
             d.AddBoolField("fitSizeToLine", "fitSizeToLine", true);
             d.AddNumericField("fontSize", "Font size", 16);
@@ -783,7 +785,7 @@ namespace pdf2eink
             return new string(charArray);
         }
 
-        public void DrawTextInRectangle(CbBook book, string text, Font font, int? maxPages, bool bustrophedon)
+        public void RenderBookFromText(CbBook book, string text, Font font, int? maxPages, bool bustrophedon)
         {
             toolStripProgressBar1.Maximum = text.Length;
             toolStripProgressBar1.Visible = true;
@@ -945,6 +947,176 @@ namespace pdf2eink
 
 
         }
+        public class FormattedString
+        {
+            public string Text;
+            public bool IsBold;
+        }
+
+        public async Task RenderBookFromFB2(CbBook book, XDocument doc, Font pFont, Font headerFont, int? maxPages)
+        {
+            List<FormattedString> strings = new List<FormattedString>();
+            var body = doc.Descendants().First(z => z.Name.LocalName == "body");
+            foreach (var item in body.Descendants().Where(z => z.Name.LocalName == "section"))
+            {
+                //todo use sections to make CB chapters
+                foreach (var eitem in item.Elements())
+                {
+                    if (eitem.Name.LocalName == "p")
+                    {
+                        strings.Add(new FormattedString() { Text = eitem.Value });
+                    }
+                    if (eitem.Name.LocalName == "title")
+                    {
+                        foreach (var ee in eitem.Elements())
+                        {
+                            if (ee.Name.LocalName == "p")
+                            {
+                                strings.Add(new FormattedString() { Text = ee.Value, IsBold = true });
+                            }
+                        }
+
+                    }
+                }
+
+            }
+            toolStripProgressBar1.Maximum = strings.Count();
+
+            toolStripProgressBar1.Visible = true;
+            await Task.Run(() =>
+            {
+                Queue<FormattedString> q = new Queue<FormattedString>(strings);
+                Graphics gr = null;
+                BookExportParams bep = new BookExportParams();
+
+                RectangleF layoutRectangle = new RectangleF(0, 0, book.Width, book.Height - bep.PageInfoHeight);
+                Bitmap bmp = null;
+                var insertPage = () =>
+                {
+                    book.InsertPage(book.pages);
+                    bmp = book.GetPage(pageNo);
+
+                    gr = Graphics.FromImage(bmp);
+                    //gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+                    //fillRectangle(0, 0, book.Width, book.Height);
+                    gr.FillRectangle(Brushes.White, 0, 0, book.Width, book.Height);
+                };
+                var finalizePage = () =>
+                {
+                    var hh = book.Height - bep.PageInfoHeight - 1;
+
+                    gr.FillRectangle(Brushes.White, 0, hh, book.Width, bep.PageInfoHeight + 1);
+
+                    gr.DrawLine(Pens.Black, 0, hh, book.Width, hh);
+
+                    var str = $"{pageNo} / {book.pages}";
+                    /*for (int z = 0; z < str.Length; z++)
+                    {
+                        gr.DrawString(str[z].ToString(), new Font("Courier New", 6),
+                     Brushes.Black, 0, 5 + z * 10);
+                    }*/
+                    string fontName = "Consolas";
+                    fontName = "Courier New";
+                    var ms = gr.MeasureString("99999 / 99999", new Font(fontName, 7));
+
+                    int xx = (pageNo * 15) % (int)(book.Width - ms.Width - 1);
+                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+                    gr.DrawString(str.ToString(), new Font(fontName, 7), Brushes.Black, xx, hh - 1);
+                    using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+                    {
+                        var buf = BookExportContext.GetBuffer(clone);
+                        for (int i = 0; i < buf.Length; i++)
+                        {
+                            buf[i] = (byte)~buf[i];
+                        }
+                        book.UpdatePage(buf, pageNo);
+                    }
+
+                    pageNo++;
+
+                };
+
+                insertPage();
+
+                bool lastPageFinalized = false;
+                int lineIndex = 0;
+                while (q.Any())
+                {
+                    statusStrip1.Invoke(() =>
+                    {
+                        toolStripProgressBar1.Value = strings.Count - q.Count;
+                    });
+                    var deq = q.Dequeue();
+                    var font = deq.IsBold ? headerFont : pFont;
+
+                    var truncatedText = deq.Text;
+
+                    // Option 1: To get the size of the entire string if it were drawn within the layout area
+                    SizeF textSize = gr.MeasureString(truncatedText, font, layoutRectangle.Size);
+
+                    // Option 2: To get the number of characters and lines that actually fit
+                    int charactersFitted;
+                    int linesFilled;
+                    StringFormat sf = new StringFormat(StringFormatFlags.LineLimit); // Prevent wrapping
+
+                    SizeF fittedSize = gr.MeasureString(truncatedText, font, layoutRectangle.Size, sf, out charactersFitted, out linesFilled);
+
+                    StringFormat stringFormat = new StringFormat(StringFormatFlags.LineLimit);
+                    stringFormat.FormatFlags = StringFormatFlags.DirectionRightToLeft;
+
+                    string currentSplit = deq.Text;
+                    var yGap = fittedSize.Height / linesFilled;
+                    yGap = font.Height;
+
+                    var maxLines = book.Height / yGap;
+
+                    while (true)
+                    {
+                        var maxChars = GetCharactersThatFitLine(gr, currentSplit, font, book.Width);
+                        var textToDraw = currentSplit.Substring(0, maxChars);
+                        SizeF fittedSize2 = gr.MeasureString(textToDraw, font);
+
+                        gr.DrawString(textToDraw, font, Brushes.Black, 0, yGap * lineIndex, sf);
+
+                        currentSplit = currentSplit.Substring(maxChars);
+
+                        lineIndex++;
+                        if (lineIndex >= maxLines - 1)
+                        {
+                            if (!lastPageFinalized)
+                                finalizePage();
+
+                            lastPageFinalized = true;
+                            if (maxPages != null && book.pages > maxPages)
+                                break;
+
+                            insertPage();
+                            lastPageFinalized = false;
+
+                            lineIndex = 0;
+                        }
+
+                        if (string.IsNullOrEmpty(currentSplit))
+                            break;
+                    }
+                    if (maxPages != null && book.pages > maxPages)
+                        break;
+                    //if (lineIndex >= maxLines) {
+                    //  break;
+                }
+
+                if (!lastPageFinalized)
+                    finalizePage();
+
+                statusStrip1.Invoke(() =>
+                {
+                    toolStripProgressBar1.Visible = false;
+                });
+            });
+
+
+        }
         private void createFromTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -958,7 +1130,7 @@ namespace pdf2eink
 
 
             d.AddStringField("fontName", "Font name", "Verdana");
-            d.AddOptionsField("fontNameOpt", "Font name", ["Verdana", "Courier New", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
+            d.AddOptionsField("fontNameOpt", "Font name", [ "Courier New", "Verdana", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
             d.AddBoolField("fontFromList", "Use font list", true);
             d.AddBoolField("pagesLimit", "pagesLimit", true);
             d.AddBoolField("useBPHD", "Bustrophedon", false);
@@ -985,7 +1157,8 @@ namespace pdf2eink
                 pagesLimit = d.GetIntegerNumericField("maxPages");
             }
 
-            DrawTextInRectangle(book, text, new Font(fontName, fontSize), pagesLimit, bphd);
+            RenderBookFromText(book, text, new Font(fontName, fontSize), pagesLimit, bphd);
+            trackBar1.Maximum = book.pages - 1;
         }
 
         private void CreateEmptyBook(MemoryStream ms)
@@ -1192,6 +1365,52 @@ namespace pdf2eink
                 pageNo++;
             }
 
+        }
+
+        private async void createFromFB2ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "FB2 (.fb2)|*.fb2";
+            if (ofd.ShowDialog() != DialogResult.OK)
+                return;
+
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            MemoryStream ms = new MemoryStream();
+            CreateEmptyBook(ms);
+            InitFromStream(ms);
+
+
+
+            d.AddStringField("fontName", "Font name", "Verdana");
+            d.AddOptionsField("fontNameOpt", "Font name", [ "Courier New", "Verdana", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
+            d.AddBoolField("fontFromList", "Use font list", true);
+            d.AddBoolField("pagesLimit", "pagesLimit", true);
+
+
+            d.AddNumericField("fontSize", "Font size", 16);
+            d.AddIntegerNumericField("maxPages", "Max pages", 20);
+
+
+
+            if (!d.ShowDialog())
+                return;
+
+            var fontName = d.GetStringField("fontName");
+
+
+            if (d.GetBoolField("fontFromList"))
+                fontName = d.GetOptionsField("fontNameOpt");
+
+            var fontSize = (float)d.GetNumericField("fontSize");
+
+            int? pagesLimit = null;
+            if (d.GetBoolField("pagesLimit"))
+            {
+                pagesLimit = d.GetIntegerNumericField("maxPages");
+            }
+
+            await RenderBookFromFB2(book, XDocument.Load(ofd.FileName), new Font(fontName, fontSize), new Font(fontName, fontSize, FontStyle.Bold), pagesLimit);
+            trackBar1.Maximum = book.pages - 1;
         }
     }
 
