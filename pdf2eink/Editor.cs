@@ -753,18 +753,24 @@ namespace pdf2eink
             showPage();
         }
 
-        public static int GetCharactersThatFitLine(Graphics g, string text, Font font, float maxWidth)
+        public static int GetCharactersThatFitLine(Graphics g, string text, Font font, float maxWidth, bool backTrackToLastSpacePositon = true)
         {
             int charactersFitted = 0;
+            int lastSpacePosition = 0;
             for (int i = 1; i <= text.Length; i++)
             {
+                if (text[i - 1] == ' ')
+                {
+                    lastSpacePosition = i;
+                }
                 string subString = text.Substring(0, i);
                 SizeF size = g.MeasureString(subString, font);
 
                 if (size.Width > maxWidth)
                 {
                     // The current substring is too wide, so the previous one was the longest that fit.
-                    charactersFitted = i - 1;
+
+                    charactersFitted = backTrackToLastSpacePositon ? lastSpacePosition : i - 1;
                     break;
                 }
                 else
@@ -953,7 +959,12 @@ namespace pdf2eink
             public bool IsBold;
         }
 
-        public async Task RenderBookFromFB2(CbBook book, XDocument doc, Font pFont, Font headerFont, int? maxPages)
+        public async Task RenderBookFromFB2(CbBook book,
+            XDocument doc,
+            Font pFont,
+            Font headerFont,
+            int? maxPages,
+            bool onlySpacesBreak = true)
         {
             List<FormattedString> strings = new List<FormattedString>();
             var body = doc.Descendants().First(z => z.Name.LocalName == "body");
@@ -1073,7 +1084,7 @@ namespace pdf2eink
 
                     while (true)
                     {
-                        var maxChars = GetCharactersThatFitLine(gr, currentSplit, font, book.Width);
+                        var maxChars = GetCharactersThatFitLine(gr, currentSplit, font, book.Width, onlySpacesBreak);
                         var textToDraw = currentSplit.Substring(0, maxChars);
                         SizeF fittedSize2 = gr.MeasureString(textToDraw, font);
 
@@ -1130,7 +1141,7 @@ namespace pdf2eink
 
 
             d.AddStringField("fontName", "Font name", "Verdana");
-            d.AddOptionsField("fontNameOpt", "Font name", [ "Courier New", "Verdana", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
+            d.AddOptionsField("fontNameOpt", "Font name", ["Courier New", "Verdana", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
             d.AddBoolField("fontFromList", "Use font list", true);
             d.AddBoolField("pagesLimit", "pagesLimit", true);
             d.AddBoolField("useBPHD", "Bustrophedon", false);
@@ -1357,14 +1368,12 @@ namespace pdf2eink
                 }
 
 
-
                 statusStrip1.Invoke(() =>
                 {
                     toolStripProgressBar1.Visible = false;
                 });
                 pageNo++;
             }
-
         }
 
         private async void createFromFB2ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1379,13 +1388,11 @@ namespace pdf2eink
             CreateEmptyBook(ms);
             InitFromStream(ms);
 
-
-
             d.AddStringField("fontName", "Font name", "Verdana");
-            d.AddOptionsField("fontNameOpt", "Font name", [ "Courier New", "Verdana", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
+            d.AddOptionsField("fontNameOpt", "Font name", ["Courier New", "Verdana", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
             d.AddBoolField("fontFromList", "Use font list", true);
             d.AddBoolField("pagesLimit", "pagesLimit", true);
-
+            d.AddBoolField("onlySpacesBreak", "Only spaces break", true);
 
             d.AddNumericField("fontSize", "Font size", 16);
             d.AddIntegerNumericField("maxPages", "Max pages", 20);
@@ -1396,7 +1403,6 @@ namespace pdf2eink
                 return;
 
             var fontName = d.GetStringField("fontName");
-
 
             if (d.GetBoolField("fontFromList"))
                 fontName = d.GetOptionsField("fontNameOpt");
@@ -1409,10 +1415,15 @@ namespace pdf2eink
                 pagesLimit = d.GetIntegerNumericField("maxPages");
             }
 
-            await RenderBookFromFB2(book, XDocument.Load(ofd.FileName), new Font(fontName, fontSize), new Font(fontName, fontSize, FontStyle.Bold), pagesLimit);
+            await RenderBookFromFB2(book,
+                XDocument.Load(ofd.FileName),
+                new Font(fontName, fontSize),
+                new Font(fontName, fontSize, FontStyle.Bold),
+                pagesLimit,
+                d.GetBoolField("onlySpacesBreak")
+                );
+
             trackBar1.Maximum = book.pages - 1;
         }
     }
-
-
 }
