@@ -1,10 +1,9 @@
 ﻿namespace pdf2eink
 {
-    public class LetterInfo
+    public class LetterInfo: PageBoundedObject
     {
         public string Letter;
-        public RectangleF Bound;
-        public PointF Location;
+    
         public string Font;
         public FontInfo FontInfo;
       

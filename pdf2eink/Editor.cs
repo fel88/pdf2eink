@@ -1283,43 +1283,45 @@ namespace pdf2eink
 
                 var maxX = 0.0;
                 var maxY = 0.0;
-                foreach (var letterInfo in pageItem.Elements("letter"))
-                {
-                    var x = letterInfo.Attribute("x").Value.ToDouble();
-                    var y = letterInfo.Attribute("y").Value.ToDouble();
-                    var w = letterInfo.Attribute("w").Value.ToDouble();
-                    var h = letterInfo.Attribute("h").Value.ToDouble();
-                    var locX = letterInfo.Attribute("locationX").Value.ToDouble();
-                    var locY = letterInfo.Attribute("locationY").Value.ToDouble();
-                    x = locX;
-                    y = locY;
 
-                    minX = Math.Min(minX, x);
-                    maxX = Math.Max(maxX, x + w);
-                    minY = Math.Min(minY, y);
-                    maxY = Math.Max(maxY, y + h);
-                }
+                foreach (var wordInfo in pageItem.Elements("word"))
+                    foreach (var letterInfo in wordInfo.Elements("letter"))
+                    {
+                        var x = letterInfo.Attribute("x").Value.ToDouble();
+                        var y = letterInfo.Attribute("y").Value.ToDouble();
+                        var w = letterInfo.Attribute("w").Value.ToDouble();
+                        var h = letterInfo.Attribute("h").Value.ToDouble();
+                        var locX = letterInfo.Attribute("locationX").Value.ToDouble();
+                        var locY = letterInfo.Attribute("locationY").Value.ToDouble();
+                        x = locX;
+                        y = locY;
+
+                        minX = Math.Min(minX, x);
+                        maxX = Math.Max(maxX, x + w);
+                        minY = Math.Min(minY, y);
+                        maxY = Math.Max(maxY, y + h);
+                    }
 
                 var realPageW = maxX - minX + 1;
                 var realPageH = maxY - minY;
 
-                foreach (var letterInfo in pageItem.Elements("letter"))
+                foreach (var wordInfo in pageItem.Elements("word"))
                 {
-                    var x = letterInfo.Attribute("x").Value.ToDouble();
-                    var y = letterInfo.Attribute("y").Value.ToDouble();
-                    var w = letterInfo.Attribute("w").Value.ToDouble();
-                    var h = letterInfo.Attribute("h").Value.ToDouble();
-                    var locX = letterInfo.Attribute("locationX").Value.ToDouble();
-                    var locY = letterInfo.Attribute("locationY").Value.ToDouble();
-                    var fontId = int.Parse(letterInfo.Attribute("fontId").Value);
+                    var x = wordInfo.Attribute("x").Value.ToDouble();
+                    var y = wordInfo.Attribute("y").Value.ToDouble();
+                    var w = wordInfo.Attribute("w").Value.ToDouble();
+                    var h = wordInfo.Attribute("h").Value.ToDouble();
+                   // var locX = wordInfo.Attribute("locationX").Value.ToDouble();
+                   // var locY = wordInfo.Attribute("locationY").Value.ToDouble();
+                   //var fontId = int.Parse(wordInfo.Attribute("fontId").Value);
 
-                    x = locX;
-                    y = locY;
+                   // x = x;
+                   // y = y;
 
                     Font font = null;
-                    if (_fonts[fontId].Item2 != null)
-                        font = _fonts[fontId].Item2;
-                    else
+                   // if (_fonts[fontId].Item2 != null)
+                    //    font = _fonts[fontId].Item2;
+                   // else
                         font = new Font("Courier New", (float)h / 2);
 
                     // Text fits, draw it normally
@@ -1334,8 +1336,43 @@ namespace pdf2eink
                     // Draw the letter within the rectangle, centered
                     //TextRenderer.DrawText(gr, letterInfo.Attribute("letter").Value, font, new Rectangle((int)x, (int)y, (int)w, (int)h), Color.Blue, flags);
 
-                    gr.DrawString(letterInfo.Attribute("letter").Value, font, Brushes.Black, (float)x, (float)y);
+                    gr.DrawString(wordInfo.Attribute("text").Value, font, Brushes.Black, (float)x, (float)y);
                     //gr.DrawRectangle(Pens.Black, (float)x, (float)y, (float)w, (float)h);
+
+                    //foreach (var letterInfo in wordInfo.Elements("letter"))
+                    //{
+                    //    var x = letterInfo.Attribute("x").Value.ToDouble();
+                    //    var y = letterInfo.Attribute("y").Value.ToDouble();
+                    //    var w = letterInfo.Attribute("w").Value.ToDouble();
+                    //    var h = letterInfo.Attribute("h").Value.ToDouble();
+                    //    var locX = letterInfo.Attribute("locationX").Value.ToDouble();
+                    //    var locY = letterInfo.Attribute("locationY").Value.ToDouble();
+                    //    var fontId = int.Parse(letterInfo.Attribute("fontId").Value);
+
+                    //    x = locX;
+                    //    y = locY;
+
+                    //    Font font = null;
+                    //    if (_fonts[fontId].Item2 != null)
+                    //        font = _fonts[fontId].Item2;
+                    //    else
+                    //        font = new Font("Courier New", (float)h / 2);
+
+                    //    // Text fits, draw it normally
+                    //    var kx = book.Width / realPageW;
+                    //    var ky = (book.Height - bep.PageInfoHeight) / realPageH;
+                    //    x -= minX;
+                    //    y -= minY;
+                    //    x *= kx;
+                    //    y *= ky;
+                    //    // Define the text format flags for centering
+                    //    TextFormatFlags flags = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine;
+                    //    // Draw the letter within the rectangle, centered
+                    //    //TextRenderer.DrawText(gr, letterInfo.Attribute("letter").Value, font, new Rectangle((int)x, (int)y, (int)w, (int)h), Color.Blue, flags);
+
+                    //    gr.DrawString(letterInfo.Attribute("letter").Value, font, Brushes.Black, (float)x, (float)y);
+                    //    //gr.DrawRectangle(Pens.Black, (float)x, (float)y, (float)w, (float)h);
+                    //}
                 }
 
                 var hh = book.Height - bep.PageInfoHeight - 1;

@@ -1,5 +1,7 @@
-﻿using OpenCvSharp.Extensions;
+﻿using OpenCvSharp;
+using OpenCvSharp.Extensions;
 using PdfiumViewer;
+using System.Drawing;
 using System.Text;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
@@ -138,19 +140,23 @@ namespace pdf2eink
             return sb.ToString();
         }
 
-        public LetterInfo[] GetPageLetters(int index)
+        public PageBoundedObject[] GetBoundedObjects(int index)
         {
             List<TiledPageInfo> pages = new List<TiledPageInfo>();
             List<Word> words = new List<Word>();
+            List<IPdfImage> images = new List<IPdfImage>();
+
             UglyToad.PdfPig.Content.Page ppage = null;
             using (var document = UglyToad.PdfPig.PdfDocument.Open(SourcePath))
             {
                 foreach (var page in document.GetPages().Skip(index).Take(1))
                 {
 
-                    var imgs = page.GetImages();
+                    //var imgs = page.GetImages();
                     string pageText = page.Text;
                     ppage = page;
+                    images = page.GetImages().ToList();
+
                     words = page.GetWords().ToList();
                 }
             }
@@ -158,12 +164,43 @@ namespace pdf2eink
 
             var kx = bmp.Width / (float)ppage.Width;
             var ky = bmp.Height / (float)ppage.Height;
-            List<LetterInfo> ret = new List<LetterInfo>();
+            List<PageBoundedObject> ret = new List<PageBoundedObject>();
+            foreach (var item in images)
+            {
+                var g = item.Bounds;
+                var rect = new RectangleF(kx * (float)g.Left,
+                    bmp.Height - ky * (float)g.Top, kx * (float)g.Width,
+                    ky * (float)g.Height);
+
+                var bytes = item.RawBytes.ToArray();
+                ret.Add(new PageImageInfo()
+                {
+                    Bound = rect,
+                    Data = bytes
+                });
+            }
+
             foreach (var item in words)
             {
+                var wg = item.BoundingBox;
+                var wrect = new RectangleF(kx * (float)wg.Left,
+                      bmp.Height - ky * (float)wg.Top, kx * (float)wg.Width,
+                       ky * (float)wg.Height);
+                
+                var winfo = new WordInfo()
+                {
+                    Bound = wrect,
+                    Word = item.Text,
+                    FontInfo = new FontInfo()
+                    {
+                        Family = item.FontName,
+                    }
+                };
+
+                ret.Add(winfo);
+
                 foreach (var litem in item.Letters)
                 {
-
                     var g = litem.GlyphRectangle;
 
                     var rect = new RectangleF(kx * (float)g.Left,
@@ -175,7 +212,7 @@ namespace pdf2eink
                       bmp.Height - ky * (float)litem.Location.Y);
 
                     var color = litem.FillColor.ToRGBValues();
-                    ret.Add(new LetterInfo()
+                    var letter = new LetterInfo()
                     {
                         Location = new PointF((float)location.X, (float)location.Y),
                         Bound = rect,
@@ -188,13 +225,12 @@ namespace pdf2eink
                             IsBold = litem.Font.IsBold,
                             IsItalic = litem.Font.IsItalic
                         }
-                    });
+                    };
+
+                    winfo.Letters.Add(letter);                                       
                 }
-
-
             }
             return ret.ToArray();
-
         }
 
         public PageImageInfo[] GetPageImages(int index)
@@ -223,13 +259,14 @@ namespace pdf2eink
                     bmp.Height - ky * (float)g.Top, kx * (float)g.Width,
                     ky * (float)g.Height);
 
+                var bytes = item.RawBytes.ToArray();
                 ret.Add(new PageImageInfo()
                 {
-                    Bound = rect
-
+                    Bound = rect,
+                    Data = bytes
                 });
-
             }
+
             return ret.ToArray();
         }
     }

@@ -1,11 +1,7 @@
 ﻿namespace pdf2eink
 {
-    public class PageImageInfo
-    {        
-        public RectangleF Bound;
-        
-        
-
-        
+    public class PageImageInfo : PageBoundedObject
+    {
+        public byte[] Data;
     }
 }

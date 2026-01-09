@@ -410,11 +410,11 @@ namespace pdf2eink
                 return;
 
             using var mat3 = mat2.Clone(bound);
-            LetterInfo[] letters = null;
+            PageBoundedObject[] letters = null;
             PageImageInfo[] images = null;
             if (eparams.RectifyLetters && pp is IPagesProviderWithLetters ppwl3)
             {
-                letters = ppwl3.GetPageLetters(pageNo);
+                letters = ppwl3.GetBoundedObjects(pageNo);
 
                 foreach (var item in letters)
                 {
@@ -539,7 +539,7 @@ namespace pdf2eink
             ExportResult> action,
             Mat rmat,
             Rect sourceRect,
-            LetterInfo[] letters,
+            PageBoundedObject[] boundedObjects,
             PageImageInfo[] images)
         {
             var top = new Mat(rmat, sourceRect);
@@ -631,10 +631,14 @@ namespace pdf2eink
                 if (res.Terminate)
                     return true;
             }
+
             using var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed);
 
-            if (eparams.RectifyLetters && letters != null)
+
+            if (eparams.RectifyLetters && boundedObjects != null)
             {
+                var letters = boundedObjects.OfType<LetterInfo>();
+
                 TileProcessor tp = new TileProcessor();
                 tp.Init(clone);
                 tp.MakeGroups();
@@ -733,7 +737,7 @@ namespace pdf2eink
           ExportResult> action,
           Mat rmat,
           Rect sourceRect,
-          LetterInfo[] letters,
+          PageBoundedObject[] letters,
           PageImageInfo[] images)
         {
             var top = new Mat(rmat, sourceRect);

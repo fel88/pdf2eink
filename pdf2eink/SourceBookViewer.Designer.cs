@@ -36,13 +36,18 @@
             toolStrip1 = new ToolStrip();
             toolStripButton1 = new ToolStripButton();
             toolStripButton2 = new ToolStripButton();
+            toolStripButton4 = new ToolStripButton();
+            toolStripDropDownButton1 = new ToolStripDropDownButton();
+            xmlToolStripMenuItem = new ToolStripMenuItem();
+            fb2ToolStripMenuItem = new ToolStripMenuItem();
             tableLayoutPanel1 = new TableLayoutPanel();
             trackBar1 = new TrackBar();
             tableLayoutPanel2 = new TableLayoutPanel();
             richTextBox1 = new RichTextBox();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            toolStripButton3 = new ToolStripButton();
+            toolStripStatusLabel2 = new ToolStripStatusLabel();
+            toolStripStatusLabel3 = new ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             contextMenuStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
@@ -80,7 +85,7 @@
             // 
             // toolStrip1
             // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripButton2, toolStripButton3 });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripDropDownButton1, toolStripButton1, toolStripButton2, toolStripButton4 });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(800, 25);
@@ -106,6 +111,40 @@
             toolStripButton2.Size = new Size(52, 22);
             toolStripButton2.Text = "get tiles";
             toolStripButton2.Click += toolStripButton2_Click;
+            // 
+            // toolStripButton4
+            // 
+            toolStripButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
+            toolStripButton4.ImageTransparentColor = Color.Magenta;
+            toolStripButton4.Name = "toolStripButton4";
+            toolStripButton4.Size = new Size(65, 22);
+            toolStripButton4.Text = "back page";
+            toolStripButton4.Click += toolStripButton4_Click;
+            // 
+            // toolStripDropDownButton1
+            // 
+            toolStripDropDownButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { xmlToolStripMenuItem, fb2ToolStripMenuItem });
+            toolStripDropDownButton1.Image = (Image)resources.GetObject("toolStripDropDownButton1.Image");
+            toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
+            toolStripDropDownButton1.Name = "toolStripDropDownButton1";
+            toolStripDropDownButton1.Size = new Size(53, 22);
+            toolStripDropDownButton1.Text = "export";
+            // 
+            // xmlToolStripMenuItem
+            // 
+            xmlToolStripMenuItem.Name = "xmlToolStripMenuItem";
+            xmlToolStripMenuItem.Size = new Size(180, 22);
+            xmlToolStripMenuItem.Text = "xml";
+            xmlToolStripMenuItem.Click += xmlToolStripMenuItem_Click;
+            // 
+            // fb2ToolStripMenuItem
+            // 
+            fb2ToolStripMenuItem.Name = "fb2ToolStripMenuItem";
+            fb2ToolStripMenuItem.Size = new Size(180, 22);
+            fb2ToolStripMenuItem.Text = "fb2";
+            fb2ToolStripMenuItem.Click += fb2ToolStripMenuItem_Click;
             // 
             // tableLayoutPanel1
             // 
@@ -158,7 +197,7 @@
             // 
             // statusStrip1
             // 
-            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripStatusLabel2, toolStripStatusLabel3 });
             statusStrip1.Location = new Point(0, 428);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(800, 22);
@@ -171,14 +210,17 @@
             toolStripStatusLabel1.Size = new Size(13, 17);
             toolStripStatusLabel1.Text = "..";
             // 
-            // toolStripButton3
+            // toolStripStatusLabel2
             // 
-            toolStripButton3.Image = (Image)resources.GetObject("toolStripButton3.Image");
-            toolStripButton3.ImageTransparentColor = Color.Magenta;
-            toolStripButton3.Name = "toolStripButton3";
-            toolStripButton3.Size = new Size(98, 22);
-            toolStripButton3.Text = "export as xml";
-            toolStripButton3.Click += toolStripButton3_Click;
+            toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            toolStripStatusLabel2.Size = new Size(759, 17);
+            toolStripStatusLabel2.Spring = true;
+            // 
+            // toolStripStatusLabel3
+            // 
+            toolStripStatusLabel3.Name = "toolStripStatusLabel3";
+            toolStripStatusLabel3.Size = new Size(13, 17);
+            toolStripStatusLabel3.Text = "..";
             // 
             // SourceBookViewer
             // 
@@ -220,6 +262,11 @@
         private TableLayoutPanel tableLayoutPanel2;
         private RichTextBox richTextBox1;
         private ToolStripButton toolStripButton2;
-        private ToolStripButton toolStripButton3;
+        private ToolStripStatusLabel toolStripStatusLabel2;
+        private ToolStripStatusLabel toolStripStatusLabel3;
+        private ToolStripButton toolStripButton4;
+        private ToolStripDropDownButton toolStripDropDownButton1;
+        private ToolStripMenuItem xmlToolStripMenuItem;
+        private ToolStripMenuItem fb2ToolStripMenuItem;
     }
 }

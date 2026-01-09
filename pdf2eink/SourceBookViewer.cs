@@ -39,16 +39,12 @@ namespace pdf2eink
         int page = 0;
         private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
-            {
-                page++;
-                pictureBox1.Image = book.GetPage(page);
-                if (book is IPagesProviderWithLetters l)
-                {
-                    richTextBox1.Text = l.GetPageText(page);
-                }
+            if (e.Button != MouseButtons.Left)
+                return;
 
-            }
+            page++;
+            showPage();
+
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -63,7 +59,8 @@ namespace pdf2eink
         private void trackBar1_Scroll(object sender, EventArgs e)
         {
             page = trackBar1.Value;
-            pictureBox1.Image = book.GetPage(page);
+            showPage();
+
             //richTextBox1.Text = book.GetPageText(page);
         }
 
@@ -159,6 +156,10 @@ namespace pdf2eink
 
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
+        }
+
+        private void ExportAsXml()
+        {
             var d = AutoDialog.DialogHelpers.StartDialog();
             d.AddNumericField("startPage", "Start page", 0, book.Pages, decimalPlaces: 0);
             d.AddNumericField("endPage", "End page", 0, book.Pages, decimalPlaces: 0);
@@ -170,7 +171,7 @@ namespace pdf2eink
 
             SaveFileDialog sfd = new SaveFileDialog();
             if (sfd.ShowDialog() != DialogResult.OK)
-                return;       
+                return;
 
             XElement elem = new XElement("root");
             var l = book as IPagesProviderWithLetters;
@@ -182,25 +183,60 @@ namespace pdf2eink
             for (int i = startPage; i < endPage; i++)
             {
                 XElement page = new XElement("page");
-                
+
                 var pageInfo = l.GetPageSize(i);
                 page.Add(new XAttribute("w", pageInfo.Width));
                 page.Add(new XAttribute("h", pageInfo.Height));
-                var letters = l.GetPageLetters(i);
-                foreach (var item in letters)
+                var boundedObjects = l.GetBoundedObjects(i);
+
+                var words = boundedObjects.OfType<WordInfo>().ToArray();
+                var images = boundedObjects.OfType<PageImageInfo>().ToArray();
+
+
+                foreach (var witem in words)
                 {
-                    XElement letter = new XElement("letter");
-                    letter.Add(new XAttribute("letter", item.Letter));
-                    letter.Add(new XAttribute("x", item.Bound.X));
-                    letter.Add(new XAttribute("y", item.Bound.Y));
-                    letter.Add(new XAttribute("w", item.Bound.Width));
-                    letter.Add(new XAttribute("h", item.Bound.Height));
-                    letter.Add(new XAttribute("locationX", item.Location.X));
-                    letter.Add(new XAttribute("locationY", item.Location.Y));
-                    
-                    fonts.TryAdd(item.Font, item.FontInfo);
-                    letter.Add(new XAttribute("fontId", fonts.Keys.ToList().IndexOf(item.Font)));
-                    page.Add(letter);
+                    XElement word = new XElement("word");
+                    word.Add(new XAttribute("text", witem.Word));
+                    word.Add(new XAttribute("x", witem.Bound.X));
+                    word.Add(new XAttribute("y", witem.Bound.Y));
+                    word.Add(new XAttribute("w", witem.Bound.Width));
+                    word.Add(new XAttribute("h", witem.Bound.Height));
+                    word.Add(new XAttribute("locationX", witem.Location.X));
+                    word.Add(new XAttribute("locationY", witem.Location.Y));
+
+                    //fonts.TryAdd(witem.Font, witem.FontInfo);
+                    //word.Add(new XAttribute("fontId", fonts.Keys.ToList().IndexOf(witem.Font)));
+                    page.Add(word);
+                    foreach (var item in witem.Letters)
+                    {
+                        XElement letter = new XElement("letter");
+                        letter.Add(new XAttribute("letter", item.Letter));
+                        letter.Add(new XAttribute("x", item.Bound.X));
+                        letter.Add(new XAttribute("y", item.Bound.Y));
+                        letter.Add(new XAttribute("w", item.Bound.Width));
+                        letter.Add(new XAttribute("h", item.Bound.Height));
+                        letter.Add(new XAttribute("locationX", item.Location.X));
+                        letter.Add(new XAttribute("locationY", item.Location.Y));
+
+                        fonts.TryAdd(item.Font, item.FontInfo);
+                        letter.Add(new XAttribute("fontId", fonts.Keys.ToList().IndexOf(item.Font)));
+                        word.Add(letter);
+                    }
+                }
+
+                foreach (var item in images)
+                {
+                    XElement image = new XElement("image");
+                    var b64 = Convert.ToBase64String(item.Data);
+                    image.Add(new XElement("data", new XCData(b64)));
+                    image.Add(new XAttribute("x", item.Bound.X));
+                    image.Add(new XAttribute("y", item.Bound.Y));
+                    image.Add(new XAttribute("w", item.Bound.Width));
+                    image.Add(new XAttribute("h", item.Bound.Height));
+                    image.Add(new XAttribute("locationX", item.Location.X));
+                    image.Add(new XAttribute("locationY", item.Location.Y));
+
+                    page.Add(image);
                 }
                 pages.Add(page);
             }
@@ -208,7 +244,7 @@ namespace pdf2eink
             int fontIndex = 0;
             foreach (var item in fonts)
             {
-                fontsElem.Add(new XElement("font", [new XAttribute("id", fontIndex++),  
+                fontsElem.Add(new XElement("font", [new XAttribute("id", fontIndex++),
                     new XAttribute("bold", item.Value.IsBold),
                     new XAttribute("italic", item.Value.IsItalic),
                     new XAttribute("family", item.Value.Family),
@@ -220,9 +256,100 @@ namespace pdf2eink
 
         }
 
+        private void ExportAsFb2()
+        {
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            d.AddNumericField("startPage", "Start page", 0, book.Pages, decimalPlaces: 0);
+            d.AddNumericField("endPage", "End page", 0, book.Pages, decimalPlaces: 0);
+            if (!d.ShowDialog())
+                return;
+
+            var startPage = d.GetIntegerNumericField("startPage");
+            var endPage = d.GetIntegerNumericField("endPage");
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "Fb2 (*.fb2)|*.fb2";
+            if (sfd.ShowDialog() != DialogResult.OK)
+                return;
+
+            XElement elem = new XElement("FictionBook");
+            XElement body = new XElement("body");
+            elem.Add(body);
+            var l = book as IPagesProviderWithLetters;
+
+            for (int i = startPage; i < endPage; i++)
+            {
+                XElement section = new XElement("section");
+
+
+                var boundedObjects = l.GetBoundedObjects(i);
+
+                var words = boundedObjects.OfType<WordInfo>().ToArray();
+                var images = boundedObjects.OfType<PageImageInfo>().ToArray();
+
+                XElement paragraph = new XElement("p");
+                StringBuilder sb = new StringBuilder();
+                foreach (var witem in words)
+                {
+                    sb.Append($"{witem.Word} ");
+                }
+                paragraph.Value = sb.ToString();
+                section.Add(paragraph);
+
+                //foreach (var item in images)
+                //{
+                //    XElement image = new XElement("image");
+                //    var b64 = Convert.ToBase64String(item.Data);
+                //    image.Add(new XElement("data", new XCData(b64)));
+                //    image.Add(new XAttribute("x", item.Bound.X));
+                //    image.Add(new XAttribute("y", item.Bound.Y));
+                //    image.Add(new XAttribute("w", item.Bound.Width));
+                //    image.Add(new XAttribute("h", item.Bound.Height));
+                //    image.Add(new XAttribute("locationX", item.Location.X));
+                //    image.Add(new XAttribute("locationY", item.Location.Y));
+
+                //    page.Add(image);
+                //}
+                body.Add(section);
+            }
+
+
+            File.WriteAllText(sfd.FileName, elem.ToString());
+
+        }
         private void SourceBookViewer_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void toolStripButton4_Click(object sender, EventArgs e)
+        {
+            page--;
+            if (page < 0)
+                page = 0;
+
+            showPage();
+
+        }
+
+        private void showPage()
+        {
+            pictureBox1.Image = book.GetPage(page);
+            if (book is IPagesProviderWithLetters l)
+            {
+                richTextBox1.Text = l.GetPageText(page);
+            }
+            toolStripStatusLabel3.Text = $"{page} / {book.Pages}";
+        }
+
+        private void xmlToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportAsXml();
+        }
+
+        private void fb2ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportAsFb2();
         }
     }
 }

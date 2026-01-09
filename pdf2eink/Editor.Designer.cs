@@ -41,6 +41,7 @@
             compressToolStripMenuItem = new ToolStripMenuItem();
             createFromTextToolStripMenuItem = new ToolStripMenuItem();
             createFromLettersToolStripMenuItem = new ToolStripMenuItem();
+            createFromFB2ToolStripMenuItem = new ToolStripMenuItem();
             toolStripButton2 = new ToolStripButton();
             toolStripButton1 = new ToolStripButton();
             toolStripButton3 = new ToolStripButton();
@@ -79,7 +80,6 @@
             toolStripProgressBar1 = new ToolStripProgressBar();
             contextMenuStrip1 = new ContextMenuStrip(components);
             showImageToolStripMenuItem = new ToolStripMenuItem();
-            createFromFB2ToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
@@ -195,6 +195,13 @@
             createFromLettersToolStripMenuItem.Text = "create from letters";
             createFromLettersToolStripMenuItem.Click += createFromLettersToolStripMenuItem_Click;
             // 
+            // createFromFB2ToolStripMenuItem
+            // 
+            createFromFB2ToolStripMenuItem.Name = "createFromFB2ToolStripMenuItem";
+            createFromFB2ToolStripMenuItem.Size = new Size(184, 26);
+            createFromFB2ToolStripMenuItem.Text = "create from FB2";
+            createFromFB2ToolStripMenuItem.Click += createFromFB2ToolStripMenuItem_Click;
+            // 
             // toolStripButton2
             // 
             toolStripButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
@@ -237,7 +244,7 @@
             toolStripButton6.Image = Properties.Resources.arrow;
             toolStripButton6.ImageTransparentColor = Color.Magenta;
             toolStripButton6.Name = "toolStripButton6";
-            toolStripButton6.Size = new Size(83, 24);
+            toolStripButton6.Size = new Size(82, 24);
             toolStripButton6.Text = "next page";
             toolStripButton6.Click += toolStripButton6_Click;
             // 
@@ -271,25 +278,24 @@
             // 
             // toolStripDropDownButton3
             // 
-            toolStripDropDownButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
             toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { flyReadToolStripMenuItem, mirrorReadToolStripMenuItem, inverseColorsToolStripMenuItem, extractTilesToolStripMenuItem });
-            toolStripDropDownButton3.Image = (Image)resources.GetObject("toolStripDropDownButton3.Image");
+            toolStripDropDownButton3.Image = Properties.Resources.funnel;
             toolStripDropDownButton3.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton3.Name = "toolStripDropDownButton3";
-            toolStripDropDownButton3.Size = new Size(49, 24);
+            toolStripDropDownButton3.Size = new Size(69, 24);
             toolStripDropDownButton3.Text = "filters";
             // 
             // flyReadToolStripMenuItem
             // 
             flyReadToolStripMenuItem.Name = "flyReadToolStripMenuItem";
-            flyReadToolStripMenuItem.Size = new Size(146, 22);
+            flyReadToolStripMenuItem.Size = new Size(180, 22);
             flyReadToolStripMenuItem.Text = "fly read";
             flyReadToolStripMenuItem.Click += flyReadToolStripMenuItem_Click;
             // 
             // mirrorReadToolStripMenuItem
             // 
             mirrorReadToolStripMenuItem.Name = "mirrorReadToolStripMenuItem";
-            mirrorReadToolStripMenuItem.Size = new Size(146, 22);
+            mirrorReadToolStripMenuItem.Size = new Size(180, 22);
             mirrorReadToolStripMenuItem.Text = "mirror read";
             mirrorReadToolStripMenuItem.Click += bustofedonToolStripMenuItem_Click;
             // 
@@ -297,7 +303,7 @@
             // 
             inverseColorsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { thisPageToolStripMenuItem, allPagesToolStripMenuItem1 });
             inverseColorsToolStripMenuItem.Name = "inverseColorsToolStripMenuItem";
-            inverseColorsToolStripMenuItem.Size = new Size(146, 22);
+            inverseColorsToolStripMenuItem.Size = new Size(180, 22);
             inverseColorsToolStripMenuItem.Text = "inverse colors";
             inverseColorsToolStripMenuItem.Click += inverseColorsToolStripMenuItem_Click;
             // 
@@ -318,7 +324,7 @@
             // extractTilesToolStripMenuItem
             // 
             extractTilesToolStripMenuItem.Name = "extractTilesToolStripMenuItem";
-            extractTilesToolStripMenuItem.Size = new Size(146, 22);
+            extractTilesToolStripMenuItem.Size = new Size(180, 22);
             extractTilesToolStripMenuItem.Text = "extract tiles";
             extractTilesToolStripMenuItem.Click += extractTilesToolStripMenuItem_Click;
             // 
@@ -329,7 +335,7 @@
             toolStripDropDownButton4.Image = (Image)resources.GetObject("toolStripDropDownButton4.Image");
             toolStripDropDownButton4.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton4.Name = "toolStripDropDownButton4";
-            toolStripDropDownButton4.Size = new Size(42, 24);
+            toolStripDropDownButton4.Size = new Size(43, 24);
             toolStripDropDownButton4.Text = "TOC";
             // 
             // parseToolStripMenuItem
@@ -482,13 +488,6 @@
             showImageToolStripMenuItem.Size = new Size(138, 22);
             showImageToolStripMenuItem.Text = "show image";
             showImageToolStripMenuItem.Click += showImageToolStripMenuItem_Click;
-            // 
-            // createFromFB2ToolStripMenuItem
-            // 
-            createFromFB2ToolStripMenuItem.Name = "createFromFB2ToolStripMenuItem";
-            createFromFB2ToolStripMenuItem.Size = new Size(184, 26);
-            createFromFB2ToolStripMenuItem.Text = "create from FB2";
-            createFromFB2ToolStripMenuItem.Click += createFromFB2ToolStripMenuItem_Click;
             // 
             // Editor
             // 
