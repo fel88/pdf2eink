@@ -63,6 +63,16 @@ namespace pdf2eink.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap applications {
+            get {
+                object obj = ResourceManager.GetObject("applications", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap arrow {
             get {
                 object obj = ResourceManager.GetObject("arrow", resourceCulture);
@@ -143,6 +153,16 @@ namespace pdf2eink.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap cards {
+            get {
+                object obj = ResourceManager.GetObject("cards", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap edit_writing_mode {
             get {
                 object obj = ResourceManager.GetObject("edit-writing-mode", resourceCulture);
@@ -196,6 +216,16 @@ namespace pdf2eink.Properties {
         internal static System.Drawing.Bitmap printer__arrow {
             get {
                 object obj = ResourceManager.GetObject("printer--arrow", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap wrench_screwdriver {
+            get {
+                object obj = ResourceManager.GetObject("wrench-screwdriver", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

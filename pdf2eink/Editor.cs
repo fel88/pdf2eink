@@ -957,12 +957,14 @@ namespace pdf2eink
         {
             public string Text;
             public bool IsBold;
+            public bool IsItalic;
         }
 
         public async Task RenderBookFromFB2(CbBook book,
             XDocument doc,
             Font pFont,
-            Font headerFont,
+            Font boldFont,
+            Font italicFont,
             int? maxPages,
             bool onlySpacesBreak = true)
         {
@@ -975,7 +977,23 @@ namespace pdf2eink
                 {
                     if (eitem.Name.LocalName == "p")
                     {
-                        strings.Add(new FormattedString() { Text = eitem.Value });
+                        foreach (var node in eitem.Nodes())
+                        {
+                            if (node is XElement element)
+                            {
+                                strings.Add(new FormattedString()
+                                {
+                                    Text = element.Value,
+                                    IsBold = element.Name.LocalName == "strong",
+                                    IsItalic = element.Name.LocalName == "emphasis"
+                                });
+                            }
+                            else if (node is XText textNode)
+                            {
+                                strings.Add(new FormattedString() { Text = textNode.Value });
+                            }
+                        }
+
                     }
                     if (eitem.Name.LocalName == "title")
                     {
@@ -1059,7 +1077,8 @@ namespace pdf2eink
                         toolStripProgressBar1.Value = strings.Count - q.Count;
                     });
                     var deq = q.Dequeue();
-                    var font = deq.IsBold ? headerFont : pFont;
+                    var font = deq.IsBold ? boldFont : pFont;
+                    font = deq.IsItalic ? italicFont : font;
 
                     var truncatedText = deq.Text;
 
@@ -1088,6 +1107,7 @@ namespace pdf2eink
                         var textToDraw = currentSplit.Substring(0, maxChars);
                         SizeF fittedSize2 = gr.MeasureString(textToDraw, font);
 
+                        //todo track last X in order to continue string later
                         gr.DrawString(textToDraw, font, Brushes.Black, 0, yGap * lineIndex, sf);
 
                         currentSplit = currentSplit.Substring(maxChars);
@@ -1311,18 +1331,18 @@ namespace pdf2eink
                     var y = wordInfo.Attribute("y").Value.ToDouble();
                     var w = wordInfo.Attribute("w").Value.ToDouble();
                     var h = wordInfo.Attribute("h").Value.ToDouble();
-                   // var locX = wordInfo.Attribute("locationX").Value.ToDouble();
-                   // var locY = wordInfo.Attribute("locationY").Value.ToDouble();
-                   //var fontId = int.Parse(wordInfo.Attribute("fontId").Value);
+                    // var locX = wordInfo.Attribute("locationX").Value.ToDouble();
+                    // var locY = wordInfo.Attribute("locationY").Value.ToDouble();
+                    //var fontId = int.Parse(wordInfo.Attribute("fontId").Value);
 
-                   // x = x;
-                   // y = y;
+                    // x = x;
+                    // y = y;
 
                     Font font = null;
-                   // if (_fonts[fontId].Item2 != null)
+                    // if (_fonts[fontId].Item2 != null)
                     //    font = _fonts[fontId].Item2;
-                   // else
-                        font = new Font("Courier New", (float)h / 2);
+                    // else
+                    font = new Font("Courier New", (float)h / 2);
 
                     // Text fits, draw it normally
                     var kx = book.Width / realPageW;
@@ -1456,6 +1476,7 @@ namespace pdf2eink
                 XDocument.Load(ofd.FileName),
                 new Font(fontName, fontSize),
                 new Font(fontName, fontSize, FontStyle.Bold),
+                new Font(fontName, fontSize, FontStyle.Italic),
                 pagesLimit,
                 d.GetBoolField("onlySpacesBreak")
                 );

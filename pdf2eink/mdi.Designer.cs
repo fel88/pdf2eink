@@ -85,11 +85,10 @@
             // toolStripButton4
             // 
             toolStripButton4.Alignment = ToolStripItemAlignment.Right;
-            toolStripButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
+            toolStripButton4.Image = Properties.Resources.wrench_screwdriver;
             toolStripButton4.ImageTransparentColor = Color.Magenta;
             toolStripButton4.Name = "toolStripButton4";
-            toolStripButton4.Size = new Size(52, 24);
+            toolStripButton4.Size = new Size(72, 24);
             toolStripButton4.Text = "settings";
             toolStripButton4.Click += toolStripButton4_Click_1;
             // 
@@ -115,32 +114,31 @@
             // toolStripDropDownButton1
             // 
             toolStripDropDownButton1.Alignment = ToolStripItemAlignment.Right;
-            toolStripDropDownButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
             toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { tileHorizontalToolStripMenuItem, tileVerticalToolStripMenuItem, cascadeToolStripMenuItem });
-            toolStripDropDownButton1.Image = (Image)resources.GetObject("toolStripDropDownButton1.Image");
+            toolStripDropDownButton1.Image = Properties.Resources.applications;
             toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
-            toolStripDropDownButton1.Size = new Size(67, 24);
+            toolStripDropDownButton1.Size = new Size(87, 24);
             toolStripDropDownButton1.Text = "windows";
             // 
             // tileHorizontalToolStripMenuItem
             // 
             tileHorizontalToolStripMenuItem.Name = "tileHorizontalToolStripMenuItem";
-            tileHorizontalToolStripMenuItem.Size = new Size(146, 22);
+            tileHorizontalToolStripMenuItem.Size = new Size(180, 22);
             tileHorizontalToolStripMenuItem.Text = "tile horizontal";
             tileHorizontalToolStripMenuItem.Click += tileHorizontalToolStripMenuItem_Click;
             // 
             // tileVerticalToolStripMenuItem
             // 
             tileVerticalToolStripMenuItem.Name = "tileVerticalToolStripMenuItem";
-            tileVerticalToolStripMenuItem.Size = new Size(146, 22);
+            tileVerticalToolStripMenuItem.Size = new Size(180, 22);
             tileVerticalToolStripMenuItem.Text = "tile vertical";
             tileVerticalToolStripMenuItem.Click += tileVerticalToolStripMenuItem_Click;
             // 
             // cascadeToolStripMenuItem
             // 
             cascadeToolStripMenuItem.Name = "cascadeToolStripMenuItem";
-            cascadeToolStripMenuItem.Size = new Size(146, 22);
+            cascadeToolStripMenuItem.Size = new Size(180, 22);
             cascadeToolStripMenuItem.Text = "cascade";
             cascadeToolStripMenuItem.Click += cascadeToolStripMenuItem_Click;
             // 

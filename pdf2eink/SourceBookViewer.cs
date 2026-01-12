@@ -261,11 +261,16 @@ namespace pdf2eink
             var d = AutoDialog.DialogHelpers.StartDialog();
             d.AddNumericField("startPage", "Start page", 0, book.Pages, decimalPlaces: 0);
             d.AddNumericField("endPage", "End page", 0, book.Pages, decimalPlaces: 0);
+            d.AddBoolField("useBold", "Use Bold", true);
+            d.AddBoolField("useItalic", "Use Italic", true);
+
             if (!d.ShowDialog())
                 return;
 
             var startPage = d.GetIntegerNumericField("startPage");
             var endPage = d.GetIntegerNumericField("endPage");
+            var useBold = d.GetBoolField("useBold");
+            var useItalic = d.GetBoolField("useItalic");
 
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Filter = "Fb2 (*.fb2)|*.fb2";
@@ -281,42 +286,60 @@ namespace pdf2eink
             {
                 XElement section = new XElement("section");
 
-
                 var boundedObjects = l.GetBoundedObjects(i);
 
                 var words = boundedObjects.OfType<WordInfo>().ToArray();
                 var images = boundedObjects.OfType<PageImageInfo>().ToArray();
 
                 XElement paragraph = new XElement("p");
-                StringBuilder sb = new StringBuilder();
+                
+                bool isBold = false;
+                bool isItalic = false;
+                XElement current = paragraph;
+                                
                 foreach (var witem in words)
-                {
-                    sb.Append($"{witem.Word} ");
+                {                    
+                    if (useBold && witem.FontInfo.IsBold && !isBold)
+                    {
+                        isBold = true;
+                        var newEL = new XElement("strong");
+                        current.Add(newEL);
+                        current = newEL;                        
+                    }
+
+                    if (!witem.FontInfo.IsBold && isBold)
+                    {
+                        isBold = false;                        
+                        current = current.Parent;
+                    }
+
+                    if (useItalic && witem.FontInfo.IsItalic && !isItalic)
+                    {
+                        isItalic = true;
+                        var newEL = new XElement("emphasis");
+                        current.Add(newEL);
+                        current = newEL;                        
+                    }
+
+                    if (!witem.FontInfo.IsItalic && isItalic)
+                    {
+                        isItalic = false;
+                        current = current.Parent;
+                    }
+
+                    current.Add($"{witem.Word} ");
                 }
-                paragraph.Value = sb.ToString();
+
+              
                 section.Add(paragraph);
-
-                //foreach (var item in images)
-                //{
-                //    XElement image = new XElement("image");
-                //    var b64 = Convert.ToBase64String(item.Data);
-                //    image.Add(new XElement("data", new XCData(b64)));
-                //    image.Add(new XAttribute("x", item.Bound.X));
-                //    image.Add(new XAttribute("y", item.Bound.Y));
-                //    image.Add(new XAttribute("w", item.Bound.Width));
-                //    image.Add(new XAttribute("h", item.Bound.Height));
-                //    image.Add(new XAttribute("locationX", item.Location.X));
-                //    image.Add(new XAttribute("locationY", item.Location.Y));
-
-                //    page.Add(image);
-                //}
+                             
                 body.Add(section);
             }
-
 
             File.WriteAllText(sfd.FileName, elem.ToString());
 
         }
+
         private void SourceBookViewer_Load(object sender, EventArgs e)
         {
 

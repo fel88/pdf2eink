@@ -156,7 +156,7 @@ namespace pdf2eink
                     string pageText = page.Text;
                     ppage = page;
                     images = page.GetImages().ToList();
-
+                    
                     words = page.GetWords().ToList();
                 }
             }
@@ -193,9 +193,15 @@ namespace pdf2eink
                     Word = item.Text,
                     FontInfo = new FontInfo()
                     {
-                        Family = item.FontName,
+                        Family = item.FontName
                     }
                 };
+                if (item.Letters.Any())
+                {
+                    var fr = item.Letters.First();
+                    winfo.FontInfo.IsBold = fr.FontDetails.IsBold;
+                    winfo.FontInfo.IsItalic = fr.FontDetails.IsItalic;
+                }
 
                 ret.Add(winfo);
 
@@ -217,17 +223,17 @@ namespace pdf2eink
                         Location = new PointF((float)location.X, (float)location.Y),
                         Bound = rect,
                         Letter = litem.Value,
-                        Font = $"{litem.FontName}_{litem.FontSize}_{litem.Font.Weight}_{litem.Font.IsItalic}_{litem.Font.IsBold}_{color.r}_{color.g}_{color.b}",
+                        Font = $"{litem.FontName}_{litem.FontSize}_{litem.FontDetails.Weight}_{litem.FontDetails.IsItalic}_{litem.FontDetails.IsBold}_{color.r}_{color.g}_{color.b}",
                         FontInfo = new FontInfo()
                         {
                             Family = litem.FontName,
                             Size = litem.FontSize,
-                            IsBold = litem.Font.IsBold,
-                            IsItalic = litem.Font.IsItalic
+                            IsBold = litem.FontDetails.IsBold,
+                            IsItalic = litem.FontDetails.IsItalic
                         }
                     };
 
-                    winfo.Letters.Add(letter);                                       
+                    winfo.Letters.Add(letter);
                 }
             }
             return ret.ToArray();
