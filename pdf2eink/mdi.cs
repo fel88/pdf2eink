@@ -83,7 +83,7 @@ namespace pdf2eink
 
             p1.Dpi = 300;
             SourceBookViewer s = new SourceBookViewer();
-            
+
             s.Open(p1);
             s.MdiParent = this;
             s.Show();
@@ -128,6 +128,13 @@ namespace pdf2eink
         private void toolStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
 
+        }
+
+        private void toolStripButton8_Click(object sender, EventArgs e)
+        {
+            HtmlRenderer r = new HtmlRenderer();
+            r.MdiParent = this;
+            r.Show();
         }
     }
 }

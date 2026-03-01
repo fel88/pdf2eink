@@ -1192,7 +1192,7 @@ namespace pdf2eink
             trackBar1.Maximum = book.pages - 1;
         }
 
-        private void CreateEmptyBook(MemoryStream ms)
+        public static void CreateEmptyBook(MemoryStream ms)
         {
             var fs = ms;
             BookExportContext ctx = new BookExportContext();

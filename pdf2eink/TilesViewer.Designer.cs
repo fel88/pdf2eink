@@ -35,8 +35,6 @@
             columnHeader2 = new ColumnHeader();
             columnHeader3 = new ColumnHeader();
             columnHeader4 = new ColumnHeader();
-            pictureBox1 = new PictureBoxWithInterpolationMode();
-            pictureBoxWithInterpolationMode1 = new PictureBoxWithInterpolationMode();
             textBox1 = new TextBox();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
@@ -54,8 +52,6 @@
             pageToolStripMenuItem = new ToolStripMenuItem();
             toolStripButton5 = new ToolStripButton();
             tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxWithInterpolationMode1).BeginInit();
             statusStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
@@ -66,8 +62,6 @@
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.Controls.Add(listView1, 0, 1);
-            tableLayoutPanel1.Controls.Add(pictureBox1, 1, 1);
-            tableLayoutPanel1.Controls.Add(pictureBoxWithInterpolationMode1, 1, 2);
             tableLayoutPanel1.Controls.Add(textBox1, 0, 0);
             tableLayoutPanel1.Dock = DockStyle.Fill;
             tableLayoutPanel1.Location = new Point(0, 25);
@@ -94,27 +88,6 @@
             listView1.View = View.Details;
             listView1.SelectedIndexChanged += listView1_SelectedIndexChanged;
             listView1.MouseDoubleClick += listView1_MouseDoubleClick;
-            // 
-            // pictureBox1
-            // 
-            pictureBox1.Dock = DockStyle.Fill;
-            pictureBox1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
-            pictureBox1.Location = new Point(403, 33);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(394, 180);
-            pictureBox1.TabIndex = 1;
-            pictureBox1.TabStop = false;
-            // 
-            // pictureBoxWithInterpolationMode1
-            // 
-            pictureBoxWithInterpolationMode1.Dock = DockStyle.Fill;
-            pictureBoxWithInterpolationMode1.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
-            pictureBoxWithInterpolationMode1.Location = new Point(403, 219);
-            pictureBoxWithInterpolationMode1.Name = "pictureBoxWithInterpolationMode1";
-            pictureBoxWithInterpolationMode1.Size = new Size(394, 181);
-            pictureBoxWithInterpolationMode1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBoxWithInterpolationMode1.TabIndex = 2;
-            pictureBoxWithInterpolationMode1.TabStop = false;
             // 
             // textBox1
             // 
@@ -173,7 +146,7 @@
             toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
             toolStripButton1.ImageTransparentColor = Color.Magenta;
             toolStripButton1.Name = "toolStripButton1";
-            toolStripButton1.Size = new Size(99, 22);
+            toolStripButton1.Size = new Size(100, 22);
             toolStripButton1.Text = "export tiled page";
             toolStripButton1.Click += toolStripButton1_Click;
             // 
@@ -259,8 +232,6 @@
             Text = "TilesViewer";
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxWithInterpolationMode1).EndInit();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             toolStrip1.ResumeLayout(false);
