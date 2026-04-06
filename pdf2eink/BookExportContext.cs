@@ -12,9 +12,9 @@
              gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;*/
             var hh = bmp1.Height - pageInfoHeight - 1;
             gr.FillRectangle(Brushes.White, 0, hh, bmp1.Width, pageInfoHeight + 1);
-            
+
             gr.DrawLine(Pens.Black, 0, hh, bmp1.Width, hh);
-            
+
             var str = $"{page} / {totalPages}";
             /*for (int z = 0; z < str.Length; z++)
             {
@@ -28,10 +28,10 @@
             int xx = (page * 15) % (int)(bmp1.Width - ms.Width - 1);
             gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
             gr.DrawString(str.ToString(), new Font(fontName, 7), Brushes.Black, xx, hh - 1);
-            
+
         }
 
-        public static byte[] GetBuffer(Bitmap bmp)
+        public static byte[] GetBuffer(Bitmap bmp, bool inverted = false)
         {
 
             // Lock the bitmap's bits. 
@@ -49,7 +49,11 @@
 
             // Copy the RGB values into the array.
             System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes); bmp.UnlockBits(bmpData);
-
+            if (inverted)
+                for (int i = 0; i < rgbValues.Length; i++)
+                {
+                    rgbValues[i] = (byte)~rgbValues[i];
+                }
             return rgbValues;
         }
         public static byte[] GetCompressedInfoBuffer(Bitmap bmp)

@@ -93,6 +93,16 @@ namespace pdf2eink.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap arrow_curve_180_left {
+            get {
+                object obj = ResourceManager.GetObject("arrow-curve-180-left", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap arrow_turn_180_left {
             get {
                 object obj = ResourceManager.GetObject("arrow-turn-180-left", resourceCulture);

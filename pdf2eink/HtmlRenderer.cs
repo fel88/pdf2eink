@@ -48,7 +48,14 @@ namespace pdf2eink
             <head>
                 <title>Dynamic HTML</title>
                 <style>
-                    body { font-family: sans-serif; background-color: #ffffff; }
+html {
+    filter: grayscale(100%);
+    background-color: white;
+-webkit-font-smoothing: none;
+  font-smooth: none;
+}
+                    body {  filter: grayscale(100%) contrast(200%);
+font-family: consolas; background-color: #ffffff; }
                     h1 { color: blue; }
                 </style>
             </head>
@@ -91,8 +98,12 @@ namespace pdf2eink
                                         
                     string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "capture.png");
                     b.Save(filePath, ImageFormat.Png);
-                    
-
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = filePath,
+                        UseShellExecute = true
+                    };
+                    Process.Start(psi);
                     MessageBox.Show($"Screenshot saved to {filePath}");
 
                 }
@@ -206,13 +217,19 @@ namespace pdf2eink
 
                 pagesLimit
                 );
-            SaveFileDialog sfd = new SaveFileDialog();
-            sfd.Filter = "CB/TCB (*.cb, *.tcb)|*.cb;*.tcb|CB files (*.cb)|*.cb|Tiled book (*.tcb)|*.tcb";
 
-            if (sfd.ShowDialog() != DialogResult.OK)
-                return;
+            Viewer ww = new Viewer();
+            ww.Init(book);
+            ww.MdiParent = MdiParent;
+            ww.Show();
+            
+            //SaveFileDialog sfd = new SaveFileDialog();
+            //sfd.Filter = "CB/TCB (*.cb, *.tcb)|*.cb;*.tcb|CB files (*.cb)|*.cb|Tiled book (*.tcb)|*.tcb";
 
-            book.SaveAs(sfd.FileName);
+            //if (sfd.ShowDialog() != DialogResult.OK)
+            //    return;
+
+            //book.SaveAs(sfd.FileName);
 
         }
         int pageNo = 0;

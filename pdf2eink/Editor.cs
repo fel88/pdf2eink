@@ -113,6 +113,7 @@ namespace pdf2eink
 
         public void Init(string path)
         {
+            undos.Clear();
             Text = $"Editor: {path}";
             lastPath = path;
             book = new CbBook(path);
@@ -456,8 +457,8 @@ namespace pdf2eink
                 book.UpdatePage(buf, pageNo);
             }
         }
-
-        public void RenderText(int pageNo, string text, int x, int y)
+        string lastText = "Hello world!";
+        public void RenderText(int pageNo)
         {
             //Bookerly  Webdings Bookerly, Literata, Lora, and PT Serif. For sans serif, I recommend Fira Sans, Noto Sans, Rambla, and Sen. 
             //Linux Biolinum
@@ -496,15 +497,29 @@ namespace pdf2eink
     Vollkorn *Gentium Book Plus
 
              */
+            int x;
+            int y;
+
+
             var d = AutoDialog.DialogHelpers.StartDialog();
-            d.AddStringField("text", "Text", text);
+            d.AddStringField("text", "Text", lastText);
             d.AddStringField("fontName", "Font name", "Verdana");
-            d.AddOptionsField("fontNameOpt", "Font name", ["Courier New", "Verdana", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
+            Font targetFont = null;
+            d.AddCustomDialogField("customFont", "Font", () =>
+            {
+                FontDialog fd = new FontDialog();
+                if (fd.ShowDialog() == DialogResult.OK)
+                    targetFont = fd.Font;
+            });
+            d.AddOptionsField("fontNameOpt", "Font name", ["Courier New", "Consolas", "Verdana", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
             d.AddBoolField("fontFromList", "Use font list", true);
             d.AddBoolField("fitSizeToLine", "fitSizeToLine", true);
-            d.AddNumericField("fontSize", "Font size", 16);
-            d.AddIntegerNumericField("x", "X", 0);
-            d.AddIntegerNumericField("y", "Y", 0);
+            d.AddBoolField("bold", "Bold", false);
+            d.AddBoolField("italic", "Italic", false);
+            d.AddBoolField("underline", "Underline", false);
+            d.AddDouble("fontSize", "Font size", 16);
+            d.AddInt("x", "X", 0);
+            d.AddInt("y", "Y", 0);
 
             if (!d.ShowDialog())
                 return;
@@ -513,32 +528,43 @@ namespace pdf2eink
             if (d.GetBoolField("fontFromList"))
                 fontName = d.GetOptionsField("fontNameOpt");
 
-            var fontSize = (float)d.GetNumericField("fontSize");
-            x = d.GetIntegerNumericField("x");
-            y = d.GetIntegerNumericField("y");
-            text = d.GetStringField("text");
+            var fontSize = (float)d.GetDouble("fontSize");
+            x = d.GetInt("x");
+            y = d.GetInt("y");
+            lastText = d.GetStringField("text");
+            var style = FontStyle.Regular;
+            if (d.GetBoolField("bold"))
+                style |= FontStyle.Bold;
+            if (d.GetBoolField("italic"))
+                style |= FontStyle.Italic;
+            if (d.GetBoolField("underline"))
+                style |= FontStyle.Underline;
 
             var bmp = book.GetPage(pageNo);
             var gr = Graphics.FromImage(bmp);
             gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
             //gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             //gr.PixelOffsetMode=System.Drawing.Drawing2D.PixelOffsetMode.
-            var font = new Font(fontName, fontSize);
+            var font = new Font(fontName, fontSize, style);
+            if (targetFont != null)
+                font = targetFont;
             float fontStep = 0.5f;
             if (d.GetBoolField("fitSizeToLine"))
             {
-                var ms = gr.MeasureString(text, font);
+                var ms = gr.MeasureString(lastText, font);
                 //binary search here
                 while (ms.Width < bmp.Width)
                 {
                     fontSize += fontStep;
-                    var font2 = new Font(fontName, fontSize);
-                    ms = gr.MeasureString(text, font2);
+                    var font2 = new Font(fontName, fontSize, style);
+                    ms = gr.MeasureString(lastText, font2);
                 }
                 fontSize -= fontStep;
-                font = new Font(fontName, fontSize);
+
+
+                font = new Font(fontName, fontSize, style);
             }
-            gr.DrawString(text, font, Brushes.Black, x, y);
+            gr.DrawString(lastText, font, Brushes.Black, x, y);
 
 
             using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
@@ -705,9 +731,11 @@ namespace pdf2eink
 
         private void renderTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            RenderText(pageNo, "Hello world", 10, 10);
+            SaveState();
+            RenderText(pageNo);
             showPage();
         }
+
         void fillRectangle(int x, int y, int width, int height)
         {
             var bmp = book.GetPage(pageNo);
@@ -725,10 +753,27 @@ namespace pdf2eink
                 book.UpdatePage(buf, pageNo);
             }
         }
+
+        public void SaveState()
+        {
+            undos.Push(book.GetBytes());
+        }
+
         private void fillRectangleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
-            fillRectangle(0, 0, book.Width, book.Height / 3);
+            var d = AutoDialog.DialogHelpers.StartDialog();
+            d.AddIntegerNumericField("x", "X", max: book.Width);
+            d.AddIntegerNumericField("y", "Y", max: book.Height);
+            d.AddIntegerNumericField("w", "Width", max: book.Width);
+            d.AddIntegerNumericField("h", "Height", max: book.Height);
+            if (!d.ShowDialog())
+                return;
+            var x = d.GetIntegerNumericField("x");
+            var y = d.GetIntegerNumericField("y");
+            var w = d.GetIntegerNumericField("w");
+            var h = d.GetIntegerNumericField("h");
+            SaveState();
+            fillRectangle(x, y, w, h);
             showPage();
         }
 
@@ -1150,18 +1195,16 @@ namespace pdf2eink
         }
         private void createFromTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.ShowDialog();
-            var text = File.ReadAllText(ofd.FileName);
-            var d = AutoDialog.DialogHelpers.StartDialog();
-            MemoryStream ms = new MemoryStream();
-            CreateEmptyBook(ms);
-            InitFromStream(ms);
 
+        }
+
+        public void FromText(string text)
+        {
+            var d = AutoDialog.DialogHelpers.StartDialog();
 
 
             d.AddStringField("fontName", "Font name", "Verdana");
-            d.AddOptionsField("fontNameOpt", "Font name", ["Courier New", "Verdana", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
+            d.AddOptionsField("fontNameOpt", "Font name", ["Courier New", "Consolas", "Verdana", "Bookerly", "Literata", "Lora", "PT Serif", "Rambla", "Sens"], 0);
             d.AddBoolField("fontFromList", "Use font list", true);
             d.AddBoolField("pagesLimit", "pagesLimit", true);
             d.AddBoolField("useBPHD", "Bustrophedon", false);
@@ -1187,6 +1230,11 @@ namespace pdf2eink
             {
                 pagesLimit = d.GetIntegerNumericField("maxPages");
             }
+            MemoryStream ms = new MemoryStream();
+            CreateEmptyBook(ms);
+            InitFromStream(ms);
+
+
 
             RenderBookFromText(book, text, new Font(fontName, fontSize), pagesLimit, bphd);
             trackBar1.Maximum = book.pages - 1;
@@ -1482,6 +1530,60 @@ namespace pdf2eink
                 );
 
             trackBar1.Maximum = book.pages - 1;
+        }
+
+        private void fromClipboardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FromText(Clipboard.GetText());
+        }
+
+        private void fileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            if (ofd.ShowDialog() != DialogResult.OK)
+                return;
+
+            var text = File.ReadAllText(ofd.FileName);
+            FromText(text);
+        }
+
+        Stack<byte[]> undos = new Stack<byte[]>();
+        private void toolStripButton7_Click(object sender, EventArgs e)
+        {
+            if (undos.Count == 0)
+                return;
+
+            var pop = undos.Pop();
+
+            MemoryStream ms = new MemoryStream(pop);
+            book = new CbBook(ms);
+            trackBar1.Maximum = book.pages - 1;
+            showPage();
+        }
+
+        private void toolStripDropDownButton1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void mergeBooksToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            if (ofd.ShowDialog() != DialogResult.OK)
+                return;
+
+            var book1 = new CbBook(ofd.FileName);
+            for (int i = 0; i < book1.pages; i++)
+            {
+                var page = book1.GetPage(i);
+                book.InsertPage(book.pages);
+                var bmp = page;
+                using (var clone = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+                {
+                    var buf = BookExportContext.GetBuffer(clone, true);
+                    book.UpdatePage(buf, book.pages - 1);
+                }
+            }
         }
     }
 }

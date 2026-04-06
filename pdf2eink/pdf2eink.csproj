@@ -16,7 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AutoDialog" Version="1.0.0.7" />
+		<PackageReference Include="AutoDialog" Version="1.0.0.9" />
 		<PackageReference Include="CefSharp.Common" Version="145.0.260" />
 		<PackageReference Include="CefSharp.OffScreen" Version="145.0.260" />
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3800.47" />
