@@ -378,11 +378,11 @@ namespace pdf2eink
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
             var d = AutoDialog.DialogHelpers.StartDialog();
-            d.AddIntegerNumericField("page", "Page");
+            d.AddInt("page", "Page");
             if (!d.ShowDialog())
                 return;
 
-            var pageNo = d.GetIntegerNumericField("page");
+            var pageNo = d.GetInt("page");
             book.InsertPage(pageNo);
         }
 
@@ -1583,6 +1583,40 @@ namespace pdf2eink
                     var buf = BookExportContext.GetBuffer(clone, true);
                     book.UpdatePage(buf, book.pages - 1);
                 }
+            }
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MemoryStream ms = new MemoryStream();
+            CreateEmptyBook(ms);
+            InitFromStream(ms);
+
+            book.InsertPage(0);
+            showPage();
+        }
+
+        private void insert1bppImgToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Bmp|*.bmp";
+            if (ofd.ShowDialog() != DialogResult.OK)
+                return;
+
+            var bmp = Bitmap.FromFile(ofd.FileName) as Bitmap;
+
+            using var mat = bmp.ToMat();
+                        
+            using var bmp1 = mat.ToBitmap();
+
+            using (var clone = bmp1.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))
+            {
+                var buf = BookExportContext.GetBuffer(clone);
+                for (int i = 0; i < buf.Length; i++)
+                {
+                    buf[i] = (byte)~buf[i];
+                }
+                book.UpdatePage(buf, pageNo);
             }
         }
     }
