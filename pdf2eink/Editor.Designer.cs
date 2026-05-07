@@ -75,6 +75,7 @@
             toolStripButton5 = new ToolStripDropDownButton();
             renderTextToolStripMenuItem = new ToolStripMenuItem();
             fillRectangleToolStripMenuItem = new ToolStripMenuItem();
+            insert1bppImgToolStripMenuItem = new ToolStripMenuItem();
             toolStripDropDownButton6 = new ToolStripDropDownButton();
             nearestToolStripMenuItem = new ToolStripMenuItem();
             defaultToolStripMenuItem = new ToolStripMenuItem();
@@ -85,7 +86,6 @@
             toolStripProgressBar1 = new ToolStripProgressBar();
             contextMenuStrip1 = new ContextMenuStrip(components);
             showImageToolStripMenuItem = new ToolStripMenuItem();
-            insert1bppImgToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
@@ -452,16 +452,23 @@
             // renderTextToolStripMenuItem
             // 
             renderTextToolStripMenuItem.Name = "renderTextToolStripMenuItem";
-            renderTextToolStripMenuItem.Size = new Size(180, 22);
+            renderTextToolStripMenuItem.Size = new Size(157, 22);
             renderTextToolStripMenuItem.Text = "render text";
             renderTextToolStripMenuItem.Click += renderTextToolStripMenuItem_Click;
             // 
             // fillRectangleToolStripMenuItem
             // 
             fillRectangleToolStripMenuItem.Name = "fillRectangleToolStripMenuItem";
-            fillRectangleToolStripMenuItem.Size = new Size(180, 22);
+            fillRectangleToolStripMenuItem.Size = new Size(157, 22);
             fillRectangleToolStripMenuItem.Text = "fill rectangle";
             fillRectangleToolStripMenuItem.Click += fillRectangleToolStripMenuItem_Click;
+            // 
+            // insert1bppImgToolStripMenuItem
+            // 
+            insert1bppImgToolStripMenuItem.Name = "insert1bppImgToolStripMenuItem";
+            insert1bppImgToolStripMenuItem.Size = new Size(157, 22);
+            insert1bppImgToolStripMenuItem.Text = "insert 1bpp img";
+            insert1bppImgToolStripMenuItem.Click += insert1bppImgToolStripMenuItem_Click;
             // 
             // toolStripDropDownButton6
             // 
@@ -533,13 +540,6 @@
             showImageToolStripMenuItem.Size = new Size(138, 22);
             showImageToolStripMenuItem.Text = "show image";
             showImageToolStripMenuItem.Click += showImageToolStripMenuItem_Click;
-            // 
-            // insert1bppImgToolStripMenuItem
-            // 
-            insert1bppImgToolStripMenuItem.Name = "insert1bppImgToolStripMenuItem";
-            insert1bppImgToolStripMenuItem.Size = new Size(180, 22);
-            insert1bppImgToolStripMenuItem.Text = "insert 1bpp img";
-            insert1bppImgToolStripMenuItem.Click += insert1bppImgToolStripMenuItem_Click;
             // 
             // Editor
             // 

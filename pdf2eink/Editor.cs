@@ -840,6 +840,11 @@ namespace pdf2eink
         {
             toolStripProgressBar1.Maximum = text.Length;
             toolStripProgressBar1.Visible = true;
+            if (maxPages != null)
+            {
+                toolStripProgressBar1.Maximum = maxPages.Value;
+                toolStripProgressBar1.Visible = true;
+            }
             Task.Run(() =>
             {
                 int charactersLeft = text.Length;
@@ -848,9 +853,19 @@ namespace pdf2eink
                 {
                     if (maxPages != null && book.pages > maxPages)
                         break;
+
                     statusStrip1.Invoke(() =>
                     {
-                        toolStripProgressBar1.Value = originalLength - charactersLeft;
+                        if (maxPages == null)
+                        {
+                            toolStripProgressBar1.Value = originalLength - charactersLeft;
+                            toolStripStatusLabel3.Text = $"pages: {book.pages}  {(int)(100f * toolStripProgressBar1.Value / (float)toolStripProgressBar1.Maximum)}%";
+                        }
+                        else
+                        {
+                            toolStripProgressBar1.Value = book.pages;
+                            toolStripStatusLabel3.Text = $"pages: {book.pages}  {(int)(100f * toolStripProgressBar1.Value / (float)toolStripProgressBar1.Maximum)}%";
+                        }
                     });
                     BookExportParams bep = new BookExportParams();
                     RectangleF layoutRectangle = new RectangleF(0, 0, book.Width, book.Height - bep.PageInfoHeight);
@@ -863,15 +878,26 @@ namespace pdf2eink
                     //fillRectangle(0, 0, book.Width, book.Height);
                     gr.FillRectangle(Brushes.White, 0, 0, book.Width, book.Height);
 
-                    // Option 1: To get the size of the entire string if it were drawn within the layout area
-                    SizeF textSize = gr.MeasureString(text, font, layoutRectangle.Size);
-
                     // Option 2: To get the number of characters and lines that actually fit
                     int charactersFitted;
                     int linesFilled;
                     StringFormat sf = new StringFormat(StringFormatFlags.LineLimit); // Prevent wrapping
+                    StringBuilder sub = new StringBuilder();
+                    SizeF fittedSize = new SizeF();
+                    const int AppendBlockSize = 512;
+                    do
+                    {
+                        if (text.Length < AppendBlockSize)
+                        {
+                            sub.Append(text);
+                        }
+                        else
+                        {
+                            sub.Append(text.Substring(sub.Length, AppendBlockSize));
 
-                    SizeF fittedSize = gr.MeasureString(text, font, layoutRectangle.Size, sf, out charactersFitted, out linesFilled);
+                        }
+                        fittedSize = gr.MeasureString(sub.ToString(), font, layoutRectangle.Size, sf, out charactersFitted, out linesFilled);
+                    } while (charactersFitted >= sub.Length && sub.Length < text.Length);
 
                     // 'charactersFitted' will contain the count of characters that fit within the layoutRectangle.
                     // 'linesFilled' will contain the count of lines that fit within the layoutRectangle.
@@ -993,7 +1019,10 @@ namespace pdf2eink
                 statusStrip1.Invoke(() =>
                 {
                     toolStripProgressBar1.Visible = false;
+                    pageNo = 0;
+                    showPage();
                 });
+                
             });
 
 
@@ -1606,7 +1635,7 @@ namespace pdf2eink
             var bmp = Bitmap.FromFile(ofd.FileName) as Bitmap;
 
             using var mat = bmp.ToMat();
-                        
+
             using var bmp1 = mat.ToBitmap();
 
             using (var clone = bmp1.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format1bppIndexed))

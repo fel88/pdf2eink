@@ -69,10 +69,7 @@ namespace pdf2eink
             var size = stride * height;
             var pageOffset = 12 + tocRawSize + size * pageNo;
 
-            var part1 = bts.Take(pageOffset).ToArray();
-            var part2 = bts.Skip(pageOffset).Skip(size).ToArray();
-
-            bts = part1.Concat(data).Concat(part2).ToArray();
+            Array.Copy(data, 0, bts, pageOffset, size);
         }
 
         public void InsertPage(int pageNo)
@@ -84,15 +81,16 @@ namespace pdf2eink
 
             var pageOffset = 12 + tocRawSize + size * pageNo;
 
-            var part1 = bts.Take(pageOffset).ToArray();
-            byte[] blank = new byte[size];
-            for (int i = 0; i < blank.Length; i++)
-            {
-                blank[i] = 0x0;
-            }
-            var part2 = bts.Skip(pageOffset).ToArray();
+            //todo refactor with linked list
 
-            bts = part1.Concat(blank).Concat(part2).ToArray();
+            
+            byte[] newArray = new byte[bts.Length + size];
+
+            Array.Copy(bts, 0, newArray, 0, pageOffset);
+            
+            Array.Copy(bts, pageOffset, newArray, pageOffset + size, bts.Length - pageOffset);
+
+            bts = newArray;
             pages++;
             UpdatePagesCount();
         }
@@ -135,7 +133,9 @@ namespace pdf2eink
             var height = BitConverter.ToUInt16(bts, 10);
             int stride = 4 * (int)Math.Ceiling(width / 8 / 4f);//aligned 4
             var size = stride * height;
-            var page1 = bts.Skip(12 + tocRawSize).Skip(pageNo * size).Take(size).ToArray();
+            byte[] page1 = new byte[size];
+            Array.Copy(bts, 12 + tocRawSize + pageNo * size, page1, 0, size);
+            
             Bitmap bmp = new Bitmap(width, height);
 
             for (int j = 0; j < bmp.Height; j++)
