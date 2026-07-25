@@ -798,7 +798,8 @@ namespace pdf2eink
             showPage();
         }
 
-        public static int GetCharactersThatFitLine(Graphics g, string text, Font font, float maxWidth, bool backTrackToLastSpacePositon = true)
+        public static int GetCharactersThatFitLine(Graphics g, string text, Font font, float maxWidth,
+            bool backTrackToLastSpacePositon = true, bool autoSplitNewLine = true)
         {
             int charactersFitted = 0;
             int lastSpacePosition = 0;
@@ -822,6 +823,9 @@ namespace pdf2eink
                 {
                     charactersFitted = i;
                 }
+
+                if (autoSplitNewLine && text[i - 1] == '\r' || text[i - 1] == '\n')
+                    break;
             }
             return charactersFitted;
         }
@@ -836,9 +840,18 @@ namespace pdf2eink
             return new string(charArray);
         }
 
-        public void RenderBookFromText(CbBook book, string text, Font font, int? maxPages, bool bustrophedon)
+        public class RenderTextBookContext
         {
-            toolStripProgressBar1.Maximum = text.Length;
+            public string text;            
+        }
+
+        public void RenderBookFromText(CbBook book, string _text, Font font,
+            int? maxPages,
+            bool bustrophedon,
+            bool customLineSpacing = false,
+            float lineSpacing = 1f)
+        {
+            toolStripProgressBar1.Maximum = _text.Length;
             toolStripProgressBar1.Visible = true;
             if (maxPages != null)
             {
@@ -847,9 +860,15 @@ namespace pdf2eink
             }
             Task.Run(() =>
             {
-                int charactersLeft = text.Length;
-                int originalLength = text.Length;
-                while (charactersLeft > 0)
+                RenderTextBookContext renderCtx = new RenderTextBookContext();
+                renderCtx.text = _text;
+
+                renderCtx.text = renderCtx.text.Replace("\r\n", "\n");
+
+                
+
+                int originalLength = _text.Length;
+                while (renderCtx.text.Length > 0)
                 {
                     if (maxPages != null && book.pages > maxPages)
                         break;
@@ -858,7 +877,7 @@ namespace pdf2eink
                     {
                         if (maxPages == null)
                         {
-                            toolStripProgressBar1.Value = originalLength - charactersLeft;
+                            toolStripProgressBar1.Value = originalLength - renderCtx.text.Length;
                             toolStripStatusLabel3.Text = $"pages: {book.pages}  {(int)(100f * toolStripProgressBar1.Value / (float)toolStripProgressBar1.Maximum)}%";
                         }
                         else
@@ -879,109 +898,46 @@ namespace pdf2eink
                     gr.FillRectangle(Brushes.White, 0, 0, book.Width, book.Height);
 
                     // Option 2: To get the number of characters and lines that actually fit
-                    int charactersFitted;
-                    int linesFilled;
-                    StringFormat sf = new StringFormat(StringFormatFlags.LineLimit); // Prevent wrapping
-                    StringBuilder sub = new StringBuilder();
-                    SizeF fittedSize = new SizeF();
-                    const int AppendBlockSize = 512;
-                    do
-                    {
-                        if (text.Length < AppendBlockSize)
-                        {
-                            sub.Append(text);
-                        }
-                        else
-                        {
-                            sub.Append(text.Substring(sub.Length, AppendBlockSize));
 
-                        }
-                        fittedSize = gr.MeasureString(sub.ToString(), font, layoutRectangle.Size, sf, out charactersFitted, out linesFilled);
-                    } while (charactersFitted >= sub.Length && sub.Length < text.Length);
+                    StringFormat sf = new StringFormat(StringFormatFlags.LineLimit); // Prevent wrapping
+
+
 
                     // 'charactersFitted' will contain the count of characters that fit within the layoutRectangle.
                     // 'linesFilled' will contain the count of lines that fit within the layoutRectangle.
-                    if (linesFilled > 19)
-                    {
 
-                    }
                     // You can then use these values to decide how to draw the text,
                     // e.g., truncate the string or adjust the font size.
                     //StringFormat sf = new StringFormat();
                     //      sf.Trimming = StringTrimming.EllipsisWord;
-                    if (charactersFitted < text.Length)
+                    //if (charactersFitted < text.Length)
                     { // Text does not fully fit, you might want to truncate it or add "..."
-                        string truncatedText = text.Substring(0, charactersFitted);// + "...";
-                        text = text.Substring(charactersFitted);
-                        charactersLeft -= charactersFitted;
+                        //string truncatedText = text.Substring(0, charactersFitted);// + "...";
+
+                        //charactersLeft -= charactersFitted;
                         //gr.Clip = new Region(layoutRectangle);
-                        if (bustrophedon)
-                        {
-                            StringFormat stringFormat = new StringFormat(StringFormatFlags.LineLimit);
-                            stringFormat.FormatFlags = StringFormatFlags.DirectionRightToLeft;
-                            var splits = truncatedText.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).ToArray();
-                            string currentSplit = splits[0];
-                            var yGap = fittedSize.Height / linesFilled;
 
-                            int lineIndex = 0;
-                            foreach (var split in splits)
-                            {
-                                currentSplit = split;
-                                while (true)
-                                {
-                                    var maxChars = GetCharactersThatFitLine(gr, currentSplit, font, book.Width);
-                                    var textToDraw = currentSplit.Substring(0, maxChars);
-                                    SizeF fittedSize2 = gr.MeasureString(textToDraw, font);
+                        if (bustrophedon || customLineSpacing)
+                        {  
+                            //var yGap = fittedSize.Height / linesFilled;
+                            var yGap = font.GetHeight(gr);
 
-                                    if (lineIndex % 2 == 0)
-                                        gr.DrawString(textToDraw, font, Brushes.Black, 0, yGap * lineIndex, sf);
-                                    else
-                                    {
-                                        // Save the current graphics state
-                                        GraphicsState state = gr.Save();
-                                        var normalLocation = new PointF(0, yGap * lineIndex);
-                                        // Measure the string to calculate translation
-                                        SizeF textSize2 = gr.MeasureString(textToDraw, font);
+                            if (customLineSpacing)
+                                yGap *= lineSpacing;
 
-                                        // Apply a horizontal flip (ScaleTransform with -1f for X)
-                                        // Then translate the origin to compensate for the flip
-                                        gr.TranslateTransform(normalLocation.X + textSize2.Width, normalLocation.Y);
-                                        gr.ScaleTransform(-1f, 1f);
-                                        gr.TranslateTransform(-normalLocation.X, -normalLocation.Y); // Translate back to the original Y position
-
-                                        // Draw the mirrored string
-                                        gr.DrawString(textToDraw, font, Brushes.Black, normalLocation, sf);
-
-                                        // Restore the original graphics state
-                                        gr.Restore(state);
-
-                                        //gr.DrawString(ReverseString(textToDraw), font, Brushes.Black, /*book.Width - fittedSize2.Width*/book.Width, yGap * lineIndex, stringFormat);
-
-                                    }
-
-                                    currentSplit = currentSplit.Substring(maxChars);
-
-                                    lineIndex++;
-
-                                    if (string.IsNullOrEmpty(currentSplit))
-                                        break;
-                                }
-
-                            }
+                            RenderTextLineByLine(book, font, layoutRectangle, bustrophedon, yGap, renderCtx, gr, sf);
                         }
-                        else
-                        {
-
-                            gr.DrawString(truncatedText, font, Brushes.Black, new RectangleF(0, 0, book.Width, fittedSize.Height), sf);
-                        }
+                        else                        
+                            DrawTextToRectangle(book, renderCtx, font, layoutRectangle, gr, sf);
+                        
                     }
-                    else
-                    {
-                        // Text fits, draw it normally
-                        gr.DrawString(text, font, Brushes.Black, layoutRectangle, sf);
-                        charactersLeft = 0;
+                    /* else
+                     {
+                         // Text fits, draw it normally
+                         gr.DrawString(text, font, Brushes.Black, layoutRectangle, sf);
+                         charactersLeft = 0;
 
-                    }
+                     }*/
                     //gr.Clip = new Region(new RectangleF (0,0,book.Width,book.Height));
                     //footer
                     var hh = book.Height - bep.PageInfoHeight - 1;
@@ -1022,11 +978,109 @@ namespace pdf2eink
                     pageNo = 0;
                     showPage();
                 });
-                
+
             });
 
 
         }
+
+        private static void RenderTextLineByLine(CbBook book, Font font, RectangleF layoutRectangle,
+            bool bustrophedon,  float yGap, RenderTextBookContext renderCtx, Graphics gr, StringFormat sf)
+        {
+            StringFormat stringFormat = new StringFormat(StringFormatFlags.LineLimit);
+            stringFormat.FormatFlags = StringFormatFlags.DirectionRightToLeft;
+
+
+          
+
+            int lineIndex = 0;
+
+            
+            
+            while (true)
+            {
+                var maxChars = GetCharactersThatFitLine(gr, renderCtx.text, font, book.Width);
+                if (renderCtx.text.Length > 0 && maxChars == 0)
+                {
+                    maxChars = GetCharactersThatFitLine(gr, renderCtx.text, font, book.Width, false);
+                }
+
+                var textToDraw = renderCtx.text.Substring(0, maxChars);
+                SizeF fittedSize2 = gr.MeasureString(textToDraw, font);
+                                
+                renderCtx.text = renderCtx.text.Substring(maxChars);
+
+                if (bustrophedon && lineIndex % 2 != 0)
+                {
+                    // Save the current graphics state
+                    GraphicsState state = gr.Save();
+                    var normalLocation = new PointF(0, yGap * lineIndex);
+                    // Measure the string to calculate translation
+                    SizeF textSize2 = gr.MeasureString(textToDraw, font);
+
+                    // Apply a horizontal flip (ScaleTransform with -1f for X)
+                    // Then translate the origin to compensate for the flip
+                    gr.TranslateTransform(normalLocation.X + textSize2.Width, normalLocation.Y);
+                    gr.ScaleTransform(-1f, 1f);
+                    gr.TranslateTransform(-normalLocation.X, -normalLocation.Y); // Translate back to the original Y position
+
+                    // Draw the mirrored string
+                    gr.DrawString(textToDraw, font, Brushes.Black, normalLocation, sf);
+
+                    // Restore the original graphics state
+                    gr.Restore(state);
+
+                    //gr.DrawString(ReverseString(textToDraw), font, Brushes.Black, /*book.Width - fittedSize2.Width*/book.Width, yGap * lineIndex, stringFormat);
+
+                }
+                else
+                {
+                    gr.DrawString(textToDraw, font, Brushes.Black, 0, yGap * lineIndex, sf);
+                }
+
+
+                lineIndex++;
+
+                var yOffset = yGap * lineIndex;
+                if ((yOffset + font.Height) > layoutRectangle.Height)
+                    break;
+
+                if (string.IsNullOrEmpty(renderCtx.text))
+                    break;
+            }
+
+
+        }
+
+        private static void DrawTextToRectangle(CbBook book, RenderTextBookContext ctx, Font font,
+            RectangleF layoutRectangle, Graphics gr, StringFormat sf)
+        {
+            StringBuilder sub = new StringBuilder();
+            int charactersFitted;
+            int linesFilled;
+            SizeF fittedSize = new SizeF();
+            const int AppendBlockSize = 512;
+            do
+            {
+                if (ctx.text.Length < AppendBlockSize)
+                {
+                    sub.Append(ctx.text);
+                }
+                else
+                {
+                    sub.Append(ctx.text.Substring(sub.Length, AppendBlockSize));
+
+                }
+                fittedSize = gr.MeasureString(sub.ToString(), font, layoutRectangle.Size, sf, out charactersFitted, out linesFilled);
+            } while (charactersFitted >= sub.Length && sub.Length < ctx.text.Length);
+
+            string truncatedText = ctx.text.Substring(0, charactersFitted);// + "...";
+            ctx.text = ctx.text.Substring(charactersFitted);
+            
+
+            gr.DrawString(truncatedText, font, Brushes.Black, new RectangleF(0, 0, book.Width, fittedSize.Height), sf);
+        }
+
         public class FormattedString
         {
             public string Text;
@@ -1237,10 +1291,20 @@ namespace pdf2eink
             d.AddBoolField("fontFromList", "Use font list", true);
             d.AddBoolField("pagesLimit", "pagesLimit", true);
             d.AddBoolField("useBPHD", "Bustrophedon", false);
+            d.AddBoolField("customLineSpacing", "Line spacing", false);
+            d.AddDouble("lineSpacing", "Line spacing", 1.4);
 
-            d.AddNumericField("fontSize", "Font size", 16);
-            d.AddIntegerNumericField("maxPages", "Max pages", 20);
+            d.AddDouble("fontSize", "Font size", 16);
 
+            Font selectedFont = null;
+            d.AddCustomDialogField("fontDialog", "select font", () =>
+            {
+                FontDialog fd = new FontDialog();
+                fd.ShowDialog();
+                selectedFont = fd.Font;
+            });
+
+            d.AddInt("maxPages", "Max pages", 20);
 
 
             if (!d.ShowDialog())
@@ -1248,7 +1312,9 @@ namespace pdf2eink
 
             var fontName = d.GetStringField("fontName");
             var bphd = d.GetBoolField("useBPHD");
-
+            var customLineSpacing = d.GetBoolField("customLineSpacing");
+            var lineSpacing = (float)d.GetDouble("lineSpacing");
+            
             if (d.GetBoolField("fontFromList"))
                 fontName = d.GetOptionsField("fontNameOpt");
 
@@ -1262,10 +1328,11 @@ namespace pdf2eink
             MemoryStream ms = new MemoryStream();
             CreateEmptyBook(ms);
             InitFromStream(ms);
+            var font = new Font(fontName, fontSize);
+            if (selectedFont != null)
+                font = selectedFont;
 
-
-
-            RenderBookFromText(book, text, new Font(fontName, fontSize), pagesLimit, bphd);
+            RenderBookFromText(book, text, font, pagesLimit, bphd, customLineSpacing, lineSpacing);
             trackBar1.Maximum = book.pages - 1;
         }
 
