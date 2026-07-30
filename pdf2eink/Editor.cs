@@ -842,7 +842,7 @@ namespace pdf2eink
 
         public class RenderTextBookContext
         {
-            public string text;            
+            public string text;
         }
 
         public void RenderBookFromText(CbBook book, string _text, Font font,
@@ -865,7 +865,7 @@ namespace pdf2eink
 
                 renderCtx.text = renderCtx.text.Replace("\r\n", "\n");
 
-                
+
 
                 int originalLength = _text.Length;
                 while (renderCtx.text.Length > 0)
@@ -918,7 +918,7 @@ namespace pdf2eink
                         //gr.Clip = new Region(layoutRectangle);
 
                         if (bustrophedon || customLineSpacing)
-                        {  
+                        {
                             //var yGap = fittedSize.Height / linesFilled;
                             var yGap = font.GetHeight(gr);
 
@@ -927,9 +927,9 @@ namespace pdf2eink
 
                             RenderTextLineByLine(book, font, layoutRectangle, bustrophedon, yGap, renderCtx, gr, sf);
                         }
-                        else                        
+                        else
                             DrawTextToRectangle(book, renderCtx, font, layoutRectangle, gr, sf);
-                        
+
                     }
                     /* else
                      {
@@ -985,18 +985,13 @@ namespace pdf2eink
         }
 
         private static void RenderTextLineByLine(CbBook book, Font font, RectangleF layoutRectangle,
-            bool bustrophedon,  float yGap, RenderTextBookContext renderCtx, Graphics gr, StringFormat sf)
+            bool bustrophedon, float yGap, RenderTextBookContext renderCtx, Graphics gr, StringFormat sf)
         {
             StringFormat stringFormat = new StringFormat(StringFormatFlags.LineLimit);
             stringFormat.FormatFlags = StringFormatFlags.DirectionRightToLeft;
 
-
-          
-
             int lineIndex = 0;
 
-            
-            
             while (true)
             {
                 var maxChars = GetCharactersThatFitLine(gr, renderCtx.text, font, book.Width);
@@ -1007,7 +1002,7 @@ namespace pdf2eink
 
                 var textToDraw = renderCtx.text.Substring(0, maxChars);
                 SizeF fittedSize2 = gr.MeasureString(textToDraw, font);
-                                
+
                 renderCtx.text = renderCtx.text.Substring(maxChars);
 
                 if (bustrophedon && lineIndex % 2 != 0)
@@ -1076,7 +1071,7 @@ namespace pdf2eink
 
             string truncatedText = ctx.text.Substring(0, charactersFitted);// + "...";
             ctx.text = ctx.text.Substring(charactersFitted);
-            
+
 
             gr.DrawString(truncatedText, font, Brushes.Black, new RectangleF(0, 0, book.Width, fittedSize.Height), sf);
         }
@@ -1295,6 +1290,7 @@ namespace pdf2eink
             d.AddDouble("lineSpacing", "Line spacing", 1.4);
 
             d.AddDouble("fontSize", "Font size", 16);
+            d.AddBoolField("concatStringsUntilDot", "Concat until dot", false);
 
             Font selectedFont = null;
             d.AddCustomDialogField("fontDialog", "select font", () =>
@@ -1313,17 +1309,18 @@ namespace pdf2eink
             var fontName = d.GetStringField("fontName");
             var bphd = d.GetBoolField("useBPHD");
             var customLineSpacing = d.GetBoolField("customLineSpacing");
+            var concatStringsUntilDot = d.GetBoolField("concatStringsUntilDot");
             var lineSpacing = (float)d.GetDouble("lineSpacing");
-            
+
             if (d.GetBoolField("fontFromList"))
                 fontName = d.GetOptionsField("fontNameOpt");
 
-            var fontSize = (float)d.GetNumericField("fontSize");
+            var fontSize = (float)d.GetDouble("fontSize");
 
             int? pagesLimit = null;
             if (d.GetBoolField("pagesLimit"))
             {
-                pagesLimit = d.GetIntegerNumericField("maxPages");
+                pagesLimit = d.GetInt("maxPages");
             }
             MemoryStream ms = new MemoryStream();
             CreateEmptyBook(ms);
@@ -1332,6 +1329,25 @@ namespace pdf2eink
             if (selectedFont != null)
                 font = selectedFont;
 
+            if (concatStringsUntilDot)
+            {
+                StringBuilder sb = new StringBuilder();
+                var splitted = text.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 0; i < splitted.Length-1; i++)
+                {
+                    var next = splitted[i + 1];
+                    if (!next.Trim().Any() || !(char.IsUpper(next.Trim()[0])||'"'==(next.Trim()[0])))
+                    {
+                        sb.Append(splitted[i]);
+                    }
+                    else
+                    {
+                        sb.AppendLine(splitted[i]);
+                    }
+                }
+                sb.Append(splitted[^1]);
+                text = sb.ToString();
+            }
             RenderBookFromText(book, text, font, pagesLimit, bphd, customLineSpacing, lineSpacing);
             trackBar1.Maximum = book.pages - 1;
         }
